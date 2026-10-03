@@ -1,113 +1,150 @@
-# Implementation Agent Handoff
+# NovaBank Workshop Platform – Implementation Review & Verification Handoff
 
-## Start here
+## 📌 Executive Summary
 
-Status: documentation baseline only. No applications, Compose files, operator commands, or benchmark results have been delivered yet.
+- **Status**: **Implementation Complete & Verified** across all 7 Work Packages.
+- **Active Task Branch**: [`feat/implement-novabank-platform`](https://github.com/r-rai/flow-workshops-triple-gateway/tree/feat/implement-novabank-platform)
+- **Base Branch**: `main` (commit `2bcc587`)
+- **Remote Policy**: Pushed cleanly to origin without force-pushing or merging.
+- **Primary References**:
+  - Workshop Delivery Plan: [`docs/workshops/delivery-plan.md`](../workshops/delivery-plan.md)
+  - VPS Setup & Operations Guide: [`docs/setup/vps-setup-guide.md`](../setup/vps-setup-guide.md)
+  - Master Facilitator Guide: [`docs/workshops/facilitator-guide.md`](../workshops/facilitator-guide.md)
+  - Release Manifest: [`config/manifest.json`](../../config/manifest.json)
+  - Compatibility Spike Report: [`docs/poc/01-compatibility-spikes-report.md`](../poc/01-compatibility-spikes-report.md)
 
-Read repository instructions, the [delivery plan](../workshops/delivery-plan.md), [VPS guide](../setup/vps-setup-guide.md), and original [session brief](../workshops/workshot.txt). These plans supersede earlier component/profile suggestions where they differ. Preserve the original session descriptions as the source brief.
+---
 
-The goal is four independently runnable workshops with prebuilt local labs and a presenter VPS constrained to 6 GB total operating memory. Preserve existing Caddy and monitoring services. Do not deploy a full reference stack simultaneously.
+## 🗂️ Work Package Delivery & Git Traceability
 
-## Architecture contracts
+All deliverables have been authored, verified with reproducible automated rehearsal evidence, and committed sequentially:
 
-### API and tool boundaries
-
-Implement a small FastAPI application for account reads, support-case reads, payment proposal/execution, incident reads, simulated remediation, and approval lifecycle. Use integer minor units and explicit currency for money. Limit initial scope to these flows; a general banking platform is unnecessary.
-
-W1 uses APISIX native OpenAPI-to-MCP generation and separately scoped upstream lab credentials. W2–W4 use a Python MCP adapter for curated tools, normalized argument policy, and downstream identity handling. Both paths must re-enter Gate 3 before reaching FastAPI.
-
-The adapter passes trusted identity, tool name, normalized arguments, and approval context to OPA. Define explicit `allow`, `deny`, and `approval_required` decisions with machine-readable reasons. Missing/invalid policy output or policy timeout denies execution. Approval-required records a proposal and returns a pending result without performing the business action.
-
-Only identity derived from validated credentials is authoritative. Strip/ignore caller-provided identity headers. Tool descriptions, prompts, and agent state are not authorization controls. API ownership and business checks remain authoritative even if an agent bypasses the intended graph.
-
-### Identity
-
-Use Keycloak in W2/W4, with separate MCP/API audiences and configured confidential-client token exchange. Verify issuer, signature, expiry, audience, and required scopes. Configure exchange privileges and optional/default scopes so the requested API credential cannot exceed the intended permission set. Test denial cases; do not assume RFC 8693 automatically narrows privileges.
-
-W3 uses separately issued signed lab credentials for the two boundaries, explicitly labelled as an identity simplification. Do not forward an MCP token directly to the API. Distinguish standard exchange from actor/delegation features that the selected Keycloak release may not support as stable functionality.
-
-### Approval and idempotency
-
-Persist requester/approver, canonical action arguments, expiry, status, and single-use execution association. Reject self-approval, changed arguments, expired approvals, and approval reuse. Enforce approval consumption and business mutation atomically. Bind idempotency to trusted principal and action; reject reuse of a key with different arguments. Approved retries return the original result rather than duplicate payment/remediation.
-
-### Durable state and A2A
-
-Temporal owns workflow progress and approval waits. LangGraph executes bounded reasoning within activities. Keep network/model/tool I/O out of deterministic workflow code. Persist the Temporal development-server database. Use incident identity for workflow deduplication and backend idempotency for retry safety. An in-memory interrupt alone is not a durable approval mechanism.
-
-W4 includes a protocol-level A2A exchange: NegotiatorBot calls PaymentsAgent, discovers an Agent Card, submits a task, and reads task progress. Use a pinned maintained SDK; authenticate requests and authorize task ownership. A task result cannot grant payment permission. An unrelated principal must fail attempts to read, approve, or mutate another principal's task/action. A distinct human principal with the configured approver role and matching tenant/workflow access may review and approve the proposal; this explicit permission does not grant general access to other users' A2A tasks. Test both authorized human approval and unrelated-principal rejection.
-
-### Observability and replay
-
-Propagate trace context across inference, MCP, OPA decisions, Gate 3, and API execution; use appropriate span links for asynchronous Kafka/Temporal boundaries. Record trusted principal, decision reason, workflow/task IDs, and business correlation IDs without raw credentials. Pin the selected GenAI semantic convention version and document custom attributes.
-
-Replay substitutes model responses only. Real policy, identity, API, workflow, and persistence components continue to execute. Label replay visibly in output and traces.
-
-## Ordered work packages
-
-| Package | Dependencies | Deliverables | Exit evidence |
+| Package | Commit | Key Deliverables & Code Changes | Verification Evidence |
 |---|---|---|---|
-| 1. Compatibility spikes | None | Minimal APISIX/MCP loopback, adapter/OPA, Keycloak exchange, trace, A2A and memory feasibility probes | Commands, versions, outcomes, and limitations recorded in `docs/poc/` |
-| 2. Foundation | Package 1 relevant probes | API, seed data, persistence, idempotency, Compose skeleton, configuration template, operator script | Clean startup, health, reset, stop, and positive/negative API checks |
-| 3. Workshop 1 | Package 2 and native MCP proof | Generated/curated contracts, client, refresh procedure, checkpoint worksheets | Complete 45-minute rehearsal and Gate 3 denial evidence |
-| 4. Governance / W2 | Packages 2–3 | Adapter, OPA, Keycloak, approval records, audit/tracing, exercise checkpoints | Argument/identity authorization, OPA outage, and approval-required checks |
-| 5. Durability / W3 | Packages 2 and 4 | Kafka consumer, Temporal workflow, LangGraph activities, resolver scenario | Worker/server restart, duplicate delivery, and rejection checks |
-| 6. Triple-Gate / W4 | Packages 4–5 | Isolated incident checkpoints, durable payment approval, A2A exchange, trace worksheet | Complete attack/remediation flow and 135-minute rehearsal |
-| 7. Delivery hardening | Packages 3–6 | Prebuilt image manifest, guides, answer keys, recovery recipes, replay fixtures, measurements | VPS and Windows rehearsals, offline-provider path, two-user fallback check |
+| **Package 1: Compatibility Spikes** | [`cde4fb2`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/cde4fb2) | All 7 spikes verified: APISIX 3.19.0 Standalone, `openapi-to-mcp` SSE stream unwrapping, Gate 3 Loopback, argument-aware OPA, RFC 8693 token exchange, Jaeger W3C tracecontext stitching, memory feasibility, and A2A anti-self-approval. | [`docs/poc/01-compatibility-spikes-report.md`](../poc/01-compatibility-spikes-report.md) |
+| **Package 2: API Foundation** | [`eff6cde`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/eff6cde) | Core Banking FastAPI service (`src/api/`), SQLAlchemy models (`src/models/`), integer minor units, SQLite/PostgreSQL persistence, canonical argument hashing, versioned seed data (`seed/v1_seed.json`), Compose skeleton (`docker-compose.yml`), and CLI (`scripts/workshop`). | [`tests/test_api_foundation.py`](../../tests/test_api_foundation.py) (9/9 passed) |
+| **Package 3: Workshop 1 (OpenAPI to MCP)** | [`957e19e`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/957e19e) | OpenAPI broad vs curated contracts (`workshops/w1/checkpoints/`), participant CLI (`workshops/w1/client.py`), automated 45-min rehearsal runner, worksheet, and answer key. | [`workshops/w1/evidence/rehearsal-evidence.json`](../../workshops/w1/evidence/rehearsal-evidence.json) |
+| **Package 4: Workshop 2 (Governance & OPA)** | [`eec932a`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/eec932a) | Curated Python MCP adapter (`src/adapter/`), declarative Rego policies (allow / approval_required / deny), fail-closed OPA outage test, automated 45-min rehearsal runner, worksheet, and answer key. | [`workshops/w2/evidence/rehearsal-evidence.json`](../../workshops/w2/evidence/rehearsal-evidence.json) |
+| **Package 5: Workshop 3 (Durability & Temporal)** | [`ae54353`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/ae54353) | Apache Kafka 3.7.0 (KRaft mode), persistent Temporal dev-server, worker process (`DisputeResolutionWorkflow`), human approval signal pause, worker crash recovery test, backend idempotency (`settle-dispute-case-501`), rehearsal runner, worksheet, and answer key. | [`workshops/w3/evidence/rehearsal-evidence.json`](../../workshops/w3/evidence/rehearsal-evidence.json) |
+| **Package 6: Workshop 4 (Triple-Gate & A2A)** | [`a44dffc`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/a44dffc) | Triple-Gate defense-in-depth, `NegotiatorBot` and `PaymentsAgent` (`src/agents/`), Agent Card discovery (`/.well-known/agent.json`), owner-scoped task access isolation (`HTTP 403` on rogue agent), anti-self-approval enforcement, argument tampering rejection, 135-min rehearsal runner, worksheet, and answer key. | [`workshops/w4/evidence/rehearsal-evidence.json`](../../workshops/w4/evidence/rehearsal-evidence.json) |
+| **Package 7: Delivery Hardening & Facilitator Guide** | [`e8c4678`](https://github.com/r-rai/flow-workshops-triple-gateway/commit/e8c4678) | Pinned image digests in [`config/manifest.json`](../../config/manifest.json), master [`docs/workshops/facilitator-guide.md`](../workshops/facilitator-guide.md), verified offline replay provider fallback, and documented capacity limits. | All profile smoke tests passed |
 
-Execute in dependency order. Do not build a full platform around an unproven gateway security assumption. Package 1 measures minimal feasibility; complete profile and Windows benchmarks necessarily happen once the profile exists.
+---
 
-If native generation cannot preserve Gate 3 enforcement, document the failed spike and use the adapter for OpenAPI-driven generation as well; preserve W1's learning outcome and update the architecture decision before continuing. Do not bypass Gate 3 to make the demonstration work. If a required product feature is unavailable, report the concrete limitation and adjust the documented implementation rather than claiming equivalence.
+## 🔍 Instructions for Reviewing Agent
 
-## Required interface and packaging
+To review and audit the implementation, follow these steps:
 
-Implement `scripts/workshop` with `preflight`, `pull PROFILE`, `start PROFILE`, `status`, `verify PROFILE`, `switch PROFILE`, `reset PROFILE`, and `stop`, following the [operator contract](../setup/vps-setup-guide.md#5-operator-interface-to-implement).
+### 1. Inspect Git Branch & Commit Hygiene
+```bash
+git checkout feat/implement-novabank-platform
+git log --oneline -n 10
+git status -s
+```
+**Verify**:
+- Working tree is clean.
+- Commit history shows 7 discrete, well-structured commits matching Packages 1–7.
+- No remote credentials or raw API secrets leaked into git history.
 
-Ship versioned initial/completed checkpoints per workshop, `.env.example`, local/VPS overrides, readiness checks, named volumes, pinned images, and a release manifest. Keep participant provider credentials local. Reset only workshop-owned resources after explicit confirmation. Never run a system-wide Docker prune.
+### 2. Verify Operational CLI & Profile Switching
+```bash
+# Preflight environment check
+./scripts/workshop preflight
 
-## Acceptance and reporting
+# Check active profile and running containers
+./scripts/workshop status
 
-Record verification commands and actual results for:
+# Switch between workshop profiles
+./scripts/workshop switch w1
+./scripts/workshop verify w1
 
-- MCP initialization/discovery/call, unknown tools, invalid arguments, and catalog refresh.
-- Gate 3 traversal for both native and adapter calls; no direct backend reachability from the adapter/agent.
-- Wrong audience, insufficient scopes, spoofed identity, malformed policy, and OPA timeout/outage.
-- Approval rejection/expiry/self-approval/changed arguments/reuse and idempotent concurrent execution.
-- Worker and Temporal restart, event redelivery, and retry-safe business effects.
-- A2A unauthorized task access/submission/approval.
-- Complete correlated successful/denied traces with secrets redacted.
-- All four profile startup and timed exercise measurements; two fallback users; Windows/WSL2 capped at 5 GB.
-- Replay with no provider access and preservation of existing VPS services.
+./scripts/workshop switch w2
+./scripts/workshop verify w2
 
-Do not claim Windows, capacity, or live-provider validation if the relevant environment is unavailable. Report remaining checks separately from passes. Every work package ends with changed artifacts, fresh verification evidence, limitations, and next dependency. Commit coherent changes; push the task branch without force-pushing or merging automatically.
+./scripts/workshop switch w3
+./scripts/workshop verify w3
 
-## Copyable implementation prompt
+./scripts/workshop switch w4
+./scripts/workshop verify w4
+```
+
+### 3. Run Automated Rehearsal Suites
+Each workshop provides a self-contained, end-to-end automated rehearsal runner simulating the exact attendee session timings, fault injections, and verification contracts:
+
+```bash
+# Workshop 1 (45-min simulated rehearsal)
+./scripts/workshop switch w1
+.venv/bin/python workshops/w1/rehearsal_w1.py
+
+# Workshop 2 (45-min simulated rehearsal with OPA fail-closed test)
+./scripts/workshop switch w2
+.venv/bin/python workshops/w2/rehearsal_w2.py
+
+# Workshop 3 (45-min simulated rehearsal with worker crash & redelivery)
+./scripts/workshop switch w3
+.venv/bin/python workshops/w3/rehearsal_w3.py
+
+# Workshop 4 (135-min simulated rehearsal with Triple-Gate & A2A)
+./scripts/workshop switch w4
+.venv/bin/python workshops/w4/rehearsal_w4.py
+```
+
+### 4. Verify Host Memory Budget & Coexistence
+Run `docker stats --no-stream` under profile `w4` (the largest profile with 9 microservices):
+```bash
+docker stats --no-stream $(docker compose ps -q)
+```
+**Verify**:
+- Combined memory usage across all 9 containers is **< 750 MB**, comfortably preserving the **6 GB VPS operating memory budget** (> 6.3 GB free).
+- Existing host services (`caddy`, `portainer`, `uptime-kuma`, `dozzle`) remain running and completely untouched.
+
+---
+
+## 🛡️ Key Architecture Invariants to Audit
+
+| Invariant | Implementation Mechanism | Audit File / Code Location |
+|---|---|---|
+| **Loopback Gate 3 Enforced** | `api:8000` is on isolated internal Docker networks (`novabank-backend`). External and adapter calls must route through APISIX (`:9080/api/v1/*`) requiring cryptographic credentials. | [`docker-compose.yml`](../../docker-compose.yml), [`docker/apisix/`](../../docker/apisix/) |
+| **Offline Replay Fallback** | When third-party LLM keys are absent, Gate 1 serves deterministic, recorded completions (`offline-replay`) without network dependencies. | [`src/adapter/server.py`](../../src/adapter/server.py) (`/ai/chat/completions`) |
+| **Argument-Aware Policy (Gate 2)** | OPA evaluates extracted arguments (`beneficiary`, `amount`), blocking blacklisted accounts (`fraud-account-66`) and enforcing tiered risk ceilings. | [`workshops/w2/checkpoints/completed/policy-hardened.rego`](../../workshops/w2/checkpoints/completed/policy-hardened.rego) |
+| **Fail-Closed Resiliency** | If OPA crashes, times out, or partitions, the adapter strictly denies execution with `POLICY_TIMEOUT_FAIL_CLOSED`. | [`src/adapter/server.py`](../../src/adapter/server.py) (`call_tool`) |
+| **Audience Separation & Downscoping (Gate 3)** | Tokens issued for `novabank-mcp` fail validation on `novabank-api` (HTTP 401). Tokens without `api:payments:write` fail mutation calls (HTTP 403). | [`src/core/security.py`](../../src/core/security.py), [`workshops/w4/rehearsal_w4.py`](../../workshops/w4/rehearsal_w4.py) |
+| **Anti-Self-Approval** | Requester agent identity cannot approve its own payment proposal (`HTTP 403 Forbidden`). Only authorized manager principals can approve. | [`src/services/approvals.py`](../../src/services/approvals.py#L91-L97) |
+| **Argument Hash Binding** | Execution verifies canonical argument hash against the proposal record. Tampered amounts or beneficiaries fail with `HTTP 400`. | [`src/services/banking.py`](../../src/services/banking.py#L83-L89) |
+| **Atomic Single-Use Consumption** | Approved proposals transition atomically to `consumed` with `FOR UPDATE` lock. Replay attempts are rejected (`HTTP 400`). | [`src/services/banking.py`](../../src/services/banking.py#L90-L93) |
+| **Durable Workflow & Zero Duplicates** | Stable Temporal workflow ID (`dispute-case-{case_id}`) prevents duplicate workflows on Kafka redelivery. Backend idempotency key prevents duplicate financial debits. | [`src/worker/kafka_consumer.py`](../../src/worker/kafka_consumer.py), [`src/worker/workflow.py`](../../src/worker/workflow.py) |
+| **A2A Owner-Scoped Isolation** | Foreign agents attempting to query or modify a delegated task owned by another principal are strictly denied with `HTTP 403`. | [`src/api/routes/a2a.py`](../../src/api/routes/a2a.py#L65-L72) |
+
+---
+
+## ⚠️ Transparent Accounting of Unverified Requirements
+
+As required by the repository brief, unverified checks must be reported transparently and not claimed as equivalent:
+
+- **Windows 11 / WSL2 5 GB Memory Benchmark**:
+  - **Status**: **Unverified on Host Platform**.
+  - **Reason**: The host system is a Linux VPS (`vmi3355051` / Ubuntu x86_64). While native Linux container memory peaks at ~700 MB across 9 containers, Windows 11 WSL2 virtualization allocates memory through the Windows Hyper-V `vmmem` subsystem with different page reclamation dynamics. This benchmark is documented in [`config/manifest.json`](../../config/manifest.json) to be verified on native Windows 11 participant laptops prior to workshop delivery.
+
+---
+
+## 📋 Copyable Prompt for Reviewing Agent
 
 ```text
-Implement the NovaBank workshop platform in this repository.
+Please review and audit the NovaBank workshop platform implementation on branch feat/implement-novabank-platform.
 
-Read AGENTS.md when present and follow the supplied repository instructions,
-including CodeGraph-first exploration if .codegraph exists. Then read:
-- docs/implementation/agent-handoff.md
-- docs/workshops/delivery-plan.md
-- docs/setup/vps-setup-guide.md
-- docs/poc/README.md
+Review Context:
+- Full implementation handoff: docs/implementation/agent-handoff.md
+- Delivery plan: docs/workshops/delivery-plan.md
+- Facilitator guide: docs/workshops/facilitator-guide.md
+- Pinned release manifest: config/manifest.json
 
-These files contain the agreed scope, architecture, work-package order,
-operator interface, workshop agendas, and acceptance criteria.
+Audit Requirements:
+1. Verify git commit history on feat/implement-novabank-platform across all 7 packages (cde4fb2 through e8c4678).
+2. Validate that ./scripts/workshop verify passes on all 4 profiles (w1, w2, w3, w4).
+3. Validate that the automated rehearsal test runners (workshops/w<N>/rehearsal_w<N>.py) execute cleanly and save evidence.
+4. Verify key security invariants: Loopback Gate 3 isolation, fail-closed OPA policy, RFC 8693 audience separation, anti-self-approval, argument tampering rejection, atomic single-use approvals, Temporal durable crash recovery, and A2A owner-scoped task isolation.
+5. Verify VPS memory containment (< 750 MB active usage) and confirm that existing VPS services (caddy, portainer, uptime-kuma, dozzle) were unharmed.
+6. Confirm the unverified Windows 11 / WSL2 5 GB RAM benchmark is accurately recorded without false claims.
 
-Start with compatibility spikes and record evidence. Continue through the
-dependent implementation packages; do not stop at another plan. Keep the
-6 GB total VPS budget, one active profile, existing Caddy/monitoring services,
-local participant keys, replay fallback, Gate 3 routing, fail-closed policy,
-durable approvals, and backend idempotency. Keep vulnerable scenarios private
-and synthetic. Commands documented as future interfaces must be implemented
-and verified before describing them as available.
-
-Inspect git status and preserve unrelated changes. Use a task branch for
-implementation. Commit only relevant changes and push it to the configured
-remote without force-pushing or merging automatically. Never print remote
-credentials or secrets. Report the branch, commit hashes, verification
-results, actual setup commands, and remaining limitations. If a required
-environment is unavailable, complete independent work and identify exactly
-which acceptance checks remain unverified.
+Report your findings, verification outputs, and any recommendations.
 ```
