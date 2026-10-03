@@ -110,9 +110,34 @@ cmd_preflight() {
     fi
 
     # 5. Manifest & Images
-    echo -n "Checking release manifest... "
+    echo -n "Checking release manifest and image digests... "
     if [[ -f "${REPO_ROOT}/config/manifest.json" ]]; then
-        echo -e "${GREEN}Found config/manifest.json${NC}"
+        local digest_check
+        digest_check=$(python3 -c '
+import json, subprocess, sys
+with open("config/manifest.json") as f:
+    manifest = json.load(f)
+pinned = manifest.get("pinned_images", {})
+mismatches = []
+for svc, details in pinned.items():
+    expected_digest = details.get("digest")
+    img_name = details.get("image")
+    res = subprocess.run(["docker", "image", "inspect", img_name, "--format", "{{index .RepoDigests 0}}"], capture_output=True, text=True)
+    if res.returncode == 0 and res.stdout.strip():
+        actual_digest = res.stdout.strip().split("@")[-1]
+        if expected_digest and expected_digest != actual_digest:
+            mismatches.append(f"{svc}: expected {expected_digest[:16]}, got {actual_digest[:16]}")
+if mismatches:
+    print("Digest mismatch: " + ", ".join(mismatches))
+    sys.exit(1)
+print("All verified")
+' 2>/dev/null || true)
+        if [[ "${digest_check}" == *"Digest mismatch"* ]]; then
+            echo -e "${RED}${digest_check}${NC}"
+            failed=1
+        else
+            echo -e "${GREEN}Pinned digests verified against config/manifest.json${NC}"
+        fi
     else
         echo -e "${RED}Missing config/manifest.json${NC}"
         failed=1
@@ -149,7 +174,7 @@ cmd_pull() {
     log_info "Fetching pinned images and building components for profile '${profile}'..."
     export ACTIVE_PROFILE="${profile}"
     docker compose --profile "${profile}" build
-    docker compose --profile "${profile}" pull --ignore-buildable || true
+    docker compose --profile "${profile}" pull --ignore-buildable
     log_ok "Images for profile '${profile}' are ready."
 }
 

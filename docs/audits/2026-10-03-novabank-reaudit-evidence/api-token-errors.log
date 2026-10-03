@@ -1,0 +1,219 @@
+INFO:     127.0.0.1:40808 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:34312 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:60964 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:60980 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:56024 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export metrics batch code: 404, reason: Not Found
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:56026 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:45916 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:45918 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:52292 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     172.26.0.4:52368 - "POST /oauth/token HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/applications.py", line 1220, in __call__
+    await self._native_telemetry(
+  File "/usr/local/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 258, in __call__
+    await app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.12/site-packages/opentelemetry/instrumentation/asgi/__init__.py", line 779, in __call__
+    await self.app(scope, otel_receive, otel_send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.12/site-packages/opentelemetry/instrumentation/fastapi/__init__.py", line 360, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1817, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 2869, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1843, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1308, in handle
+    await effective_context.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 360, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/src/api/routes/oauth.py", line 41, in token_exchange_endpoint
+    form = await request.form()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/starlette/requests.py", line 276, in _get_form
+    assert parse_options_header is not None, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: The `python-multipart` library must be installed to use form parsing.
+INFO:     127.0.0.1:52302 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:34832 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:34840 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:57850 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:39276 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:39290 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:54192 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export metrics batch code: 404, reason: Not Found
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:54196 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:54958 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:54962 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:38956 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:38966 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:38784 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:38790 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:37050 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:37058 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     172.26.0.4:49886 - "POST /oauth/token HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py", line 422, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/applications.py", line 1220, in __call__
+    await self._native_telemetry(
+  File "/usr/local/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 258, in __call__
+    await app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.12/site-packages/opentelemetry/instrumentation/asgi/__init__.py", line 779, in __call__
+    await self.app(scope, otel_receive, otel_send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/usr/local/lib/python3.12/site-packages/opentelemetry/instrumentation/fastapi/__init__.py", line 360, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/routing.py", line 676, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 2786, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1817, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 2869, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1843, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 1308, in handle
+    await effective_context.app(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 165, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 151, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 727, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/fastapi/routing.py", line 360, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/src/api/routes/oauth.py", line 41, in token_exchange_endpoint
+    form = await request.form()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/starlette/requests.py", line 276, in _get_form
+    assert parse_options_header is not None, (
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: The `python-multipart` library must be installed to use form parsing.
+INFO:     172.26.0.4:49894 - "POST /api/v1/oauth/token HTTP/1.1" 401 Unauthorized
+INFO:     172.26.0.4:49894 - "GET /api/v1/payments HTTP/1.1" 403 Forbidden
+INFO:     172.26.0.4:49894 - "POST /oauth/token HTTP/1.1" 200 OK
+INFO:     172.26.0.4:49894 - "GET /api/v1/payments HTTP/1.1" 200 OK
+INFO:     172.26.0.4:49894 - "POST /oauth/token HTTP/1.1" 200 OK
+INFO:     172.26.0.4:49894 - "POST /oauth/token HTTP/1.1" 200 OK
+INFO:     172.26.0.4:49894 - "GET /api/v1/a2a/tasks/task-c5feea54 HTTP/1.1" 200 OK
+INFO:     172.26.0.4:49910 - "GET /api/v1/accounts/acc-101 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35928 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:47804 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export metrics batch code: 404, reason: Not Found
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:47808 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:47544 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:47554 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:39404 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:39418 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found
+INFO:     127.0.0.1:53484 - "GET /healthz HTTP/1.1" 200 OK
+Failed to export spans batch code: 404, reason: Not Found

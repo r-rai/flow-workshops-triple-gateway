@@ -141,6 +141,57 @@ async def run_rehearsal():
         "workflow_result": result
     }
 
+    # Segment 6: Exercise Rejection Settlement Branch
+    print("\n[Segment 6: 41–45 min] Verify Rejection Settlement Activity Execution")
+    await emit_dispute(KAFKA_SERVER, "case-502", "cust-8802")
+    handle_502 = temporal_client.get_workflow_handle("dispute-case-case-502")
+    status_502 = None
+    for attempt in range(20):
+        try:
+            status_502 = await handle_502.query("get_status")
+            if status_502.get("current_phase") == "WAITING_FOR_APPROVAL":
+                break
+        except Exception:
+            pass
+        await asyncio.sleep(1)
+
+    if not status_502 or status_502.get("current_phase") != "WAITING_FOR_APPROVAL":
+        raise RuntimeError("Workflow for case-502 failed to reach WAITING_FOR_APPROVAL state")
+
+    # Signal Rejection (approved=False)
+    rej_result = await signal_approval(
+        TEMPORAL_HOST,
+        "case-502",
+        approved=False,
+        reviewer="risk-lead",
+        comments="Dispute rejected: transaction verified via biometric 2FA"
+    )
+    assert rej_result.get("phase") == "COMPLETED" or rej_result.get("status") == "COMPLETED"
+    assert rej_result["result"]["status"] == "REJECTED"
+    print(f"✓ Rejection workflow completed successfully: {rej_result['result']}")
+
+    # Verify case status transitioned to 'closed' and no payment was executed
+    async with httpx.AsyncClient() as http_client:
+        c_resp = await http_client.get(f"{GATE3_URL}/cases/case-502", headers=headers)
+        case_502 = c_resp.json()
+        assert case_502["status"] == "closed", f"Expected case-502 to be closed, got {case_502['status']}"
+        print(f"✓ Case-502 status verified 'closed' in Core Banking API: {case_502['status']}")
+
+        p_resp = await http_client.get(f"{GATE3_URL}/payments", headers=headers)
+        all_payments = p_resp.json()
+        case_502_payments = [
+            p for p in all_payments
+            if isinstance(p, dict) and "case-502" in p.get("idempotency_key", "")
+        ]
+        assert len(case_502_payments) == 0, f"Expected 0 payments for rejected case-502, found {len(case_502_payments)}"
+        print("✓ REJECTION INVARIANT VERIFIED: 0 payment records created for rejected dispute!")
+
+    evidence["segments"]["segment6"] = {
+        "rejection_result": rej_result,
+        "case_502_final_status": case_502["status"],
+        "rejected_payment_count": len(case_502_payments)
+    }
+
     # Save evidence
     os.makedirs(os.path.dirname(EVIDENCE_FILE), exist_ok=True)
     with open(EVIDENCE_FILE, "w") as f:

@@ -36,6 +36,10 @@ async def diagnose_and_propose_resolution(case_data: dict) -> dict:
         amount = 75000 # INR 750.00 (> INR 500 requires human approval)
         destination_account = "acc-101"
         rationale = "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00."
+    elif "prompt_injection" in issue_type or "502" in case_id:
+        amount = 90000000 # INR 900,000.00 (> INR 500 requires human approval)
+        destination_account = "fraud-account-66"
+        rationale = "Suspicious prompt injection attack detected; flagged for mandatory security review."
     elif "fee dispute" in desc.lower() or "overcharge" in desc.lower():
         amount = 25000 # INR 250.00
         destination_account = "acc-101"
@@ -112,7 +116,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
             case_update = {
                 "status": "closed"
             }
-            await client.patch(f"{api_url}/cases/{case_id}", json=case_update, headers=headers)
+            await client.patch(f"{gate3_url}/cases/{case_id}", json=case_update, headers=headers)
             return {
                 "case_id": case_id,
                 "status": "REJECTED",

@@ -1,6 +1,6 @@
 {
   "workshop": "w3",
-  "timestamp": 1791043617.685597,
+  "timestamp": 1791033014.5211668,
   "segments": {
     "segment1": {
       "case_loaded": {
@@ -73,39 +73,13 @@
             "beneficiary": "acc-101",
             "currency": "INR",
             "idempotent_replay": false,
-            "payment_id": "pay-94358dee",
+            "payment_id": "pay-d6953f78",
             "remaining_balance": 8425000,
             "status": "COMPLETED"
           },
           "status": "RESOLVED"
         }
       }
-    },
-    "segment6": {
-      "rejection_result": {
-        "approval": {
-          "approved": false,
-          "comments": "Dispute rejected: transaction verified via biometric 2FA",
-          "reviewer": "risk-lead"
-        },
-        "case_id": "case-502",
-        "phase": "COMPLETED",
-        "proposal": {
-          "amount": 90000000,
-          "case_id": "case-502",
-          "customer_id": "cust-8802",
-          "destination_account": "fraud-account-66",
-          "rationale": "Suspicious prompt injection attack detected; flagged for mandatory security review.",
-          "requires_approval": true
-        },
-        "result": {
-          "case_id": "case-502",
-          "notification_sent": true,
-          "status": "REJECTED"
-        }
-      },
-      "case_502_final_status": "closed",
-      "rejected_payment_count": 0
     }
   }
 }

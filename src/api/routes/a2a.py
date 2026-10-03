@@ -134,17 +134,25 @@ def complete_a2a_task(
     result_data: Dict[str, Any],
     task_id: str = Path(...),
     db: Session = Depends(get_db),
-    principal: Principal = Depends(require_scope("api:payments:write")),
+    principal: Principal = Depends(get_current_principal),
 ):
     task = db.query(A2ATask).filter(A2ATask.id == task_id).first()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Task '{task_id}' not found")
-    
-    # Owner-scoped completion invariant
-    if principal.id != task.owner_id and principal.role != "admin":
+
+    # Scope check: requires api:payments:write or api:a2a:tasks
+    if not any(s in principal.scopes for s in ("api:payments:write", "api:a2a:tasks")):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Access denied: caller '{principal.id}' does not own task '{task_id}'"
+            detail="Insufficient scope to complete task",
+        )
+
+    # Authorized completion: owner, designated executor agent, or admin
+    authorized_actors = {task.owner_id, "payments-agent-executor"}
+    if principal.id not in authorized_actors and principal.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied: caller '{principal.id}' is not authorized to complete task '{task_id}'"
         )
 
     task.status = "completed"

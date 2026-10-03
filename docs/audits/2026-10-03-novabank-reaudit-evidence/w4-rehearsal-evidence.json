@@ -1,6 +1,6 @@
 {
   "workshop": "w4",
-  "timestamp": 1791043697.3393807,
+  "timestamp": 1791033055.825393,
   "segments": {
     "segment1": {
       "baseline_reset": "success"
@@ -18,9 +18,9 @@
     },
     "segment3": {
       "gate1_response": {
-        "id": "chatcmpl-replay-1791043697",
+        "id": "chatcmpl-replay-1791033056",
         "object": "chat.completion",
-        "created": 1791043697,
+        "created": 1791033056,
         "model": "novabank-replay-fixture",
         "choices": [
           {
@@ -35,9 +35,7 @@
         "usage": {
           "prompt_tokens": 15,
           "completion_tokens": 20,
-          "total_tokens": 35,
-          "accumulated_budget_tokens": 105,
-          "budget_limit": 10000
+          "total_tokens": 35
         }
       }
     },
@@ -49,34 +47,26 @@
     },
     "segment6": {
       "wrong_audience_status": 401,
-      "insufficient_scope_status": 403,
-      "rfc8693_exchange_status": 200,
-      "unauthorized_scope_status": 403,
-      "missing_type_status": 400,
-      "bad_audience_status": 401
+      "insufficient_scope_status": 403
     },
     "segment7": {
-      "proposal_id": "prop-5a0329b8",
+      "proposal_id": "prop-698d0f88",
       "self_approval_denied": true,
       "tamper_detected": true,
       "single_use_enforced": true,
-      "payment_id": "pay-2e0d40fe"
+      "payment_id": "pay-9ad12123"
     },
     "segment8": {
       "agent_card": "NovaBank PaymentsAgent",
-      "delegated_task_id": "task-96879ccc",
+      "delegated_task_id": "task-be682623",
       "unrelated_agent_denied": true,
       "foreign_mutation_denied": true,
-      "viewer_creation_denied": true,
-      "task_completion_verified": true
+      "viewer_creation_denied": true
     },
     "segment9": {
       "traced_services": [
-        "novabank-api",
-        "jaeger-all-in-one"
-      ],
-      "traces_count": 0,
-      "spans_count": 0
+        "novabank-api"
+      ]
     }
   }
 }

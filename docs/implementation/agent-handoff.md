@@ -2,12 +2,13 @@
 
 ## 📌 Executive Summary
 
-- **Status**: **Implementation Complete & Remediated** (All findings from the 2026-10-03 independent audit fully resolved and re-verified).
+- **Status**: **Implementation Remediated & Fully Re-Verified** (All findings from the initial audit and the 2026-10-03 re-audit fully resolved, hardened, and verified).
 - **Active Task Branch**: [`feat/implement-novabank-platform`](https://github.com/r-rai/flow-workshops-triple-gateway/tree/feat/implement-novabank-platform)
 - **Base Branch**: `main` (commit `2bcc587`)
 - **Remote Policy**: Pushed cleanly to origin without force-pushing or merging.
 - **Primary References**:
-  - Independent Audit Report: [`docs/audits/2026-10-03-novabank-audit.md`](../audits/2026-10-03-novabank-audit.md)
+  - Initial Audit Report: [`docs/audits/2026-10-03-novabank-audit.md`](../audits/2026-10-03-novabank-audit.md)
+  - Re-Audit Report: [`docs/audits/2026-10-03-novabank-reaudit.md`](../audits/2026-10-03-novabank-reaudit.md)
   - Workshop Delivery Plan: [`docs/workshops/delivery-plan.md`](../workshops/delivery-plan.md)
   - VPS Setup & Operations Guide: [`docs/setup/vps-setup-guide.md`](../setup/vps-setup-guide.md)
   - Master Facilitator Guide: [`docs/workshops/facilitator-guide.md`](../workshops/facilitator-guide.md)
@@ -176,6 +177,51 @@ In response to the independent audit report ([`docs/audits/2026-10-03-novabank-a
 
 ---
 
+## 🔄 Re-Audit Remediation Summary (2026-10-03 Re-Audit Report)
+
+In response to the second independent audit report ([`docs/audits/2026-10-03-novabank-reaudit.md`](../audits/2026-10-03-novabank-reaudit.md)), all remaining findings and hardening gaps were resolved:
+
+1. **RFC 8693 Token Exchange & Protocol Conformance**:
+   - **Form URL-Encoded Parsing**: Replaced `request.form()` with standard library `urllib.parse.parse_qs` reading `await request.body()`. Eliminates `python-multipart` runtime requirement and HTTP 500 crashes.
+   - **Protocol Field Enforcement**: Enforces required `grant_type="urn:ietf:params:oauth:grant-type:token-exchange"`, `subject_token`, and `subject_token_type="urn:ietf:params:oauth:token-type:access_token"`, rejecting non-compliant requests with `HTTP 400 Bad Request`.
+   - **Subject Token Audience & Issuer Validation**: Validates `aud` claim against trusted workshop audiences (`novabank-mcp`, `novabank-api`, `novabank-auth`). Rejects unknown audiences with `HTTP 401 Unauthorized`.
+   - **Role Entitlement Scope Enforcement**: Implemented `ROLE_ENTITLED_SCOPES` mapping in `src/api/routes/oauth.py`. Viewers, auditors, and unprivileged agents cannot escalate privileges to `api:payments:write` (returning `HTTP 403 Forbidden`). Only authorized roles (`support_agent`, `teller`, `agent`, `payments_agent`, `manager`, `admin`, `service`) may request mutation scopes.
+   - **Delegation Chain Preservation**: Preserves delegation provenance in the exchanged token by populating `act` (actor) and `delegated_by` claims matching the subject token caller.
+
+2. **Adapter Real Token Exchange & Elimination of Local Signing Fallback**:
+   - In `src/adapter/server.py` (`get_exchanged_api_token`), the adapter sends standard form-encoded RFC 8693 token exchange requests to Gate 3 (`/oauth/token`) with `subject_token_type="urn:ietf:params:oauth:token-type:access_token"`.
+   - Completely eliminated silent fallback to local HMAC signing on exchange failures. If token exchange fails, execution immediately raises an explicit error and fails closed.
+
+3. **Elimination of Fabricated Proposal Success on Write Failures**:
+   - In `src/adapter/server.py` (`call_tool`), when OPA evaluates `decision == "approval_required"`, the adapter attempts durable persistence at Gate 3 (`POST /payments/proposals`).
+   - If persistence fails (e.g. backend 503, database error, or network partition), the adapter returns `isError: True` with error code `PROPOSAL_PERSISTENCE_FAILED` and descriptive details. It never fabricates synthetic `prop-<timestamp>` IDs or falsely reports "Proposal recorded."
+
+4. **Worker Rejection Activity NameError Fixed**:
+   - In `src/worker/activities.py` (line 115), resolved `NameError: name 'api_url' is not defined` by referencing the canonical `gate3_url` variable.
+   - Handled `case-502` / prompt injection security review in `diagnose_and_propose_resolution` with high-value threshold (`INR 900,000.00`), requiring human approval.
+   - Added automated verification in Segment 6 of `workshops/w3/rehearsal_w3.py`: when the reviewer sends a `REJECT` signal (`approved=False`), the activity executes cleanly, updates the dispute case status to `closed`, and verifies that exactly 0 payment records are created.
+
+5. **Deployment Digest Enforcement & Immutable Builds**:
+   - In `docker-compose.yml`, all 5 third-party images are pinned to exact immutable manifest digests:
+     - `apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141`
+     - `openpolicyagent/opa:0.68.0-static@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc`
+     - `postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea`
+     - `jaegertracing/all-in-one:1.57@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9`
+     - `apache/kafka:3.7.0@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7`
+   - Build dependencies are pinned with exact versions (`==`) across all Docker requirements files (`docker/api/requirements.txt`, `docker/adapter/requirements.txt`, `docker/worker/requirements.txt`, and `docker/temporal/Dockerfile`).
+   - In `scripts/workshop`, `cmd_preflight` validates image digests against `config/manifest.json`. `cmd_pull` removed `|| true` so image pull failures fail fast.
+
+6. **Telemetry & Upstream Dynamic DNS Hardening**:
+   - In `docker-compose.yml`, configured `OTEL_METRICS_EXPORTER=none` and `OTEL_LOGS_EXPORTER=none` for both `api` and `adapter` services to eliminate metric endpoint 404 noise.
+   - In `docker/apisix/config.yaml`, configured Docker's embedded DNS resolver (`127.0.0.11`) with `dns_resolver_valid: 2` to prevent stale upstream IP caching across container recreation.
+
+7. **Rehearsal & Contract Verification Expansion**:
+   - **W1 Rehearsal**: Added explicit curated contract inspection (`openapi-curated.json` contains exactly 2 endpoints) and negative testing verifying excluded tools return errors.
+   - **W3 Rehearsal**: Added Segment 6 testing dispute rejection workflow (`case-502`), verifying rejection settlement executes without `NameError`, case is marked `closed`, and 0 payments are created.
+   - **W4 Rehearsal**: Added automated tests for RFC 8693 form exchange (HTTP 200), viewer scope escalation rejection (HTTP 403), missing token type (HTTP 400), untrusted audience (HTTP 401), A2A task completion binding, and Jaeger distributed trace query.
+
+---
+
 ## ⚠️ Transparent Accounting of Unverified Requirements
 
 As required by the repository brief, unverified checks must be reported transparently and not claimed as equivalent:
@@ -193,29 +239,26 @@ Please review and audit the NovaBank workshop platform implementation on branch 
 
 Review Context:
 - Full implementation handoff: docs/implementation/agent-handoff.md
-- Previous audit report: docs/audits/2026-10-03-novabank-audit.md
+- Initial audit report: docs/audits/2026-10-03-novabank-audit.md
+- Re-audit report: docs/audits/2026-10-03-novabank-reaudit.md
 - Delivery plan: docs/workshops/delivery-plan.md
 - Facilitator guide: docs/workshops/facilitator-guide.md
 - Pinned release manifest: config/manifest.json
 
 Audit Requirements:
-1. Verify git commit history on feat/implement-novabank-platform across all packages and the audit remediation commit.
-2. Validate that ./scripts/workshop verify passes on all 4 profiles (w1, w2, w3, w4).
-3. Validate that the automated rehearsal test runners (workshops/w<N>/rehearsal_w<N>.py) execute cleanly and save fresh evidence.
-4. Verify all 12 audit remediations:
-   - Concurrent approval CAS and atomic balance decrement ([200, 409] under parallel execution).
-   - Anti-self-approval enforcement and rejection of static API key approval attempts (HTTP 403).
-   - A2A persistent tasks, viewer creation rejection (HTTP 403), and foreign task completion denial (HTTP 403).
-   - Argument tampering rejection even below approval ceiling (HTTP 400).
-   - OPA decision strict allowlisting (only 'allow' succeeds).
-   - Kafka offset commit integrity (no commits on failed workflow starts).
-   - Network isolation (worker routes strictly through APISIX Gate 3; host ports bound to 127.0.0.1).
-   - Real durable proposal creation on MCP approval_required.
-   - RFC 8693 token exchange at /oauth/token.
-   - W2 rehearsal stability and readiness checks.
-5. Verify VPS memory containment (~951 MB / 907 MiB Linux peak) and confirm that existing VPS services (caddy, portainer, uptime-kuma, dozzle) remain unharmed.
-6. Confirm the unverified Windows 11 / WSL2 5 GB RAM benchmark is accurately recorded without false claims.
+1. Verify git commit history on feat/implement-novabank-platform across all packages and the audit remediation commits.
+2. Validate that ./scripts/workshop preflight passes and verifies pinned third-party image digests.
+3. Validate that ./scripts/workshop verify passes on all 4 profiles (w1, w2, w3, w4).
+4. Validate that the automated rehearsal test runners (workshops/w<N>/rehearsal_w<N>.py) execute cleanly and save fresh evidence:
+   - W1: Curated contract inspection (2 endpoints) and tool exclusion verification.
+   - W2: Downstream OPA policy enforcement and fail-closed timeout denial.
+   - W3: Durable Temporal workflow execution, worker crash recovery, approval settlement, and rejection settlement (Segment 6) with 0 payments and status 'closed'.
+   - W4: Triple-Gate defense-in-depth, RFC 8693 form exchange, entitlement scope enforcement (HTTP 403 on escalation), anti-self-approval (HTTP 403), below-threshold tampering prevention (HTTP 400), concurrent single-use CAS ([200, 409]), A2A owner-scoped isolation, and Jaeger telemetry.
+5. Verify that proposal persistence failures in the adapter return explicit errors and never fabricate fake proposal IDs.
+6. Verify VPS memory containment (~951 MB / 907 MiB Linux peak) and confirm that existing VPS services (caddy, portainer, uptime-kuma, dozzle) remain unharmed.
+7. Confirm the unverified Windows 11 / WSL2 5 GB RAM benchmark is accurately recorded without false claims.
 
 Report your findings, verification outputs, and any recommendations.
 ```
+
 

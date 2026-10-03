@@ -1,0 +1,10 @@
+{
+  "report_links_valid": true,
+  "probe_scripts_parse": true,
+  "eight_requested_commands_passed": true,
+  "protected_before_equals_after": true,
+  "runtime_source_hashes_match": true,
+  "installed_third_party_digests_match": true,
+  "final_w4_verify_passed": true,
+  "head_unchanged": true
+}

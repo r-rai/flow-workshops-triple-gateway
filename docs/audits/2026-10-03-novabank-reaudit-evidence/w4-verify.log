@@ -1,0 +1,8 @@
+[0;34m[INFO][0m Executing verification test suite for profile 'w4'...
+=== Running Profile w4 Verification Smoke Test ===
+✓ Gate 1 AI Replay OK
+✓ Gate 2 MCP tools discovery OK
+✓ Gate 3 API token validation OK: Acme Retail Checking
+✓ A2A Agent Card Discovery OK: NovaBank PaymentsAgent
+=== Profile w4 Verification Complete: ALL CHECKS PASSED ===
+[0;32m[OK][0m Verification for profile 'w4' PASSED!

@@ -3,11 +3,11 @@
     "id": 1,
     "jsonrpc": "2.0",
     "result": {
-      "protocolVersion": "2024-11-05",
       "serverInfo": {
-        "name": "openapi2mcp",
-        "version": "0.0.1"
+        "version": "0.0.1",
+        "name": "openapi2mcp"
       },
+      "protocolVersion": "2024-11-05",
       "capabilities": {
         "tools": {}
       }
@@ -46,7 +46,7 @@
       "content": [
         {
           "type": "text",
-          "text": "{\n  \"status\": 200,\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"content-length\": \"99\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"application/json\",\n    \"date\": \"Sat, 03 Oct 2026 15:55:23 GMT\",\n    \"server\": \"APISIX/3.19.0\"\n  },\n  \"data\": {\n    \"status\": \"active\",\n    \"name\": \"Acme Retail Checking\",\n    \"id\": \"acc-101\",\n    \"balance\": 1500000,\n    \"currency\": \"INR\"\n  }\n}"
+          "text": "{\n  \"data\": {\n    \"balance\": 1500000,\n    \"name\": \"Acme Retail Checking\",\n    \"currency\": \"INR\",\n    \"id\": \"acc-101\",\n    \"status\": \"active\"\n  },\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"server\": \"APISIX/3.19.0\",\n    \"connection\": \"keep-alive\",\n    \"date\": \"Sat, 03 Oct 2026 13:09:20 GMT\",\n    \"content-type\": \"application/json\",\n    \"content-length\": \"99\"\n  },\n  \"status\": 200\n}"
         }
       ]
     }
@@ -59,10 +59,10 @@
       "content": [
         {
           "type": "text",
-          "text": "{\n  \"status\": 401,\n  \"statusText\": \"Unauthorized\",\n  \"headers\": {\n    \"www-authenticate\": \"apikey realm=\\\"key\\\"\",\n    \"transfer-encoding\": \"chunked\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"text/plain; charset=utf-8\",\n    \"date\": \"Sat, 03 Oct 2026 15:55:24 GMT\",\n    \"server\": \"APISIX/3.19.0\"\n  },\n  \"data\": {\n    \"message\": \"Invalid API key in request\"\n  }\n}"
+          "text": "{\n  \"data\": {\n    \"message\": \"Invalid API key in request\"\n  },\n  \"statusText\": \"Unauthorized\",\n  \"headers\": {\n    \"server\": \"APISIX/3.19.0\",\n    \"www-authenticate\": \"apikey realm=\\\"key\\\"\",\n    \"transfer-encoding\": \"chunked\",\n    \"date\": \"Sat, 03 Oct 2026 13:09:20 GMT\",\n    \"content-type\": \"text/plain; charset=utf-8\",\n    \"connection\": \"keep-alive\"\n  },\n  \"status\": 401\n}"
         }
       ]
     }
   },
-  "rehearsal_duration_seconds": 0.41
+  "rehearsal_duration_seconds": 0.42
 }

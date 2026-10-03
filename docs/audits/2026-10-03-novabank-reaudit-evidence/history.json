@@ -1,0 +1,8 @@
+{
+  "branch": "feat/implement-novabank-platform",
+  "head": "17f0b02a98d6e0d1d3c708ff3f9cc0a4e88e588c",
+  "base": "2bcc58763298018c076430d340e10fd8772882c9",
+  "origin_tracking": "17f0b02a98d6e0d1d3c708ff3f9cc0a4e88e588c",
+  "remediation_is_ancestor": true,
+  "commit_count": 9
+}

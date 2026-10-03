@@ -1,0 +1,275 @@
+{
+  "forced_proposal_race": {
+    "calls": [
+      {
+        "status": 200,
+        "response": {
+          "payment_id": "pay-3bc60e82",
+          "status": "COMPLETED",
+          "account_id": "acc-102",
+          "amount": 150000,
+          "currency": "INR",
+          "beneficiary": "acc-101",
+          "remaining_balance": 8350000,
+          "idempotent_replay": false
+        }
+      },
+      {
+        "status": 409,
+        "detail": "Proposal was already consumed concurrently"
+      }
+    ],
+    "statuses": [
+      200,
+      409
+    ],
+    "payment_count": 1,
+    "balance_before": 8500000,
+    "balance_after": 8350000,
+    "proposal_status": "consumed"
+  },
+  "independent_debit_race": {
+    "statuses": [
+      200,
+      200
+    ],
+    "balance_before": 8500000,
+    "balance_after": 8400000,
+    "payment_count": 2
+  },
+  "opa_allowlist": [
+    {
+      "decision": "allow",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": false,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"account_id\": \"acc-101\"\n}"
+            }
+          ]
+        }
+      },
+      "downstream_calls": [
+        "http://apisix:9080/api/v1/accounts/acc-101"
+      ]
+    },
+    {
+      "decision": "deny",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "unexpected",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'unexpected'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": null,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'None'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "ALLOW",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'ALLOW'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: ''. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": {},
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '{}'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": [],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '[]'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    }
+  ],
+  "proposal_backend_failure": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"status\": \"APPROVAL_REQUIRED\",\n  \"proposal_id\": \"prop-1791033158086\",\n  \"reason\": \"audit\",\n  \"message\": \"Payment amount requires supervisory approval. Proposal recorded.\"\n}"
+        }
+      ]
+    }
+  },
+  "rejected_settlement": {
+    "error": "NameError",
+    "detail": "name 'api_url' is not defined"
+  },
+  "kafka_offsets": [
+    {
+      "mode": "transient",
+      "read_offsets": [
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": []
+    },
+    {
+      "mode": "exhaust_then_recover",
+      "read_offsets": [
+        10,
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": [
+        10
+      ]
+    },
+    {
+      "mode": "shutdown",
+      "read_offsets": [
+        10
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10"
+      ],
+      "commits": [],
+      "seeks": [
+        10
+      ]
+    }
+  ]
+}

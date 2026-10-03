@@ -5,7 +5,7 @@ WORKDIR /app
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-RUN pip install --no-cache-dir temporalio>=1.6.0
+RUN pip install --no-cache-dir temporalio==1.34.0
 
 RUN mkdir -p /data
 

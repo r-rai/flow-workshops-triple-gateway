@@ -99,44 +99,60 @@ def evaluate_opa_policy(principal: Dict[str, Any], tool_name: str, arguments: Di
         return "deny", f"POLICY_UNAVAILABLE_FAIL_CLOSED: {type(e).__name__}"
 
 def get_exchanged_api_token(principal: Dict[str, Any], tool_name: str) -> str:
-    """Attempts RFC 8693 token exchange via API, falling back to local signing with authoritative issuer."""
+    """Performs RFC 8693 token exchange via API for bearer tokens without silent fallback."""
     raw_token = principal.get("raw_token")
     if raw_token:
-        try:
-            with httpx.Client(timeout=2.0) as client:
-                resp = client.post(
-                    f"{GATE3_URL}/oauth/token",
-                    headers={"X-API-Key": GATE3_KEY},
-                    json={
-                        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
-                        "subject_token": raw_token,
-                        "audience": API_AUDIENCE,
-                        "scope": "api:accounts:read api:cases:read api:payments:write" if tool_name == "create_payment" else "api:accounts:read api:cases:read",
-                    }
+        scope = "api:accounts:read api:cases:read"
+        if tool_name == "create_payment":
+            scope = "api:accounts:read api:cases:read api:payments:write"
+        elif tool_name == "remediate_incident":
+            scope = "api:accounts:read api:cases:read api:incidents:write"
+
+        exchange_payload = {
+            "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+            "subject_token": raw_token,
+            "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+            "audience": API_AUDIENCE,
+            "scope": scope,
+        }
+
+        with httpx.Client(timeout=3.0) as client:
+            resp = client.post(
+                f"{GATE3_URL}/oauth/token",
+                headers={
+                    "X-API-Key": GATE3_KEY,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                data=exchange_payload,
+            )
+            if resp.status_code == 200:
+                return resp.json()["access_token"]
+            else:
+                raise HTTPException(
+                    status_code=resp.status_code,
+                    detail=f"RFC 8693 token exchange failed (HTTP {resp.status_code}): {resp.text}"
                 )
-                if resp.status_code == 200:
-                    return resp.json()["access_token"]
-        except Exception:
-            pass
 
-    now = int(time.time())
-    scopes = ["api:accounts:read", "api:cases:read"]
-    if tool_name == "create_payment":
-        scopes.append("api:payments:write")
-    if tool_name == "remediate_incident":
-        scopes.append("api:incidents:write")
+    # Fallback only for authenticated static lab API key principals (non-bearer)
+    if principal.get("role") == "support_agent":
+        now = int(time.time())
+        scopes = ["api:accounts:read", "api:cases:read"]
+        payload = {
+            "iss": ISSUER,
+            "sub": principal.get("id", "lab-support-agent"),
+            "aud": API_AUDIENCE,
+            "exp": now + 600,
+            "iat": now,
+            "scope": " ".join(scopes),
+            "role": "support_agent",
+            "act": {"sub": "lab-static-key"},
+        }
+        return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-    payload = {
-        "iss": ISSUER,
-        "sub": principal.get("id", "adapter-service"),
-        "aud": API_AUDIENCE,
-        "exp": now + 600,
-        "iat": now,
-        "scope": " ".join(scopes),
-        "role": principal.get("role", "viewer"),
-        "act": {"sub": "mcp-adapter"},
-    }
-    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Caller lacks valid bearer token for RFC 8693 token exchange",
+    )
 
 CURATED_TOOLS = [
     {
@@ -251,6 +267,7 @@ async def handle_mcp(req: Request):
                 "Content-Type": "application/json",
             }
             prop_id = None
+            persist_err = None
             try:
                 with httpx.Client(timeout=5.0) as client:
                     proposal_payload = {
@@ -262,11 +279,30 @@ async def handle_mcp(req: Request):
                     p_res = client.post(f"{GATE3_URL}/payments/proposals", headers=headers, json=proposal_payload)
                     if p_res.status_code in (200, 201):
                         prop_id = p_res.json().get("proposal_id")
+                    else:
+                        persist_err = f"Backend banking service returned HTTP {p_res.status_code}: {p_res.text}"
             except Exception as e:
-                print(f"Failed to persist approval proposal: {e}")
+                persist_err = f"Backend banking service communication failure: {str(e)}"
 
             if not prop_id:
-                prop_id = f"prop-{int(time.time()*1000)}"
+                # Return explicit persistence failure - never fabricate proposal IDs or report recorded status
+                return JSONResponse({
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "result": {
+                        "isError": True,
+                        "content": [{
+                            "type": "text",
+                            "text": json.dumps({
+                                "error": "PROPOSAL_PERSISTENCE_FAILED",
+                                "status": "ERROR",
+                                "reason": reason,
+                                "detail": persist_err or "Proposal could not be recorded in backend banking service.",
+                                "message": "Payment requires supervisory approval, but the proposal could not be durably recorded in the banking ledger. No financial mutation occurred."
+                            }, indent=2)
+                        }]
+                    }
+                })
 
             return JSONResponse({
                 "jsonrpc": "2.0",
@@ -343,22 +379,41 @@ async def handle_mcp(req: Request):
     return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": "Method not found"}})
 
 
+_accumulated_tokens = 0
+INFERENCE_BUDGET_TOKENS = int(os.getenv("INFERENCE_BUDGET_TOKENS", "10000"))
+
 @app.post("/ai/chat/completions")
 async def ai_chat_completions(req: Request):
     """
     Gate 1 Mock/Replay LLM provider.
-    Returns deterministic responses clearly marked [REPLAY].
+    Evaluates inference budget and returns deterministic responses marked [REPLAY]
+    when USE_REPLAY_FIXTURES is true or live keys are absent.
     """
+    global _accumulated_tokens
     body = await req.json()
     messages = body.get("messages", [])
     last_msg = messages[-1]["content"] if messages else ""
 
+    tokens_requested = 35
+    if _accumulated_tokens + tokens_requested > INFERENCE_BUDGET_TOKENS:
+        return JSONResponse({
+            "error": {
+                "message": f"Inference budget exceeded ({_accumulated_tokens}/{INFERENCE_BUDGET_TOKENS} tokens)",
+                "type": "budget_exceeded_error",
+                "code": 429
+            }
+        }, status_code=429)
+
+    _accumulated_tokens += tokens_requested
+
+    use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
+    model_name = "novabank-replay-fixture" if use_replay else "gpt-4o-mini"
     content = f"[REPLAY] Simulated reasoning complete for input: '{last_msg[:80]}'. Tool proposed: get_account"
     return JSONResponse({
         "id": f"chatcmpl-replay-{int(time.time())}",
         "object": "chat.completion",
         "created": int(time.time()),
-        "model": "novabank-replay-fixture",
+        "model": model_name,
         "choices": [
             {
                 "index": 0,
@@ -366,5 +421,11 @@ async def ai_chat_completions(req: Request):
                 "finish_reason": "stop"
             }
         ],
-        "usage": {"prompt_tokens": 15, "completion_tokens": 20, "total_tokens": 35}
+        "usage": {
+            "prompt_tokens": 15,
+            "completion_tokens": 20,
+            "total_tokens": tokens_requested,
+            "accumulated_budget_tokens": _accumulated_tokens,
+            "budget_limit": INFERENCE_BUDGET_TOKENS
+        }
     })

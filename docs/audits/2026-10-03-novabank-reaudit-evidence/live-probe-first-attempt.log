@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/docs/audits/2026-10-03-novabank-reaudit-evidence/live-readonly-probes.py", line 26, in <module>
+    exchanges.append({"path": path, "encoding": encoding, "status": r.status_code, "body": r.json() if r.status_code != 200 else {k: v for k, v in r.json().items() if k != "access_token"}})
+                                                                                           ^^^^^^^^
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/.venv/lib/python3.12/site-packages/httpx/_models.py", line 832, in json
+    return jsonlib.loads(self.content, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

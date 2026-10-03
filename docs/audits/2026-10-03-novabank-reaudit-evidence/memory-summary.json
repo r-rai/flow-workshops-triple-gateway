@@ -1,0 +1,62 @@
+{
+  "measurement": "sampled Docker active working set; not process RSS, total host usage, or sustained-session benchmark",
+  "samples": 70,
+  "fresh_peak_bytes": 914470470,
+  "fresh_peak_decimal_mb": 914.47,
+  "fresh_peak_binary_mib": 872.11,
+  "peak_sample": {
+    "time": "2026-10-03T13:10:23.688292+00:00",
+    "host": "               total        used        free      shared  buff/cache   available\nMem:      8326934528  2434457600  3768127488    18014208  2464309248  5892476928\nSwap:     8589930496    83886080  8506044416\n",
+    "total_active_bytes": 914470470,
+    "containers": [
+      {
+        "name": "novabank-workshops-adapter-1",
+        "active_bytes": 41984983
+      },
+      {
+        "name": "novabank-workshops-api-1",
+        "active_bytes": 71942799
+      },
+      {
+        "name": "novabank-workshops-apisix-1",
+        "active_bytes": 111778202
+      },
+      {
+        "name": "novabank-workshops-jaeger-1",
+        "active_bytes": 10674504
+      },
+      {
+        "name": "novabank-workshops-kafka-1",
+        "active_bytes": 486329549
+      },
+      {
+        "name": "novabank-workshops-opa-1",
+        "active_bytes": 6938427
+      },
+      {
+        "name": "novabank-workshops-postgres-1",
+        "active_bytes": 17951621
+      },
+      {
+        "name": "novabank-workshops-temporal-1",
+        "active_bytes": 99352576
+      },
+      {
+        "name": "novabank-workshops-worker-1",
+        "active_bytes": 67517809
+      }
+    ]
+  },
+  "max_bytes_by_container_count": {
+    "0": 0,
+    "2": 174829077,
+    "1": 71764541,
+    "5": 443769947,
+    "9": 914470470
+  },
+  "previous_audit_recomputed_peak_bytes": 951021733,
+  "previous_audit_recomputed_peak_mb": 951.02,
+  "previous_audit_recomputed_peak_mib": 906.97,
+  "six_gb_budget_preserved_at_sampled_peak": true,
+  "host_after": "               total        used        free      shared  buff/cache   available\nMem:      8326934528  2313306112  3872030720    19202048  2482745344  6013628416\nSwap:     8589930496    83886080  8506044416\n"
+}

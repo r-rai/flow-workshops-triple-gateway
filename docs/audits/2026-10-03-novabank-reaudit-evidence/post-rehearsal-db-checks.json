@@ -1,0 +1,44 @@
+{
+  "proposal": {
+    "id": "prop-698d0f88",
+    "requester_id": "payments-agent-executor",
+    "account_id": "acc-102",
+    "amount": 150000,
+    "currency": "INR",
+    "beneficiary": "acc-101",
+    "canonical_args_hash": "5cbf41fdb3455b3f8ccdccb285c4bde68b2918f0a59a566d40edef83f4fa012a",
+    "status": "consumed",
+    "approver_id": "risk-manager-99",
+    "expires_at": 1791033656.4545798,
+    "created_at": 1791033056.4545846,
+    "consumed_at": 1791033056.814223
+  },
+  "payments": [
+    {
+      "id": "pay-9ad12123",
+      "proposal_id": "prop-698d0f88",
+      "account_id": "acc-102",
+      "amount": 150000,
+      "currency": "INR",
+      "beneficiary": "acc-101",
+      "idempotency_key": "concurrent-1-prop-698d0f88",
+      "status": "completed",
+      "created_at": 1791033056.8199503
+    }
+  ],
+  "payment_count": 1,
+  "seed_balance_acc102": 8500000,
+  "post_rehearsal_balance_acc102": 8350000,
+  "debit_equals_150000": true,
+  "a2a_task_in_sqlite": {
+    "id": "task-be682623",
+    "owner_id": "negotiator-bot-agent",
+    "owner_role": "agent",
+    "task_type": "propose_payment",
+    "status": "pending_approval",
+    "input_json": "{\"case_id\": \"case-501\", \"amount\": 50000, \"destination_account\": \"acc-101\", \"currency\": \"INR\", \"reason\": \"Negotiated settlement for customer dispute\"}",
+    "output_json": null,
+    "created_at": 1791033056.910136,
+    "updated_at": 1791033056.910136
+  }
+}

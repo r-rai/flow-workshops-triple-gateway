@@ -79,7 +79,15 @@ def main():
         read_tool = next(t for t in tool_names if "account" in t.lower())
 
         # Step 3: Invoke Account Read through MCP (22–32 min)
-        print("\n[Segment 3: 22–32 min] Authorized Tool Invocation")
+        print("\n[Segment 3: 22–32 min] Authorized Tool Invocation & Curated Contract Comparison")
+        # Load and verify completed curated checkpoint contract
+        curated_path = "workshops/w1/checkpoints/completed/openapi-curated.json"
+        with open(curated_path) as f:
+            curated_spec = json.load(f)
+        curated_paths = list(curated_spec.get("paths", {}).keys())
+        print(f"✓ Loaded curated contract from {curated_path}: {len(curated_paths)} curated endpoints (downscoped from {len(tools_broad)} broad operations)")
+        assert len(curated_paths) == 2, f"Expected 2 curated paths, found {len(curated_paths)}"
+
         auth_headers = {**headers_mcp, "X-API-Key": "gate3-secret-token"}
         r_call_ok = client.post(
             f"{base_url}/mcp",
@@ -101,6 +109,25 @@ def main():
         assert "1500000" in call_ok_str and "INR" in call_ok_str, f"Unexpected response: {call_ok_str}"
         print("✓ Successfully retrieved account acc-101 balance through MCP:")
         print(" ", call_ok_data.get("result", {}).get("content", [{}])[0].get("text")[:100], "...")
+
+        # Test excluded/uncrated tool invocation returns error
+        r_call_excluded = client.post(
+            f"{base_url}/mcp",
+            headers=auth_headers,
+            json={
+                "jsonrpc": "2.0",
+                "id": 31,
+                "method": "tools/call",
+                "params": {
+                    "name": "delete_customer_account",
+                    "arguments": {"pathParameters": {"id": "acc-101"}}
+                }
+            }
+        )
+        excluded_data = parse_sse(r_call_excluded.text)
+        excluded_str = json.dumps(excluded_data)
+        assert excluded_data.get("result", {}).get("isError") is True or "not found" in excluded_str.lower() or "error" in excluded_data, f"Excluded tool call did not fail: {excluded_str}"
+        print("✓ CURATED CONTRACT INVARIANT CONFIRMED: Excluded tool 'delete_customer_account' rejected by MCP.")
 
         # Step 4: Gate 3 Denial Invariant (32–40 min)
         print("\n[Segment 4: 32–40 min] Gate 3 Downstream Authorization Enforcement")

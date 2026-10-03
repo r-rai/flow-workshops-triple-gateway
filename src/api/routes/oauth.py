@@ -1,18 +1,13 @@
 import time
-from typing import Optional, List
-from fastapi import APIRouter, HTTPException, status, Form, Request
+import json
+import urllib.parse
+from typing import Optional, Dict, Any, Set
+from fastapi import APIRouter, HTTPException, status, Request
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from src.core.config import settings
 
 router = APIRouter(prefix="", tags=["OAuth2 & RFC 8693 Token Exchange"])
-
-class TokenExchangeRequest(BaseModel):
-    grant_type: str = "urn:ietf:params:oauth:grant-type:token-exchange"
-    subject_token: str
-    subject_token_type: str = "urn:ietf:params:oauth:token-type:access_token"
-    audience: str = "novabank-api"
-    scope: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -21,29 +16,84 @@ class TokenResponse(BaseModel):
     expires_in: int = 3600
     scope: str
 
+# Entitlement matrix: Maximum permitted target API scopes per subject role
+ROLE_ENTITLED_SCOPES: Dict[str, Set[str]] = {
+    "viewer": {"api:accounts:read", "api:cases:read"},
+    "auditor": {"api:accounts:read", "api:cases:read"},
+    "support_agent": {"api:accounts:read", "api:cases:read", "api:payments:write"},
+    "teller": {"api:accounts:read", "api:cases:read", "api:payments:write"},
+    "operator": {"api:accounts:read", "api:cases:read"},
+    "agent": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
+    "payments_agent": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
+    "negotiator_bot": {"api:accounts:read", "api:cases:read", "api:a2a:tasks"},
+    "manager": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
+    "admin": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:incidents:write", "api:a2a:tasks"},
+    "service": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
+}
+
+VALID_TOKEN_TYPES = {
+    "urn:ietf:params:oauth:token-type:access_token",
+    "urn:ietf:params:oauth:token-type:jwt",
+}
+
+VALID_SUBJECT_AUDIENCES = {
+    "novabank-mcp",
+    "novabank-api",
+    "novabank-auth",
+}
+
+VALID_TARGET_AUDIENCES = {
+    settings.API_AUDIENCE,
+    "novabank-api",
+}
+
 @router.post("/oauth/token", response_model=TokenResponse)
 @router.post("/api/v1/oauth/token", response_model=TokenResponse)
-async def token_exchange_endpoint(
-    request: Request,
-):
+async def token_exchange_endpoint(request: Request):
     """
     RFC 8693 OAuth 2.0 Token Exchange implementation.
-    Accepts application/x-www-form-urlencoded or application/json.
+    Accepts application/x-www-form-urlencoded (standard) or application/json.
     """
-    content_type = request.headers.get("content-type", "")
+    content_type = request.headers.get("content-type", "").lower()
+    raw_body = await request.body()
+
+    grant_type = None
+    subject_token = None
+    subject_token_type = None
+    audience = None
+    requested_scope = None
+
     if "application/json" in content_type:
-        body = await request.json()
+        try:
+            body = json.loads(raw_body.decode("utf-8") if raw_body else "{}")
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Malformed JSON body",
+            )
         grant_type = body.get("grant_type")
         subject_token = body.get("subject_token")
-        audience = body.get("audience", settings.API_AUDIENCE)
-        requested_scope = body.get("scope", "")
+        subject_token_type = body.get("subject_token_type")
+        audience = body.get("audience")
+        requested_scope = body.get("scope")
     else:
-        form = await request.form()
-        grant_type = form.get("grant_type")
-        subject_token = form.get("subject_token")
-        audience = form.get("audience", settings.API_AUDIENCE)
-        requested_scope = form.get("scope", "")
+        # Default / application/x-www-form-urlencoded (RFC 8693 §2.1)
+        # Parse using standard library urllib.parse to avoid python-multipart dependency
+        try:
+            raw_str = raw_body.decode("utf-8") if raw_body else ""
+            parsed = urllib.parse.parse_qs(raw_str, keep_blank_values=True)
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Malformed urlencoded form body",
+            )
+        grant_type = parsed.get("grant_type", [None])[0]
+        subject_token = parsed.get("subject_token", [None])[0]
+        subject_token_type = parsed.get("subject_token_type", [None])[0]
+        audience = parsed.get("audience", [None])[0]
+        requested_scope = parsed.get("scope", [None])[0]
 
+    # 1. Validate RFC 8693 required request parameters
     if grant_type != "urn:ietf:params:oauth:grant-type:token-exchange":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -56,13 +106,27 @@ async def token_exchange_endpoint(
             detail="Missing required parameter: 'subject_token'",
         )
 
-    # 1. Validate subject_token
+    if not subject_token_type or subject_token_type not in VALID_TOKEN_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Missing or unsupported 'subject_token_type': '{subject_token_type}'. Supported types: {sorted(VALID_TOKEN_TYPES)}",
+        )
+
+    target_audience = audience or settings.API_AUDIENCE
+    if target_audience not in VALID_TARGET_AUDIENCES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported target audience: '{target_audience}'. Supported: {sorted(VALID_TARGET_AUDIENCES)}",
+        )
+
+    # 2. Decode and validate subject_token
     try:
         claims = jwt.decode(
             subject_token,
             settings.JWT_SECRET_KEY,
             algorithms=[settings.JWT_ALGORITHM],
             issuer=settings.JWT_ISSUER,
+            options={"verify_aud": False},
         )
     except JWTError as e:
         raise HTTPException(
@@ -70,39 +134,84 @@ async def token_exchange_endpoint(
             detail=f"Invalid subject token: {str(e)}",
         )
 
-    subject = claims.get("sub", "unknown")
+    subject = claims.get("sub")
+    if not subject:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid subject token: missing 'sub' claim",
+        )
+
+    token_aud = claims.get("aud")
+    if not token_aud or token_aud not in VALID_SUBJECT_AUDIENCES:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid subject token: invalid or untrusted audience '{token_aud}'",
+        )
+
+    # 3. Entitlement & Scope Downscoping Validation
     role = claims.get("role", "viewer")
-    granted_scopes = claims.get("scope", "").split()
+    max_entitled = ROLE_ENTITLED_SCOPES.get(role, {"api:accounts:read", "api:cases:read"})
+    granted_scopes = set(claims.get("scope", "").split())
 
-    # 2. Downscope verification
-    ALLOWED_API_SCOPES = {"api:accounts:read", "api:cases:read", "api:payments:write", "api:incidents:write", "api:a2a:tasks"}
-    
-    if requested_scope:
-        requested_scope_list = requested_scope.split()
+    if token_aud == "novabank-mcp":
+        # MCP token exchanging for API execution
+        # Verify caller has MCP execution authorization
+        if not ({"mcp:tools", "tools:call"}.intersection(granted_scopes) or role in ("agent", "payments_agent", "service", "admin")):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Subject token lacks MCP tool execution authorization",
+            )
+        authorized_scopes = max_entitled
     else:
-        # Default downscoped API scopes
-        requested_scope_list = ["api:accounts:read", "api:cases:read"]
-        if role in ("agent", "admin", "service", "support_agent", "manager"):
-            requested_scope_list.append("api:payments:write")
+        # Pre-existing API or auth token: cannot escalate beyond already granted scopes
+        authorized_scopes = granted_scopes.intersection(max_entitled)
 
-    # Scope downscoping: filter to allowed API scopes
-    effective_scopes = [s for s in requested_scope_list if s in ALLOWED_API_SCOPES]
+    # Process requested scopes
+    if requested_scope:
+        req_set = set(requested_scope.split())
+        unauthorized = req_set - authorized_scopes
+        if unauthorized:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requested scope not authorized for subject: {sorted(unauthorized)}",
+            )
+        effective_scopes = req_set
+    else:
+        # Default safe downscoped subset
+        effective_scopes = {"api:accounts:read", "api:cases:read"}.intersection(authorized_scopes)
+        if not effective_scopes:
+            effective_scopes = authorized_scopes
+
     if not effective_scopes:
-        effective_scopes = ["api:accounts:read"]
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Subject has no authorized scopes for the target audience",
+        )
 
-    # 3. Mint exchanged API-audience token
+    # 4. Mint exchanged API-audience token with preserved delegation context (RFC 8693 §4.1)
     now = int(time.time())
     expires_in = 3600
-    exchanged_claims = {
+
+    existing_act = claims.get("act")
+    delegated_by = claims.get("delegated_by")
+
+    act_claim: Dict[str, Any] = {"sub": subject}
+    if existing_act:
+        act_claim["act"] = existing_act
+
+    exchanged_claims: Dict[str, Any] = {
         "iss": settings.JWT_ISSUER,
         "sub": subject,
-        "aud": audience,
+        "aud": target_audience,
         "role": role,
-        "scope": " ".join(effective_scopes),
+        "scope": " ".join(sorted(effective_scopes)),
         "iat": now,
         "exp": now + expires_in,
-        "act": {"sub": "rfc8693-token-exchange"},
+        "act": act_claim,
     }
+    if delegated_by:
+        exchanged_claims["delegated_by"] = delegated_by
+
     access_token = jwt.encode(exchanged_claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
     return TokenResponse(
@@ -110,5 +219,5 @@ async def token_exchange_endpoint(
         issued_token_type="urn:ietf:params:oauth:token-type:access_token",
         token_type="Bearer",
         expires_in=expires_in,
-        scope=" ".join(effective_scopes),
+        scope=" ".join(sorted(effective_scopes)),
     )

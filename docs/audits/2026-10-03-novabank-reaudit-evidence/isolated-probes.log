@@ -1,0 +1,352 @@
+/home/sysadmin/projects/flow-workshops-triple-gateway/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+2026-10-03 18:42:38,041 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,042 [INFO] [KafkaConsumer] HTTP Request: GET http://apisix:9080/api/v1/accounts/acc-101 "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,045 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,050 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,052 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,055 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,057 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,062 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,064 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,068 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,070 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,074 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,075 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,077 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,079 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,082 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,084 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,085 [INFO] [KafkaConsumer] HTTP Request: POST http://opa:8181/v1/data/novabank/policy "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,086 [INFO] [KafkaConsumer] HTTP Request: POST http://apisix:9080/api/v1/payments/proposals "HTTP/1.1 503 Service Unavailable"
+2026-10-03 18:42:38,087 [INFO] [KafkaConsumer] HTTP Request: POST http://testserver/mcp "HTTP/1.1 200 OK"
+2026-10-03 18:42:38,148 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 18:42:38,148 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 18:42:38,148 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 18:42:38,148 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 18:42:38,149 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-10
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Committed Kafka offset 11 for topic novabank.disputes.
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Received dispute event for case-11 (offset 11). Initiating workflow 'dispute-case-case-11'...
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-11
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Committed Kafka offset 12 for topic novabank.disputes.
+2026-10-03 18:42:38,149 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 18:42:38,150 [INFO] [KafkaConsumer] Kafka consumer stopped.
+2026-10-03 18:42:38,150 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 18:42:38,150 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 18:42:38,150 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 18:42:38,150 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 2/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 3/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 4/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 5/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 6/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 7/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 8/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 9/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 10/10): Injected Temporal start failure
+2026-10-03 18:42:38,151 [ERROR] [KafkaConsumer] Unrecoverable or interrupted workflow start for offset 10. Seeking back partition TopicPartition(topic='novabank.disputes', partition=0) to offset 10 to prevent event loss.
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-10
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Committed Kafka offset 11 for topic novabank.disputes.
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Received dispute event for case-11 (offset 11). Initiating workflow 'dispute-case-case-11'...
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-11
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Committed Kafka offset 12 for topic novabank.disputes.
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 18:42:38,151 [INFO] [KafkaConsumer] Kafka consumer stopped.
+2026-10-03 18:42:38,152 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 18:42:38,152 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 18:42:38,152 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 18:42:38,152 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 18:42:38,152 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 2/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 3/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 4/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 5/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 6/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 7/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 8/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 9/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 10/10): Injected Temporal start failure
+2026-10-03 18:42:38,153 [ERROR] [KafkaConsumer] Unrecoverable or interrupted workflow start for offset 10. Seeking back partition TopicPartition(topic='novabank.disputes', partition=0) to offset 10 to prevent event loss.
+2026-10-03 18:42:38,153 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 18:42:38,153 [INFO] [KafkaConsumer] Kafka consumer stopped.
+{
+  "forced_proposal_race": {
+    "calls": [
+      {
+        "status": 200,
+        "response": {
+          "payment_id": "pay-3bc60e82",
+          "status": "COMPLETED",
+          "account_id": "acc-102",
+          "amount": 150000,
+          "currency": "INR",
+          "beneficiary": "acc-101",
+          "remaining_balance": 8350000,
+          "idempotent_replay": false
+        }
+      },
+      {
+        "status": 409,
+        "detail": "Proposal was already consumed concurrently"
+      }
+    ],
+    "statuses": [
+      200,
+      409
+    ],
+    "payment_count": 1,
+    "balance_before": 8500000,
+    "balance_after": 8350000,
+    "proposal_status": "consumed"
+  },
+  "independent_debit_race": {
+    "statuses": [
+      200,
+      200
+    ],
+    "balance_before": 8500000,
+    "balance_after": 8400000,
+    "payment_count": 2
+  },
+  "opa_allowlist": [
+    {
+      "decision": "allow",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": false,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"account_id\": \"acc-101\"\n}"
+            }
+          ]
+        }
+      },
+      "downstream_calls": [
+        "http://apisix:9080/api/v1/accounts/acc-101"
+      ]
+    },
+    {
+      "decision": "deny",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "unexpected",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'unexpected'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": null,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'None'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "ALLOW",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'ALLOW'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: ''. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": {},
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '{}'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": [],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '[]'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    }
+  ],
+  "proposal_backend_failure": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"status\": \"APPROVAL_REQUIRED\",\n  \"proposal_id\": \"prop-1791033158086\",\n  \"reason\": \"audit\",\n  \"message\": \"Payment amount requires supervisory approval. Proposal recorded.\"\n}"
+        }
+      ]
+    }
+  },
+  "rejected_settlement": {
+    "error": "NameError",
+    "detail": "name 'api_url' is not defined"
+  },
+  "kafka_offsets": [
+    {
+      "mode": "transient",
+      "read_offsets": [
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": []
+    },
+    {
+      "mode": "exhaust_then_recover",
+      "read_offsets": [
+        10,
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": [
+        10
+      ]
+    },
+    {
+      "mode": "shutdown",
+      "read_offsets": [
+        10
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10"
+      ],
+      "commits": [],
+      "seeks": [
+        10
+      ]
+    }
+  ]
+}

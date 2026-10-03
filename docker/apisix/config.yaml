@@ -6,3 +6,6 @@ deployment:
 apisix:
   node_listen: 9080
   enable_admin: false
+  dns_resolver:
+    - 127.0.0.11
+  dns_resolver_valid: 2

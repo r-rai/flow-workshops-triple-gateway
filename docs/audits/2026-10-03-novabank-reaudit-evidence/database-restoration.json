@@ -1,0 +1,8 @@
+{
+  "api": "restored from online SQLite backup; integrity_check=ok",
+  "temporal": "restored from online SQLite backup; integrity_check=ok",
+  "writers_stopped_during_restore": true,
+  "initial_attempt": "host volume permission denied; recovered with network-disabled Docker volume helpers",
+  "original_rehearsal_evidence": "restored",
+  "backup_path": "/tmp/novabank-reaudit-backup"
+}
