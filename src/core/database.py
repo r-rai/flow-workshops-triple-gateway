@@ -5,7 +5,9 @@ from src.core.config import settings
 
 db_url = settings.DATABASE_URL
 if db_url.startswith("sqlite"):
-    # Ensure directory exists for sqlite file
+    # If path is inside /app and /app does not exist, use ./data
+    if "///app/" in db_url and not os.path.exists("/app"):
+        db_url = "sqlite:///./data/novabank.sqlite"
     if "///" in db_url:
         path = db_url.split("///")[-1]
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)

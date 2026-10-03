@@ -1,0 +1,59 @@
+{
+  "mcp_initialize": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "serverInfo": {
+        "name": "openapi2mcp",
+        "version": "0.0.1"
+      },
+      "capabilities": {
+        "tools": {}
+      },
+      "protocolVersion": "2024-11-05"
+    }
+  },
+  "broad_tools_count": 13,
+  "broad_tool_names": [
+    "healthz_healthz_get",
+    "readyz_readyz_get",
+    "read_account_api_v1_accounts__id__get",
+    "get_all_cases_api_v1_cases_get",
+    "read_case_api_v1_cases__id__get",
+    "propose_payment_api_v1_payments_proposals_post",
+    "execute_payment_api_v1_payments_post",
+    "get_approval_api_v1_approvals__id__get",
+    "approve_proposal_api_v1_approvals__id__approve_post",
+    "reject_proposal_api_v1_approvals__id__reject_post",
+    "read_incident_api_v1_incidents__id__get",
+    "remediate_incident_api_v1_incidents__id__remediate_post",
+    "reset_database_api_v1_admin_reset_post"
+  ],
+  "authorized_call_status": 200,
+  "authorized_call_result": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"data\": {\n    \"id\": \"acc-101\",\n    \"balance\": 1500000,\n    \"status\": \"active\",\n    \"currency\": \"INR\",\n    \"name\": \"Acme Retail Checking\"\n  },\n  \"statusText\": \"OK\",\n  \"status\": 200,\n  \"headers\": {\n    \"content-type\": \"application/json\",\n    \"date\": \"Sat, 03 Oct 2026 10:04:33 GMT\",\n    \"server\": \"APISIX/3.19.0\",\n    \"connection\": \"keep-alive\",\n    \"content-length\": \"99\"\n  }\n}"
+        }
+      ]
+    }
+  },
+  "denied_call_status": 200,
+  "denied_call_result": {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"data\": {\n    \"message\": \"Invalid API key in request\"\n  },\n  \"statusText\": \"Unauthorized\",\n  \"status\": 401,\n  \"headers\": {\n    \"content-type\": \"text/plain; charset=utf-8\",\n    \"date\": \"Sat, 03 Oct 2026 10:04:34 GMT\",\n    \"www-authenticate\": \"apikey realm=\\\"key\\\"\",\n    \"server\": \"APISIX/3.19.0\",\n    \"connection\": \"keep-alive\",\n    \"transfer-encoding\": \"chunked\"\n  }\n}"
+        }
+      ]
+    }
+  },
+  "rehearsal_duration_seconds": 3.26
+}
