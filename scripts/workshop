@@ -255,7 +255,7 @@ cmd_reset() {
     echo "Existing Caddy, monitoring, and host services will NOT be touched."
     echo "====================================================================="
 
-    if [[ "${force}" != "-y" && "${force}" != "--yes" ]]; then
+    if [[ "${force}" != "-y" && "${force}" != "--yes" && "${FORCE:-}" != "true" ]]; then
         read -p "Are you sure you want to reset profile '${profile}' lab state? (y/N): " confirm
         if [[ "${confirm}" != "y" && "${confirm}" != "Y" ]]; then
             log_info "Reset cancelled by operator."

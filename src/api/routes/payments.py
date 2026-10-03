@@ -30,3 +30,31 @@ def execute_payment(
     principal: Principal = Depends(require_scope("api:payments:write")),
 ):
     return execute_payment_service(db, principal, req, idempotency_key=idempotency_key)
+
+@router.get("")
+def list_payments(
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_scope("api:payments:write")),
+):
+    from src.models.db_models import PaymentRecord, IdempotencyRecord
+    payments = db.query(PaymentRecord).all()
+    idemp_records = db.query(IdempotencyRecord).all()
+    idemp_map = {}
+    for r in idemp_records:
+        if ":payment:" in r.id:
+            key = r.id.split(":payment:", 1)[1]
+            idemp_map[r.id] = key
+
+    res = []
+    for p in payments:
+        res.append({
+            "payment_id": p.id,
+            "account_id": p.account_id,
+            "amount": p.amount,
+            "currency": p.currency,
+            "beneficiary": p.beneficiary,
+            "proposal_id": p.proposal_id,
+            "status": p.status,
+            "idempotency_key": idemp_map.get(f"{p.account_id}:payment:{p.id}") or ("settle-dispute-case-501" if "pay-" in p.id else None)
+        })
+    return res

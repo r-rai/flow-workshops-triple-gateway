@@ -1,0 +1,85 @@
+{
+  "workshop": "w3",
+  "timestamp": 1791024408.611715,
+  "segments": {
+    "segment1": {
+      "case_loaded": {
+        "id": "case-501",
+        "customer_id": "cust-8801",
+        "issue_type": "disputed_transaction",
+        "description": "Customer claims unapproved charge of 45000 INR on checking account.",
+        "priority": "medium",
+        "status": "open"
+      }
+    },
+    "segment2": {
+      "kafka_event_emitted": true
+    },
+    "segment3": {
+      "status_before_crash": {
+        "approval_decision": null,
+        "current_phase": "WAITING_FOR_APPROVAL",
+        "execution_result": null,
+        "proposal": {
+          "amount": 75000,
+          "case_id": "case-501",
+          "customer_id": "cust-8801",
+          "destination_account": "acc-101",
+          "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+          "requires_approval": true
+        }
+      }
+    },
+    "segment4": {
+      "recovered_status": {
+        "approval_decision": null,
+        "current_phase": "WAITING_FOR_APPROVAL",
+        "execution_result": null,
+        "proposal": {
+          "amount": 75000,
+          "case_id": "case-501",
+          "customer_id": "cust-8801",
+          "destination_account": "acc-101",
+          "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+          "requires_approval": true
+        }
+      }
+    },
+    "segment5": {
+      "final_case_status": "resolved",
+      "settlement_payment_count": 1,
+      "workflow_result": {
+        "approval": {
+          "approved": true,
+          "comments": "Approved by Ops Lead: double charge confirmed on card statement",
+          "reviewer": "ops-lead"
+        },
+        "case_id": "case-501",
+        "phase": "COMPLETED",
+        "proposal": {
+          "amount": 75000,
+          "case_id": "case-501",
+          "customer_id": "cust-8801",
+          "destination_account": "acc-101",
+          "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+          "requires_approval": true
+        },
+        "result": {
+          "case_id": "case-501",
+          "notification_sent": true,
+          "payment": {
+            "account_id": "acc-102",
+            "amount": 75000,
+            "beneficiary": "acc-101",
+            "currency": "INR",
+            "idempotent_replay": false,
+            "payment_id": "pay-e79b38af",
+            "remaining_balance": 8425000,
+            "status": "COMPLETED"
+          },
+          "status": "RESOLVED"
+        }
+      }
+    }
+  }
+}

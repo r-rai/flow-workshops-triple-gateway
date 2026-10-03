@@ -30,3 +30,20 @@ def list_cases(db: Session, limit: int = 50) -> List[SupportCaseResponse]:
         )
         for c in cases
     ]
+
+def update_case(db: Session, case_id: str, updates: dict) -> SupportCaseResponse:
+    c = db.query(SupportCase).filter(SupportCase.id == case_id).first()
+    if not c:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Support case '{case_id}' not found")
+    if "status" in updates:
+        c.status = updates["status"]
+    db.commit()
+    db.refresh(c)
+    return SupportCaseResponse(
+        id=c.id,
+        customer_id=c.customer_id,
+        issue_type=c.issue_type,
+        description=c.description,
+        priority=c.priority,
+        status=c.status,
+    )

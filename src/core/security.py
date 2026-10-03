@@ -70,3 +70,25 @@ def require_scope(scope_name: str):
             )
         return principal
     return _checker
+
+def create_jwt_token(
+    subject: str,
+    audience: str,
+    scopes: List[str],
+    role: str = "service",
+    expires_in_seconds: int = 3600,
+    delegated_by: Optional[str] = None
+) -> str:
+    now = int(time.time())
+    claims = {
+        "iss": "novabank-authz-server",
+        "sub": subject,
+        "aud": audience,
+        "role": role,
+        "scope": " ".join(scopes),
+        "iat": now,
+        "exp": now + expires_in_seconds
+    }
+    if delegated_by:
+        claims["act"] = {"sub": delegated_by}
+    return jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)

@@ -22,3 +22,13 @@ def read_case(
     principal: Principal = Depends(require_scope("api:cases:read")),
 ):
     return get_case_by_id(db, id)
+
+@router.patch("/{id}", response_model=SupportCaseResponse)
+def update_case_endpoint(
+    updates: dict,
+    id: str = Path(..., description="The unique support case identifier"),
+    db: Session = Depends(get_db),
+    principal: Principal = Depends(require_scope("api:cases:write")),
+):
+    from src.services.cases import update_case
+    return update_case(db, id, updates)

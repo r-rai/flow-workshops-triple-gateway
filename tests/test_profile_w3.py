@@ -20,7 +20,20 @@ def main():
             json={"action": "restart_service"}
         )
         assert r_rem.status_code in (200, 400) # 400 if already remediated in this run
-        print("✓ Incident remediation endpoint verified")
+        # Check Temporal connectivity
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(2.0)
+        assert s.connect_ex(('127.0.0.1', 7233)) == 0, "Temporal port 7233 unreachable"
+        s.close()
+        print("✓ Temporal server connectivity verified (7233)")
+
+        # Check Kafka connectivity
+        s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s2.settimeout(2.0)
+        assert s2.connect_ex(('127.0.0.1', 9092)) == 0, "Kafka port 9092 unreachable"
+        s2.close()
+        print("✓ Kafka broker connectivity verified (9092)")
 
     print("=== Profile w3 Verification Complete: ALL CHECKS PASSED ===")
     return 0
