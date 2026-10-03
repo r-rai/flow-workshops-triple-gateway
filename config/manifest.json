@@ -1,0 +1,49 @@
+{
+  "manifest_version": "1.0.0",
+  "generated_at": "2026-10-03T10:00:00Z",
+  "profiles": ["w1", "w2", "w3", "w4"],
+  "pinned_images": {
+    "apisix": {
+      "image": "apache/apisix:3.19.0-debian",
+      "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "memory_limit": "384m"
+    },
+    "opa": {
+      "image": "openpolicyagent/opa:0.68.0-static",
+      "digest": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "memory_limit": "128m"
+    },
+    "postgres": {
+      "image": "postgres:16-alpine",
+      "digest": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "memory_limit": "384m"
+    },
+    "keycloak": {
+      "image": "quay.io/keycloak/keycloak:24.0.5",
+      "digest": "sha256:4eb2c8f85f8c6b45a6c0bbbbfaadba986e08c0ef0be18bce5d57bba10444bfbc",
+      "memory_limit": "768m"
+    },
+    "jaeger": {
+      "image": "jaegertracing/all-in-one:1.57",
+      "digest": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "memory_limit": "256m"
+    }
+  },
+  "built_images": {
+    "api": {
+      "tag": "novabank/api:1.0.0",
+      "dockerfile": "docker/api/Dockerfile",
+      "memory_limit": "256m"
+    },
+    "adapter": {
+      "tag": "novabank/adapter:1.0.0",
+      "dockerfile": "docker/adapter/Dockerfile",
+      "memory_limit": "256m"
+    },
+    "worker": {
+      "tag": "novabank/worker:1.0.0",
+      "dockerfile": "docker/worker/Dockerfile",
+      "memory_limit": "512m"
+    }
+  }
+}

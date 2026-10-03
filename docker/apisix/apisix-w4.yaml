@@ -1,0 +1,35 @@
+routes:
+  # Gate 1: AI / Replay endpoint
+  - id: w4_ai_route
+    uri: /ai/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "adapter:8080": 1
+
+  # Gate 2: Curated MCP Adapter endpoint
+  - id: w4_mcp_route
+    uri: /mcp
+    upstream:
+      type: roundrobin
+      nodes:
+        "adapter:8080": 1
+
+  # Gate 3: API route with downstream key-auth
+  - id: w4_gate3_api
+    uri: /api/v1/*
+    plugins:
+      key-auth:
+        header: X-API-Key
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
+consumers:
+  - username: lab_participant
+    plugins:
+      key-auth:
+        key: "gate3-secret-token"
+
+#END

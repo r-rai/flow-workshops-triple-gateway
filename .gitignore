@@ -18,6 +18,7 @@ htmlcov/
 *.db
 .env
 !.env.example
+.active_profile
 
 # OS / Editor
 .DS_Store

@@ -1,0 +1,25 @@
+routes:
+  - id: w3_mcp_route
+    uri: /mcp
+    upstream:
+      type: roundrobin
+      nodes:
+        "adapter:8080": 1
+
+  - id: w3_gate3_api
+    uri: /api/v1/*
+    plugins:
+      key-auth:
+        header: X-API-Key
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
+consumers:
+  - username: lab_participant
+    plugins:
+      key-auth:
+        key: "gate3-secret-token"
+
+#END

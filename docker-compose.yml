@@ -1,0 +1,166 @@
+name: novabank-workshops
+
+networks:
+  edge:
+    name: novabank-edge
+  capability:
+    name: novabank-capability
+  backend:
+    name: novabank-backend
+  persistence:
+    name: novabank-persistence
+  workflow:
+    name: novabank-workflow
+
+volumes:
+  novabank_api_data:
+  novabank_postgres_data:
+  novabank_temporal_data:
+
+services:
+  apisix:
+    image: apache/apisix:3.19.0-debian
+    restart: unless-stopped
+    ports:
+      - "${APISIX_HTTP_PORT:-9080}:9080"
+    volumes:
+      - ./docker/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./docker/apisix/apisix-${ACTIVE_PROFILE:-w1}.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    networks:
+      - edge
+      - capability
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    profiles: ["w1", "w2", "w3", "w4"]
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    image: novabank/api:1.0.0
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=workshop
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/novabank.sqlite}
+      - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-novabank-super-secret-signing-key-for-lab}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ISSUER=${JWT_ISSUER:-https://identity.novabank.internal/realms/novabank}
+      - API_AUDIENCE=${API_AUDIENCE:-novabank-api}
+      - ENABLE_TELEMETRY=${ENABLE_TELEMETRY:-false}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4318/v1/traces}
+    volumes:
+      - novabank_api_data:/app/data
+      - ./seed/v1_seed.json:/app/seed/v1_seed.json:ro
+    networks:
+      - backend
+      - persistence
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    profiles: ["w1", "w2", "w3", "w4"]
+
+  adapter:
+    build:
+      context: .
+      dockerfile: docker/adapter/Dockerfile
+    image: novabank/adapter:1.0.0
+    restart: unless-stopped
+    environment:
+      - OPA_URL=http://opa:8181/v1/data/novabank/policy
+      - GATE3_URL=http://apisix:9080/api/v1
+      - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-novabank-super-secret-signing-key-for-lab}
+      - MCP_AUDIENCE=${MCP_AUDIENCE:-novabank-mcp}
+      - API_AUDIENCE=${API_AUDIENCE:-novabank-api}
+      - USE_REPLAY_FIXTURES=${USE_REPLAY_FIXTURES:-true}
+    networks:
+      - capability
+      - edge
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    profiles: ["w2", "w3", "w4"]
+
+  opa:
+    image: openpolicyagent/opa:0.68.0-static
+    restart: unless-stopped
+    command:
+      - "run"
+      - "--server"
+      - "--log-level=error"
+      - "/policy.rego"
+    volumes:
+      - ./spikes/spike3_opa/policy.rego:/policy.rego:ro
+    networks:
+      - capability
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    profiles: ["w2", "w3", "w4"]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-novabank}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-novabank-db-pass}
+      POSTGRES_DB: ${POSTGRES_DB:-novabank}
+    volumes:
+      - novabank_postgres_data:/var/lib/postgresql/data
+    networks:
+      - persistence
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    profiles: ["w2", "w3", "w4"]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    restart: unless-stopped
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - backend
+      - capability
+      - edge
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    profiles: ["w2", "w3", "w4"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/worker/Dockerfile
+    image: novabank/worker:1.0.0
+    restart: unless-stopped
+    networks:
+      - workflow
+      - backend
+      - capability
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    profiles: ["w3", "w4"]

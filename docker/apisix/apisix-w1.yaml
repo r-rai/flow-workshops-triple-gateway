@@ -1,0 +1,29 @@
+routes:
+  # Gate 2: Native OpenAPI-to-MCP generation
+  - id: w1_mcp_route
+    uri: /mcp
+    plugins:
+      openapi-to-mcp:
+        transport: streamable_http
+        openapi_url: "http://api:8000/openapi.json"
+        base_url: "http://127.0.0.1:9080"
+        headers:
+          X-API-Key: "$http_x_api_key"
+  # Gate 3: API route with downstream key-auth
+  - id: w1_gate3_api
+    uri: /api/v1/*
+    plugins:
+      key-auth:
+        header: X-API-Key
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
+consumers:
+  - username: lab_participant
+    plugins:
+      key-auth:
+        key: "gate3-secret-token"
+
+#END
