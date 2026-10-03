@@ -227,6 +227,7 @@ async def handle_mcp(req: Request):
         api_token = get_exchanged_api_token(principal, tool_name)
         headers = {
             "Authorization": f"Bearer {api_token}",
+            "X-API-Key": GATE3_KEY,
             "Content-Type": "application/json",
         }
         # Propagate W3C traceparent if present
