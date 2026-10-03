@@ -1,0 +1,24 @@
+{
+  "checkpoint": "completed",
+  "name": "Triple-Gate Hardened Defense-in-Depth",
+  "mitigations": [
+    {
+      "gate": 1,
+      "mechanism": "Deterministic model replay budgets & provider rate-limiting fallback"
+    },
+    {
+      "gate": 2,
+      "mechanism": "Argument-aware declarative Rego policy with prohibited beneficiary blocks and tiered risk ceilings"
+    },
+    {
+      "gate": 3,
+      "mechanism": "RFC 8693 token exchange with audience separation (novabank-mcp vs novabank-api) and fine-grained scope downscoping"
+    },
+    {
+      "approval": "Anti-self-approval enforcement, canonical argument hash binding, and single-use atomic consumption"
+    },
+    {
+      "a2a": "Standard Agent Card discovery and owner-scoped task access control"
+    }
+  ]
+}

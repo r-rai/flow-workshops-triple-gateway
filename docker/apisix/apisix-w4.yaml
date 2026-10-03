@@ -26,6 +26,14 @@ routes:
       nodes:
         "api:8000": 1
 
+  # A2A Discovery route
+  - id: w4_well_known
+    uri: /.well-known/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
 consumers:
   - username: lab_participant
     plugins:

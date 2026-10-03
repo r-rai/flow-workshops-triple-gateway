@@ -5,7 +5,7 @@ from src.core.config import settings
 from src.core.database import engine, Base, SessionLocal
 from src.services.seed import reset_and_seed_db
 from src.models.db_models import Account
-from src.api.routes import health, accounts, cases, payments, approvals, incidents, admin
+from src.api.routes import health, accounts, cases, payments, approvals, incidents, admin, a2a
 
 # Optional OpenTelemetry instrumentation
 if settings.ENABLE_TELEMETRY:
@@ -63,6 +63,11 @@ app.include_router(payments.router)
 app.include_router(approvals.router)
 app.include_router(incidents.router)
 app.include_router(admin.router)
+app.include_router(a2a.router)
+
+@app.get("/.well-known/agent.json")
+def well_known_agent():
+    return a2a.AGENT_CARD
 
 if __name__ == "__main__":
     import uvicorn
