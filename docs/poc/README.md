@@ -3,9 +3,13 @@
 Validate the risky assumptions before building the complete NovaBank
 platform.
 
+See the [agent handoff](../implementation/agent-handoff.md) for contracts and
+work-package dependencies. Record versions, commands, actual results and
+limitations; no spike is currently marked complete.
+
 ## Spike 1 --- APISIX Standalone + OpenAPI-to-MCP
 
-Prove standalone APISIX supports the selected plugins and can expose a
+Start with APISIX 3.19.0 and Streamable HTTP. Prove standalone APISIX supports the selected plugins and can expose a
 minimal FastAPI OpenAPI contract through `tools/list` and `tools/call`.
 
 Minimal API:
@@ -34,15 +38,18 @@ Given:
 }
 ```
 
-prove policy can use method, tool, nested arguments and identity
-context. Define explicitly how an approval-required decision is
+prove the curated MCP adapter validates and normalizes arguments, then passes
+method, tool, arguments and trusted identity to OPA. Do not assume the stock
+APISIX OPA plugin supplies request-body fields. Define explicitly how an approval-required decision is
 represented and enforced.
 
-## Spike 4 --- Identity Propagation
+## Spike 4 --- Audience-Separated Identity
 
-Prove token/context propagation from agent -\> `/mcp` -\> `/api` -\>
-FastAPI. Then validate the selected Keycloak delegated/token-exchange
-scenario before Workshop 4 is frozen.
+Validate the MCP-facing token, exchange for a restricted API-facing token,
+and prove Gate 3 rejects wrong audiences or insufficient scopes. Preserve
+trusted subject/caller context without token passthrough. Validate Keycloak
+client-scope configuration and distinguish standard exchange from preview
+actor/delegation behavior before Workshop 4 is frozen.
 
 ## Spike 5 --- Trace Stitching
 
@@ -59,7 +66,15 @@ total WSL footprint for every workshop profile.
 Do not publish estimated memory figures as guarantees until this
 benchmark is complete.
 
+## Spike 7 --- A2A and Approval
+
+Validate a pinned A2A SDK/protocol with Agent Card discovery, authenticated
+task submission, and owner-scoped task access. Prove another principal cannot
+read or mutate the task. Validate approval binding and retry-safe execution
+in the backend.
+
 ## Exit Condition
 
-Proceed to the full platform only when the unified-gateway security
-invariants and participant hardware envelope are proven.
+Proceed with dependent implementation only after its security/compatibility
+spikes pass. Record minimal memory feasibility first; complete full-profile
+and Windows/WSL benchmarks after the profiles exist and before release.

@@ -39,6 +39,17 @@ images before workshop day.
 
 ## Fallback
 
-If local Docker fails, allow the participant client to point to the
-presenter APISIX/MCP endpoint. The presenter VPS is a failsafe, not a
-multi-tenant agent runtime.
+If local Docker fails, use a secured presenter endpoint with distinct identities
+and isolated seeded data. Initially allow at most two concurrent fallback runs
+pending load testing; queue additional users or use presenter demonstration.
+Fallback uses labelled model replay, and participant provider keys remain local.
+
+## Model Access and Preparation
+
+Participants bring their own hosted-model credentials for live local inference.
+All exercises must also work with labelled deterministic model replay. Download
+prebuilt images and run preflight before the session; do not build or install
+dependencies during the timed exercise.
+
+See the [delivery plan](../workshops/delivery-plan.md) and
+[VPS setup guide](vps-setup-guide.md).

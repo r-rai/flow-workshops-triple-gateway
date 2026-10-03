@@ -1,15 +1,20 @@
 # Implementation Roadmap
 
+The [agent handoff](implementation/agent-handoff.md) defines ordered work
+packages, interface contracts, a copyable prompt, and required evidence.
+Status: documentation baseline; runtime implementation is outstanding.
+
 ## Phase 0 --- Technical Spikes
 
 Validate APISIX standalone mode, OpenAPI-to-MCP, Gate-2-to-Gate-3
-loopback, body-aware OPA policy, token propagation, trace propagation
+loopback, adapter-based argument policy, audience-separated token exchange, trace propagation
 and Windows/WSL memory.
 
 ## Phase 1 --- NovaBank API
 
-Build small deterministic Customer, Account, Transaction, Beneficiary,
-Payment, Support and Operations APIs with reproducible seed data.
+Build the minimal account, support-case, payment proposal/execution, incident,
+approval, and simulated-remediation flows with seed data and transactional
+idempotency. Deliver the Compose skeleton and operator interface early.
 
 ## Phase 2 --- Workshop 1
 
@@ -30,7 +35,7 @@ orchestration, Temporal durability and HITL pause/resume.
 
 Build NegotiatorBot in vulnerable and remediated states. Demonstrate
 inference controls, capability policy, scoped API identity, approval and
-end-to-end tracing.
+end-to-end tracing and a protocol-level A2A exchange with task ownership checks.
 
 ## Phase 6 --- Packaging
 
@@ -48,3 +53,7 @@ clean uncached machine and realistic network conditions.
 Each workshop starts with one documented command, has a deterministic
 fallback, does not require the full stack, can visibly demonstrate
 control failure/success and can trace the relevant execution path.
+
+Release requires the [VPS runbook](setup/vps-setup-guide.md) to contain actual
+verified versions, commands, endpoints, image coordinates and measurements.
+Do not publish future interfaces or estimated memory as verified behavior.

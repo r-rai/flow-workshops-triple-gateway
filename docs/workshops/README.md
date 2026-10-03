@@ -1,5 +1,8 @@
 # Workshop Mapping
 
+See the [complete delivery plan](delivery-plan.md) for timed agendas, exercise
+artifacts, checkpoints, facilitator preparation, and acceptance criteria.
+
 ## W1 --- Modernizing APIs for AI Agents: From OpenAPI to MCP
 
 **45 min.** Existing REST/OpenAPI -\> generated MCP -\> successful
@@ -18,7 +21,7 @@ Profile: `w2`.
 
 ## W3 --- Architecting the Agentic Enterprise
 
-**45 min.** Kafka -\> LangGraph -\> Temporal -\> MCP/API. Demonstrate
+**45 min.** Kafka -\> Temporal workflow -\> LangGraph activity -\> MCP/API. Demonstrate
 event-triggered agents, durable execution, retries and HITL using an
 Autonomous System Resolver.
 
@@ -28,9 +31,12 @@ Profile: `w3`.
 
 **135 min.** NegotiatorBot incident: vulnerable capability exposure -\>
 prompt-originated unsafe behavior -\> Gate 1 -\> Gate 2 -\> Gate 3 -\>
-delegated identity -\> approval -\> end-to-end forensic trace.
+restricted token exchange -\> approval -\> secured A2A task exchange -\> forensic trace.
 
 Profile: `w4`.
 
 The fourth workshop should be staged progressively; all services do not
 need to be active from minute one.
+
+Run one active profile at a time. W4 does not require Kafka or Redis. Commands
+and profiles are planned interfaces until the implementation is delivered.

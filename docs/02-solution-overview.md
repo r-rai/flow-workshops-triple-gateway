@@ -25,8 +25,10 @@ Users / MCP Clients
         LLM      OPA    FastAPI
 ```
 
-Optional modules add Keycloak, Kafka, Temporal, PostgreSQL, Redis and
-OpenTelemetry/Jaeger.
+W2–W4 add a curated MCP adapter between Gate 2 and Gate 3 for argument-aware
+OPA policy and downstream credentials. W1 demonstrates native OpenAPI-to-MCP
+generation. Keycloak runs in W2/W4, Kafka in W3, and Temporal in W3/W4.
+PostgreSQL and OpenTelemetry/Jaeger support W2–W4. Redis is not required.
 
 ## Three Logical Boundaries
 
@@ -42,7 +44,7 @@ OpenTelemetry/Jaeger.
 MCP-generated REST calls must pass through Gate 3:
 
 ``` text
-Agent -> Gate 2 (/mcp) -> Gate 3 (/api/v1/*) -> FastAPI
+Agent -> Gate 2 (/mcp) -> native generator or adapter -> Gate 3 -> FastAPI
 ```
 
 They must not call FastAPI directly. Exact APISIX loopback behavior is a
@@ -55,3 +57,7 @@ exercise.
 
 **Reference Enterprise Edition:** complete architecture used for design
 discussion and presenter demonstrations.
+
+See the [delivery plan](workshops/delivery-plan.md),
+[VPS guide](setup/vps-setup-guide.md), and
+[agent handoff](implementation/agent-handoff.md) for the agreed scope.

@@ -21,9 +21,19 @@ Inference:** agent-to-LLM. 2. **Gate 2 --- Capability:**
 agent-to-MCP/tool. 3. **Gate 3 --- API:** tool-to-enterprise API.
 
 Supporting components: FastAPI, LangGraph, OPA, Keycloak, Kafka,
-Temporal, PostgreSQL/SQLite, Redis, OpenTelemetry and Jaeger.
+Temporal, PostgreSQL/SQLite, OpenTelemetry and Jaeger. Workshops 2–4 add
+a lightweight MCP adapter for argument policy and downstream identity.
+Kafka runs only in Workshop 3; Redis is not required.
 
 ## Documentation
+
+Start here for implementation and delivery:
+
+- [Workshop Delivery Plan](docs/workshops/delivery-plan.md)
+- [VPS Infrastructure Setup Guide](docs/setup/vps-setup-guide.md)
+- [Implementation Agent Handoff and Copyable Prompt](docs/implementation/agent-handoff.md)
+
+Background and architecture:
 
 -   [Problem Statement](docs/01-problem-statement.md)
 -   [Solution Overview](docs/02-solution-overview.md)
@@ -41,10 +51,14 @@ Temporal, PostgreSQL/SQLite, Redis, OpenTelemetry and Jaeger.
 
 ## Status
 
-**Architecture v1.0 candidate.** APISIX-specific behavior around
-standalone MCP generation, loopback routing, body-aware OPA policy,
-token propagation and trace propagation must be validated before being
-treated as guaranteed.
+**Documentation baseline; runtime not implemented.** The delivery plan and agent
+handoff define the agreed implementation scope. Commands in the setup guide
+are future interfaces until built and verified. Native MCP generation,
+Gate 3 routing, adapter policy, audience-separated identity, trace propagation,
+and resource use require recorded compatibility evidence.
+
+Target: one active profile within a **6 GB total VPS operating budget**,
+with local participant labs and limited replay-based VPS fallback.
 
 > Keep deterministic enterprise controls. Add agent-aware controls
 > around them.
