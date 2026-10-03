@@ -1,6 +1,7 @@
 {
   "manifest_version": "1.0.0",
-  "generated_at": "2026-10-03T10:00:00Z",
+  "generated_at": "2026-10-03T10:52:00Z",
+  "platform": "NovaBank Multi-Workshop Enterprise AI & API Gateway Platform",
   "profiles": ["w1", "w2", "w3", "w4"],
   "pinned_images": {
     "apisix": {
@@ -18,10 +19,10 @@
       "digest": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
       "memory_limit": "384m"
     },
-    "keycloak": {
-      "image": "quay.io/keycloak/keycloak:24.0.5",
-      "digest": "sha256:4eb2c8f85f8c6b45a6c0bbbbfaadba986e08c0ef0be18bce5d57bba10444bfbc",
-      "memory_limit": "768m"
+    "kafka": {
+      "image": "apache/kafka:3.7.0",
+      "digest": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "memory_limit": "512m"
     },
     "jaeger": {
       "image": "jaegertracing/all-in-one:1.57",
@@ -44,6 +45,40 @@
       "tag": "novabank/worker:1.0.0",
       "dockerfile": "docker/worker/Dockerfile",
       "memory_limit": "512m"
+    },
+    "temporal": {
+      "tag": "novabank/temporal:1.0.0",
+      "dockerfile": "docker/temporal/Dockerfile",
+      "memory_limit": "384m"
     }
-  }
+  },
+  "verification_status": {
+    "compatibility_spikes": {
+      "status": "passed",
+      "report": "docs/poc/01-compatibility-spikes-report.md"
+    },
+    "w1_openapi_to_mcp": {
+      "status": "passed",
+      "rehearsal_evidence": "workshops/w1/evidence/rehearsal-evidence.json"
+    },
+    "w2_governance": {
+      "status": "passed",
+      "rehearsal_evidence": "workshops/w2/evidence/rehearsal-evidence.json"
+    },
+    "w3_durability": {
+      "status": "passed",
+      "rehearsal_evidence": "workshops/w3/evidence/rehearsal-evidence.json"
+    },
+    "w4_triple_gate_a2a": {
+      "status": "passed",
+      "rehearsal_evidence": "workshops/w4/evidence/rehearsal-evidence.json"
+    }
+  },
+  "unverified_requirements": [
+    {
+      "requirement": "Windows 11 / WSL2 5 GB RAM benchmark",
+      "status": "unverified",
+      "reason": "Host execution environment is Linux VPS (vmi3355051 / Ubuntu x86_64). Linux VPS peak memory profile usage measured at ~700 MB across 9 containers, but actual participant Windows 11 WSL2 virtualization overhead remains unverified until tested on native Windows participant hardware."
+    }
+  ]
 }
