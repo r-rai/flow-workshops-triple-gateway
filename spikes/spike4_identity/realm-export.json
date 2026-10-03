@@ -1,0 +1,97 @@
+{
+  "id": "novabank",
+  "realm": "novabank",
+  "enabled": true,
+  "sslRequired": "none",
+  "clients": [
+    {
+      "clientId": "mcp-client",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "mcp-client-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["web-origins", "role_list", "profile", "email"],
+      "optionalClientScopes": ["mcp:tools"]
+    },
+    {
+      "clientId": "mcp-adapter",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "adapter-secret",
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": ["web-origins", "role_list", "profile", "email"],
+      "optionalClientScopes": ["api:accounts:read", "api:payments:write"]
+    },
+    {
+      "clientId": "gate3-api",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "gate3-secret",
+      "bearerOnly": true
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "mcp:tools",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "mcp-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "novabank-mcp",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "api:accounts:read",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "novabank-api",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "api:payments:write",
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "novabank-api",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "support_agent_ravi",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password123"
+        }
+      ],
+      "attributes": {
+        "role": "support_agent"
+      }
+    }
+  ]
+}

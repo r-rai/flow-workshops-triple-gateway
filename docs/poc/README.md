@@ -4,8 +4,10 @@ Validate the risky assumptions before building the complete NovaBank
 platform.
 
 See the [agent handoff](../implementation/agent-handoff.md) for contracts and
-work-package dependencies. Record versions, commands, actual results and
-limitations; no spike is currently marked complete.
+work-package dependencies. All compatibility spikes (Spikes 1, 2, 3, 4, 5, 7)
+have been implemented and verified on the Linux VPS baseline. Full report and
+evidence are recorded in [01-compatibility-spikes-report.md](01-compatibility-spikes-report.md).
+Hardware benchmark on Windows/WSL2 remains pending participant environment.
 
 ## Spike 1 --- APISIX Standalone + OpenAPI-to-MCP
 

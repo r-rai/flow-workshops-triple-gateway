@@ -1,0 +1,27 @@
+routes:
+  - id: mcp_route
+    uri: /mcp
+    plugins:
+      openapi-to-mcp:
+        transport: streamable_http
+        openapi_url: "http://novabank-api-spike:8000/openapi.json"
+        base_url: "http://127.0.0.1:9080"
+        headers:
+          X-API-Key: "$http_x_api_key"
+  - id: gate3_api_route
+    uri: /api/v1/*
+    plugins:
+      key-auth:
+        header: X-API-Key
+    upstream:
+      type: roundrobin
+      nodes:
+        "novabank-api-spike:8000": 1
+
+consumers:
+  - username: gate3_authorized_client
+    plugins:
+      key-auth:
+        key: "gate3-secret-token"
+
+#END

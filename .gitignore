@@ -1,2 +1,25 @@
 *.endpointdlp
 *.Identifier
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases & local state
+*.sqlite
+*.sqlite3
+*.db
+.env
+!.env.example
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
