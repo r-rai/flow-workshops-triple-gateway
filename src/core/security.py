@@ -5,11 +5,12 @@ from jose import jwt, JWTError
 from src.core.config import settings
 
 class Principal:
-    def __init__(self, id: str, role: str, scopes: List[str], delegated_by: Optional[str] = None):
+    def __init__(self, id: str, role: str, scopes: List[str], delegated_by: Optional[str] = None, auth_method: str = "bearer"):
         self.id = id
         self.role = role
         self.scopes = scopes
         self.delegated_by = delegated_by
+        self.auth_method = auth_method
 
 def get_current_principal(
     authorization: Optional[str] = Header(None, alias="Authorization"),
@@ -28,12 +29,13 @@ def get_current_principal(
                 settings.JWT_SECRET_KEY,
                 algorithms=[settings.JWT_ALGORITHM],
                 audience=settings.API_AUDIENCE,
+                issuer=settings.JWT_ISSUER,
             )
             scopes = claims.get("scope", "").split()
             role = claims.get("role", "viewer")
             sub = claims.get("sub", "anonymous")
             delegated_by = claims.get("act", {}).get("sub")
-            return Principal(id=sub, role=role, scopes=scopes, delegated_by=delegated_by)
+            return Principal(id=sub, role=role, scopes=scopes, delegated_by=delegated_by, auth_method="bearer")
         except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,13 +43,14 @@ def get_current_principal(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-    # 2. Check X-API-Key (Workshop Gate 3 static lab key for W1)
+    # 2. Check X-API-Key (Workshop Gate 3 static lab key for W1 operator)
     if x_api_key:
         if x_api_key == settings.API_KEY_SECRET:
             return Principal(
                 id="w1-lab-operator",
-                role="admin",
+                role="operator",
                 scopes=["api:accounts:read", "api:payments:write", "api:cases:read", "api:incidents:write"],
+                auth_method="api_key",
             )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -81,7 +84,7 @@ def create_jwt_token(
 ) -> str:
     now = int(time.time())
     claims = {
-        "iss": "novabank-authz-server",
+        "iss": settings.JWT_ISSUER,
         "sub": subject,
         "aud": audience,
         "role": role,
@@ -92,3 +95,4 @@ def create_jwt_token(
     if delegated_by:
         claims["act"] = {"sub": delegated_by}
     return jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+

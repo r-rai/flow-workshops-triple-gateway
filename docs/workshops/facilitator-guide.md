@@ -96,4 +96,5 @@ This guide provides complete instructions for instructors, facilitators, and ope
 ### Unverified Requirements (Documented Transparently)
 - [ ] **Windows 11 / WSL2 5 GB RAM Participant Benchmark**:
   - **Status**: Unverified on local infrastructure.
-  - **Reason**: The host system is a Linux VPS. While total Linux container memory across 9 microservices peaks at ~700 MB (leaving > 6.3 GB free), Windows 11 WSL2 introduces virtualization overhead (Vmmem process allocation and dynamic memory reclamation) that cannot be measured on a native Linux kernel. This benchmark must be confirmed during participant onboarding on native Windows 11 hardware.
+  - **Reason**: The host system is a Linux VPS. While total Linux container active memory across 9 microservices peaks at ~951 MB / 907 MiB (comfortably within the 6 GB VPS operating budget), Windows 11 WSL2 introduces virtualization overhead (Vmmem process allocation and dynamic memory reclamation) that cannot be measured on a native Linux kernel. This benchmark must be confirmed during participant onboarding on native Windows 11 hardware.
+

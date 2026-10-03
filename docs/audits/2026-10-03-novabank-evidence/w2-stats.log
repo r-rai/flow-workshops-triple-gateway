@@ -1,0 +1,20 @@
+=====================================================================
+ Active Workshop Profile: w2
+=====================================================================
+NAME                            IMAGE                               COMMAND                  SERVICE    CREATED         STATUS                                     PORTS
+novabank-workshops-adapter-1    novabank/adapter:1.0.0              "uvicorn src.adapter…"   adapter    3 seconds ago   Up 2 seconds (health: starting)            8080/tcp
+novabank-workshops-api-1        novabank/api:1.0.0                  "uvicorn src.api.mai…"   api        3 seconds ago   Up Less than a second (health: starting)   8000/tcp
+novabank-workshops-apisix-1     apache/apisix:3.19.0-debian         "/docker-entrypoint.…"   apisix     3 seconds ago   Up 1 second                                0.0.0.0:9080->9080/tcp, [::]:9080->9080/tcp, 9443/tcp
+novabank-workshops-jaeger-1     jaegertracing/all-in-one:1.57       "/go/bin/all-in-one-…"   jaeger     3 seconds ago   Up 2 seconds                               4317-4318/tcp, 5775/udp, 5778/tcp, 9411/tcp, 14250/tcp, 14268/tcp, 6831-6832/udp, 0.0.0.0:16686->16686/tcp, [::]:16686->16686/tcp
+novabank-workshops-opa-1        openpolicyagent/opa:0.68.0-static   "/opa run --server -…"   opa        3 seconds ago   Up 1 second                                
+novabank-workshops-postgres-1   postgres:16-alpine                  "docker-entrypoint.s…"   postgres   3 seconds ago   Up 1 second                                5432/tcp
+
+Memory & Resource Usage:
+CONTAINER ID   NAME                            CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O     PIDS
+4a5943aabfd4   novabank-workshops-adapter-1    0.23%     40.98MiB / 256MiB   16.01%    6.08kB / 3.5kB    0B / 0B       5
+4bab224f2682   novabank-workshops-api-1        13.23%    66.06MiB / 256MiB   25.81%    1.77kB / 348B     0B / 0B       9
+ce1295dd2072   novabank-workshops-apisix-1     0.80%     106.3MiB / 384MiB   27.67%    7.45kB / 4.57kB   0B / 0B       13
+08ec5edd8c14   novabank-workshops-jaeger-1     0.04%     8.977MiB / 256MiB   3.51%     3.61kB / 378B     65.5kB / 0B   9
+ca5f26076761   novabank-workshops-opa-1        0.00%     7.285MiB / 128MiB   5.69%     1.86kB / 693B     57.3kB / 0B   9
+7ba5238964d7   novabank-workshops-postgres-1   0.11%     17.14MiB / 384MiB   4.46%     1.17kB / 126B     0B / 28.7kB   6
+=====================================================================

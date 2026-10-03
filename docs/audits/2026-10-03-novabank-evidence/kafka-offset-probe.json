@@ -1,0 +1,13 @@
+{
+  "read_offsets": [
+    10,
+    11
+  ],
+  "started_workflows": [
+    "dispute-case-second-succeeds"
+  ],
+  "committed_next_offsets": [
+    12
+  ],
+  "failed_offset_10_skipped_by_commit_12": true
+}

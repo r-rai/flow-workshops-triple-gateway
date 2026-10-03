@@ -1,0 +1,198 @@
+[
+  {
+    "label": "w1-switch",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w1"
+    ],
+    "exit_code": 0,
+    "seconds": 16.59
+  },
+  {
+    "label": "w1-reset",
+    "command": [
+      "./scripts/workshop",
+      "reset",
+      "w1",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "seconds": 0.16
+  },
+  {
+    "label": "w1-verify",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w1"
+    ],
+    "exit_code": 1,
+    "seconds": 0.37
+  },
+  {
+    "label": "w1-rehearsal",
+    "command": [
+      ".venv/bin/python",
+      "workshops/w1/rehearsal_w1.py"
+    ],
+    "exit_code": 0,
+    "seconds": 1.62
+  },
+  {
+    "label": "w1-stats",
+    "command": [
+      "./scripts/workshop",
+      "status"
+    ],
+    "exit_code": 0,
+    "seconds": 2.37
+  },
+  {
+    "label": "w2-switch",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w2"
+    ],
+    "exit_code": 0,
+    "seconds": 15.03
+  },
+  {
+    "label": "w2-reset",
+    "command": [
+      "./scripts/workshop",
+      "reset",
+      "w2",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "seconds": 0.22
+  },
+  {
+    "label": "w2-verify",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w2"
+    ],
+    "exit_code": 0,
+    "seconds": 0.52
+  },
+  {
+    "label": "w2-rehearsal",
+    "command": [
+      ".venv/bin/python",
+      "workshops/w2/rehearsal_w2.py"
+    ],
+    "exit_code": 1,
+    "seconds": 14.07
+  },
+  {
+    "label": "w2-stats",
+    "command": [
+      "./scripts/workshop",
+      "status"
+    ],
+    "exit_code": 0,
+    "seconds": 2.53
+  },
+  {
+    "label": "w3-switch",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w3"
+    ],
+    "exit_code": 0,
+    "seconds": 6.79
+  },
+  {
+    "label": "w3-reset",
+    "command": [
+      "./scripts/workshop",
+      "reset",
+      "w3",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "seconds": 0.17
+  },
+  {
+    "label": "w3-verify",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w3"
+    ],
+    "exit_code": 0,
+    "seconds": 0.32
+  },
+  {
+    "label": "w3-rehearsal",
+    "command": [
+      ".venv/bin/python",
+      "workshops/w3/rehearsal_w3.py"
+    ],
+    "exit_code": 0,
+    "seconds": 35.56
+  },
+  {
+    "label": "w3-stats",
+    "command": [
+      "./scripts/workshop",
+      "status"
+    ],
+    "exit_code": 0,
+    "seconds": 2.53
+  },
+  {
+    "label": "w4-switch",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w4"
+    ],
+    "exit_code": 0,
+    "seconds": 17.07
+  },
+  {
+    "label": "w4-reset",
+    "command": [
+      "./scripts/workshop",
+      "reset",
+      "w4",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "seconds": 0.27
+  },
+  {
+    "label": "w4-verify",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w4"
+    ],
+    "exit_code": 0,
+    "seconds": 0.83
+  },
+  {
+    "label": "w4-rehearsal",
+    "command": [
+      ".venv/bin/python",
+      "workshops/w4/rehearsal_w4.py"
+    ],
+    "exit_code": 0,
+    "seconds": 1.52
+  },
+  {
+    "label": "w4-stats",
+    "command": [
+      "./scripts/workshop",
+      "status"
+    ],
+    "exit_code": 0,
+    "seconds": 2.63
+  }
+]

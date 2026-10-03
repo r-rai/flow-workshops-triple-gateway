@@ -1,0 +1,31 @@
+{
+  "w1": {
+    "snapshot_active_bytes": 193137213,
+    "snapshot_mb": 193.14,
+    "container_count": 2
+  },
+  "w2": {
+    "snapshot_active_bytes": 258727739,
+    "snapshot_mb": 258.73,
+    "container_count": 6
+  },
+  "w3": {
+    "snapshot_active_bytes": 815027716,
+    "snapshot_mb": 815.03,
+    "container_count": 9
+  },
+  "w4": {
+    "snapshot_active_bytes": 740979376,
+    "snapshot_mb": 740.98,
+    "container_count": 9
+  },
+  "w4_sampled_peak": {
+    "samples": 80,
+    "bytes": 951021733,
+    "mb": 951.02,
+    "mib": 906.97,
+    "timestamp": 1791030152.6935272,
+    "threshold_bytes": 750000000,
+    "passed": false
+  }
+}

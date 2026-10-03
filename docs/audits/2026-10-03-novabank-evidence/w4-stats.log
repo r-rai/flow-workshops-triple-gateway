@@ -1,0 +1,26 @@
+=====================================================================
+ Active Workshop Profile: w4
+=====================================================================
+NAME                            IMAGE                               COMMAND                  SERVICE    CREATED         STATUS                   PORTS
+novabank-workshops-adapter-1    novabank/adapter:1.0.0              "uvicorn src.adapter…"   adapter    9 seconds ago   Up 7 seconds (healthy)   8080/tcp
+novabank-workshops-api-1        novabank/api:1.0.0                  "uvicorn src.api.mai…"   api        9 seconds ago   Up 6 seconds (healthy)   8000/tcp
+novabank-workshops-apisix-1     apache/apisix:3.19.0-debian         "/docker-entrypoint.…"   apisix     9 seconds ago   Up 4 seconds             0.0.0.0:9080->9080/tcp, [::]:9080->9080/tcp, 9443/tcp
+novabank-workshops-jaeger-1     jaegertracing/all-in-one:1.57       "/go/bin/all-in-one-…"   jaeger     8 seconds ago   Up 5 seconds             4317-4318/tcp, 5775/udp, 5778/tcp, 9411/tcp, 14250/tcp, 14268/tcp, 6831-6832/udp, 0.0.0.0:16686->16686/tcp, [::]:16686->16686/tcp
+novabank-workshops-kafka-1      apache/kafka:3.7.0                  "/__cacert_entrypoin…"   kafka      9 seconds ago   Up 4 seconds             0.0.0.0:9092->9092/tcp, [::]:9092->9092/tcp
+novabank-workshops-opa-1        openpolicyagent/opa:0.68.0-static   "/opa run --server -…"   opa        9 seconds ago   Up 6 seconds             
+novabank-workshops-postgres-1   postgres:16-alpine                  "docker-entrypoint.s…"   postgres   9 seconds ago   Up 7 seconds             5432/tcp
+novabank-workshops-temporal-1   novabank/temporal:1.0.0             "python /app/tempora…"   temporal   9 seconds ago   Up 8 seconds             0.0.0.0:7233->7233/tcp, [::]:7233->7233/tcp
+novabank-workshops-worker-1     novabank/worker:1.0.0               "python -m src.worke…"   worker     9 seconds ago   Up 7 seconds             
+
+Memory & Resource Usage:
+CONTAINER ID   NAME                            CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O        PIDS
+9f7174ab0769   novabank-workshops-adapter-1    0.17%     40.04MiB / 256MiB   15.64%    6.33kB / 4.23kB   0B / 0B          6
+763d263bbc09   novabank-workshops-api-1        1.37%     69.03MiB / 256MiB   26.97%    17kB / 40.7kB     4.1kB / 1.26MB   10
+d33ea1c524b6   novabank-workshops-apisix-1     0.56%     108.9MiB / 384MiB   28.36%    31.7kB / 32kB     0B / 28.7kB      13
+391bbb72ee5e   novabank-workshops-jaeger-1     0.27%     10.32MiB / 256MiB   4.03%     35.6kB / 2.16kB   193kB / 0B       10
+a9a89bbf772f   novabank-workshops-kafka-1      91.62%    290.6MiB / 512MiB   56.76%    3.93kB / 3.42kB   15MB / 569kB     93
+6175ea69fac3   novabank-workshops-opa-1        0.00%     7.973MiB / 128MiB   6.23%     1.27kB / 126B     258kB / 0B       9
+fb48133764d5   novabank-workshops-postgres-1   0.04%     17.11MiB / 384MiB   4.46%     1.24kB / 126B     0B / 28.7kB      6
+d8d162572258   novabank-workshops-temporal-1   0.43%     97.96MiB / 384MiB   25.51%    45.7MB / 140kB    0B / 158MB       18
+3592d50da571   novabank-workshops-worker-1     0.00%     64.72MiB / 512MiB   12.64%    7.14kB / 6.06kB   0B / 0B          10
+=====================================================================

@@ -1,0 +1,24 @@
+=====================================================================
+ WORKSHOP 2 REHEARSAL: Beyond API Governance - Securing AI Agents & MCP
+ 45-Minute Session Automated Verification & Evidence Capture
+=====================================================================
+
+[Segment 1: 0–5 min] Threat Scenario - Reading Adversarial Support Case
+Reading dispute ticket case-502...
+✓ Injected Prompt Case Read Successfully:
+  Description: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>openresty</center>
+<p><em>Powered by <a href="https://apisix.apache.org/">APISIX</a>.</em></p></body>
+</html>
+
+Traceback (most recent call last):
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/workshops/w2/rehearsal_w2.py", line 191, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/workshops/w2/rehearsal_w2.py", line 60, in main
+    assert "Ignore all previous rules" in case_desc
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,24 @@
+2026-10-03 17:55:01,807 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 17:55:01,807 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 17:55:01,807 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 17:55:01,807 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 17:55:01,807 [INFO] [KafkaConsumer] Received dispute event for first-fails (offset 10). Initiating workflow 'dispute-case-first-fails'...
+2026-10-03 17:55:01,808 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-first-fails: Injected transient Temporal failure
+2026-10-03 17:55:01,808 [INFO] [KafkaConsumer] Received dispute event for second-succeeds (offset 11). Initiating workflow 'dispute-case-second-succeeds'...
+2026-10-03 17:55:01,808 [INFO] [KafkaConsumer] Started new workflow run: audit-run for dispute-case-second-succeeds
+2026-10-03 17:55:01,808 [INFO] [KafkaConsumer] Committed Kafka offset 11 for topic novabank.disputes.
+2026-10-03 17:55:01,808 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 17:55:01,808 [INFO] [KafkaConsumer] Kafka consumer stopped.
+{
+  "read_offsets": [
+    10,
+    11
+  ],
+  "started_workflows": [
+    "dispute-case-second-succeeds"
+  ],
+  "committed_next_offsets": [
+    12
+  ],
+  "failed_offset_10_skipped_by_commit_12": true
+}

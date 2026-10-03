@@ -1,0 +1,4 @@
+agent_self_approval_with_bearer {'status': 403, 'body': {'detail': 'Self-approval prohibited: Requester cannot approve their own proposal'}}
+same_agent_key_without_bearer_approves {'status': 200, 'body': {'proposal_id': 'prop-26576834', 'status': 'approved', 'approver_id': 'w1-lab-operator', 'message': 'Proposal successfully approved'}}
+proposal_approved_by_fallback_admin {'status': 200, 'body': {'proposal_id': 'prop-26576834', 'requester_id': 'audit-payment-agent', 'account_id': 'acc-102', 'amount': 150000, 'currency': 'INR', 'beneficiary': 'acc-101', 'status': 'approved', 'expires_at': 1791031132.4069238}}
+payment_during_opa_timeout {'status': 200, 'body': {'jsonrpc': '2.0', 'id': 1, 'result': {'isError': True, 'content': [{'type': 'text', 'text': 'POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: POLICY_TIMEOUT_FAIL_CLOSED'}]}}}

@@ -74,7 +74,13 @@ def approve_proposal_service(
     principal: Principal,
     proposal_id: str,
 ) -> ApprovalActionResponse:
-    prop = db.query(PaymentProposal).filter(PaymentProposal.id == proposal_id).with_for_update().first()
+    if getattr(principal, "auth_method", "bearer") != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Approvals require an authenticated Bearer token. Static lab API keys cannot approve proposals.",
+        )
+
+    prop = db.query(PaymentProposal).filter(PaymentProposal.id == proposal_id).first()
     if not prop:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal not found")
 
@@ -88,8 +94,8 @@ def approve_proposal_service(
         db.commit()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Proposal has expired")
 
-    # Anti-Self-Approval Invariant
-    if principal.id == prop.requester_id:
+    # Anti-Self-Approval Invariant (requester or delegated actor)
+    if principal.id == prop.requester_id or getattr(principal, "delegated_by", None) == prop.requester_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Self-approval prohibited: Requester cannot approve their own proposal",
@@ -102,8 +108,24 @@ def approve_proposal_service(
             detail=f"Unauthorized role '{principal.role}'. Manager or approver role required.",
         )
 
-    prop.status = "approved"
-    prop.approver_id = principal.id
+    # Atomic CAS status transition: status 'pending' -> 'approved'
+    approved_count = db.query(PaymentProposal).filter(
+        PaymentProposal.id == proposal_id,
+        PaymentProposal.status == "pending"
+    ).update(
+        {
+            PaymentProposal.status: "approved",
+            PaymentProposal.approver_id: principal.id,
+        },
+        synchronize_session="fetch"
+    )
+    if approved_count == 0:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Proposal status changed concurrently",
+        )
+
     db.commit()
 
     return ApprovalActionResponse(
@@ -118,7 +140,13 @@ def reject_proposal_service(
     principal: Principal,
     proposal_id: str,
 ) -> ApprovalActionResponse:
-    prop = db.query(PaymentProposal).filter(PaymentProposal.id == proposal_id).with_for_update().first()
+    if getattr(principal, "auth_method", "bearer") != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Rejections require an authenticated Bearer token. Static lab API keys cannot reject proposals.",
+        )
+
+    prop = db.query(PaymentProposal).filter(PaymentProposal.id == proposal_id).first()
     if not prop:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Proposal not found")
 
@@ -128,8 +156,31 @@ def reject_proposal_service(
             detail=f"Cannot reject proposal in '{prop.status}' state",
         )
 
-    prop.status = "rejected"
-    prop.approver_id = principal.id
+    # Role/Owner Invariant: Requester can cancel/reject their own proposal, or an authorized manager/admin/approver can reject
+    if principal.role not in ("manager", "admin", "approver") and principal.id != prop.requester_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Unauthorized role '{principal.role}'. Manager or approver role (or proposal requester) required to reject.",
+        )
+
+    # Atomic CAS status transition: status 'pending' -> 'rejected'
+    rejected_count = db.query(PaymentProposal).filter(
+        PaymentProposal.id == proposal_id,
+        PaymentProposal.status == "pending"
+    ).update(
+        {
+            PaymentProposal.status: "rejected",
+            PaymentProposal.approver_id: principal.id,
+        },
+        synchronize_session="fetch"
+    )
+    if rejected_count == 0:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Proposal status changed concurrently",
+        )
+
     db.commit()
 
     return ApprovalActionResponse(
@@ -138,3 +189,4 @@ def reject_proposal_service(
         approver_id=principal.id,
         message="Proposal rejected",
     )
+

@@ -59,6 +59,7 @@ class PaymentRecord(Base):
     amount = Column(BigInteger, nullable=False)
     currency = Column(String(8), nullable=False)
     beneficiary = Column(String(128), nullable=False)
+    idempotency_key = Column(String(128), nullable=True, index=True)
     status = Column(String(32), nullable=False, default="completed")
     created_at = Column(Float, default=time.time)
 
@@ -82,3 +83,16 @@ class IdempotencyRecord(Base):
     payload_hash = Column(String(64), nullable=False)
     response_json = Column(Text, nullable=False)
     created_at = Column(Float, default=time.time)
+
+class A2ATask(Base):
+    __tablename__ = "a2a_tasks"
+
+    id = Column(String(64), primary_key=True, index=True)
+    owner_id = Column(String(128), nullable=False, index=True)
+    owner_role = Column(String(64), nullable=False)
+    task_type = Column(String(64), nullable=False)
+    status = Column(String(32), nullable=False, default="pending_approval")
+    input_json = Column(Text, nullable=False)
+    output_json = Column(Text, nullable=True)
+    created_at = Column(Float, default=time.time)
+    updated_at = Column(Float, default=time.time, onupdate=time.time)

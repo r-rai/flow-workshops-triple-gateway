@@ -1,0 +1,9 @@
+{
+  "audited_head": "6003764bcacdeaabcb8dfc804e5cdab81f452521",
+  "active_profile": "w4",
+  "tracked_rehearsal_evidence_restored": true,
+  "implementation_files_modified": false,
+  "raw_runtime_backups": "/tmp/novabank-audit-20261003/runtime-backup",
+  "original_rehearsal_evidence": "/tmp/novabank-audit-20261003/original-evidence",
+  "audit_evidence_files": 70
+}

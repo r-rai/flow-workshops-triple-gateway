@@ -1,0 +1,42 @@
+[
+  {
+    "service": "apisix",
+    "repo_digests": [
+      "apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+    ],
+    "manifest_digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+    "matches_installed": true
+  },
+  {
+    "service": "opa",
+    "repo_digests": [
+      "openpolicyagent/opa@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc"
+    ],
+    "manifest_digest": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+    "matches_installed": true
+  },
+  {
+    "service": "postgres",
+    "repo_digests": [
+      "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+    ],
+    "manifest_digest": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+    "matches_installed": true
+  },
+  {
+    "service": "kafka",
+    "repo_digests": [
+      "apache/kafka@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7"
+    ],
+    "manifest_digest": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+    "matches_installed": true
+  },
+  {
+    "service": "jaeger",
+    "repo_digests": [
+      "jaegertracing/all-in-one@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9"
+    ],
+    "manifest_digest": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+    "matches_installed": true
+  }
+]

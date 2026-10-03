@@ -53,7 +53,7 @@ def execute_payment_service(
             return PaymentExecuteResponse(**cached_data)
 
     # 2. Account Validation
-    acc = db.query(Account).filter(Account.id == req.account_id).with_for_update().first()
+    acc = db.query(Account).filter(Account.id == req.account_id).first()
     if not acc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Account '{req.account_id}' not found")
     if acc.status != "active":
@@ -61,13 +61,15 @@ def execute_payment_service(
 
     # 3. Unsupervised threshold check: Amounts > 100,000 minor units require an approved proposal
     UNSUPERVISED_LIMIT = 100000
-    if req.amount > UNSUPERVISED_LIMIT:
-        if not req.proposal_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Amount {req.amount} exceeds unsupervised limit ({UNSUPERVISED_LIMIT}). Valid proposal_id required.",
-            )
-        prop = db.query(PaymentProposal).filter(PaymentProposal.id == req.proposal_id).with_for_update().first()
+    if req.amount > UNSUPERVISED_LIMIT and not req.proposal_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Amount {req.amount} exceeds unsupervised limit ({UNSUPERVISED_LIMIT}). Valid proposal_id required.",
+        )
+
+    # Invariant: If proposal_id is supplied, ALWAYS validate arguments, status, expiry, and consume it atomically
+    if req.proposal_id:
+        prop = db.query(PaymentProposal).filter(PaymentProposal.id == req.proposal_id).first()
         if not prop:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment proposal not found")
         if prop.status != "approved":
@@ -87,19 +89,44 @@ def execute_payment_service(
                 detail="Execution arguments do not match the approved proposal arguments",
             )
         
-        # Atomically consume proposal
-        prop.status = "consumed"
-        prop.consumed_at = time.time()
+        # Atomic CAS: transition 'approved' -> 'consumed'
+        consumed_count = db.query(PaymentProposal).filter(
+            PaymentProposal.id == req.proposal_id,
+            PaymentProposal.status == "approved"
+        ).update(
+            {
+                PaymentProposal.status: "consumed",
+                PaymentProposal.consumed_at: time.time(),
+            },
+            synchronize_session="fetch"
+        )
+        if consumed_count == 0:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Proposal was already consumed concurrently",
+            )
 
-    # 4. Balance check & debit
-    if acc.balance < req.amount:
+    # 4. Atomic Balance check & debit
+    debited_count = db.query(Account).filter(
+        Account.id == req.account_id,
+        Account.balance >= req.amount,
+        Account.status == "active"
+    ).update(
+        {
+            Account.balance: Account.balance - req.amount,
+            Account.updated_at: time.time(),
+        },
+        synchronize_session="fetch"
+    )
+    if debited_count == 0:
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Insufficient funds: available {acc.balance}, required {req.amount}",
         )
 
-    acc.balance -= req.amount
-    acc.updated_at = time.time()
+    db.refresh(acc)
 
     payment_id = f"pay-{uuid.uuid4().hex[:8]}"
     payment_record = PaymentRecord(
@@ -109,6 +136,7 @@ def execute_payment_service(
         amount=req.amount,
         currency=req.currency,
         beneficiary=req.beneficiary,
+        idempotency_key=idempotency_key,
         status="completed",
         created_at=time.time(),
     )
@@ -139,3 +167,4 @@ def execute_payment_service(
 
     db.commit()
     return PaymentExecuteResponse(**response_payload)
+

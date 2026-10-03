@@ -1,0 +1,7 @@
+cde4fb2 feat(poc): complete Package 1 compatibility spikes and verification evidence
+eff6cde feat(foundation): implement Work Package 2 (API, seed data, persistence, idempotency, Compose skeleton, operator script)
+957e19e feat(w1): complete Work Package 3 (Workshop 1 contracts, client, rehearsal, and worksheets)
+eec932a feat(w2): complete Package 4 governance implementation, rehearsal, and worksheets
+ae54353 feat(w3): complete Package 5 durability implementation, rehearsal, and worksheets
+a44dffc feat(w4): complete Package 6 Triple-Gate implementation, A2A agents, rehearsal, and worksheets
+e8c4678 feat(delivery): complete Package 7 release manifest, facilitator guide, and verification reporting

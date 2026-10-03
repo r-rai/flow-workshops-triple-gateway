@@ -5,7 +5,7 @@ from src.core.security import create_jwt_token
 
 @activity.defn
 async def read_dispute_ticket(case_id: str) -> dict:
-    api_url = os.getenv("API_URL", "http://api:8000/api/v1")
+    gate3_url = os.getenv("GATE3_URL", os.getenv("API_URL", "http://apisix:9080/api/v1"))
     token = create_jwt_token(
         subject="system-workflow-engine",
         audience="novabank-api",
@@ -17,10 +17,11 @@ async def read_dispute_ticket(case_id: str) -> dict:
     }
     
     async with httpx.AsyncClient(timeout=5.0) as client:
-        resp = await client.get(f"{api_url}/cases/{case_id}", headers=headers)
+        resp = await client.get(f"{gate3_url}/cases/{case_id}", headers=headers)
         if resp.status_code != 200:
             raise RuntimeError(f"Failed to fetch case {case_id}: {resp.status_code} {resp.text}")
         return resp.json()
+
 
 @activity.defn
 async def diagnose_and_propose_resolution(case_data: dict) -> dict:
@@ -63,7 +64,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
     amount = settlement_data["amount"]
     destination_account = settlement_data["destination_account"]
     
-    api_url = os.getenv("API_URL", "http://api:8000/api/v1")
+    gate3_url = os.getenv("GATE3_URL", os.getenv("API_URL", "http://apisix:9080/api/v1"))
     token = create_jwt_token(
         subject="system-workflow-engine",
         audience="novabank-api",
@@ -88,7 +89,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
                 **headers,
                 "Idempotency-Key": idempotency_key
             }
-            pay_resp = await client.post(f"{api_url}/payments", json=payment_body, headers=pay_headers)
+            pay_resp = await client.post(f"{gate3_url}/payments", json=payment_body, headers=pay_headers)
             if pay_resp.status_code not in (200, 201):
                 raise RuntimeError(f"Payment execution failed: {pay_resp.status_code} {pay_resp.text}")
             payment_record = pay_resp.json()
@@ -97,7 +98,8 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
             case_update = {
                 "status": "resolved"
             }
-            case_resp = await client.patch(f"{api_url}/cases/{case_id}", json=case_update, headers=headers)
+            case_resp = await client.patch(f"{gate3_url}/cases/{case_id}", json=case_update, headers=headers)
+
             
             return {
                 "case_id": case_id,

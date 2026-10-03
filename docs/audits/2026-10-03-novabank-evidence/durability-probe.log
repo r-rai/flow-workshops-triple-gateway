@@ -1,0 +1,66 @@
+Before kill/restart {'approval_decision': None, 'current_phase': 'WAITING_FOR_APPROVAL', 'execution_result': None, 'proposal': {'amount': 75000, 'case_id': 'case-501', 'customer_id': 'cust-8801', 'destination_account': 'acc-101', 'rationale': 'Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.', 'requires_approval': True}}
+After SIGKILL and Temporal server restart {'approval_decision': None, 'current_phase': 'WAITING_FOR_APPROVAL', 'execution_result': None, 'proposal': {'amount': 75000, 'case_id': 'case-501', 'customer_id': 'cust-8801', 'destination_account': 'acc-101', 'rationale': 'Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.', 'requires_approval': True}}
+[Kafka] Emitting dispute event for case 'case-501' to topic 'novabank.disputes'...
+[Kafka] Successfully emitted dispute event for 'case-501'.
+{
+  "workflow_id": "audit-recovery-1791030152",
+  "before_crash": {
+    "approval_decision": null,
+    "current_phase": "WAITING_FOR_APPROVAL",
+    "execution_result": null,
+    "proposal": {
+      "amount": 75000,
+      "case_id": "case-501",
+      "customer_id": "cust-8801",
+      "destination_account": "acc-101",
+      "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+      "requires_approval": true
+    }
+  },
+  "after_worker_sigkill_and_temporal_restart": {
+    "approval_decision": null,
+    "current_phase": "WAITING_FOR_APPROVAL",
+    "execution_result": null,
+    "proposal": {
+      "amount": 75000,
+      "case_id": "case-501",
+      "customer_id": "cust-8801",
+      "destination_account": "acc-101",
+      "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+      "requires_approval": true
+    }
+  },
+  "rejection_result": {
+    "approval": {
+      "approved": false,
+      "comments": "test rejection after recovery",
+      "reviewer": "audit-reviewer"
+    },
+    "case_id": "case-501",
+    "phase": "COMPLETED",
+    "proposal": {
+      "amount": 75000,
+      "case_id": "case-501",
+      "customer_id": "cust-8801",
+      "destination_account": "acc-101",
+      "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+      "requires_approval": true
+    },
+    "result": {
+      "case_id": "case-501",
+      "notification_sent": true,
+      "status": "REJECTED"
+    }
+  },
+  "payment_counts": [
+    2,
+    2,
+    2
+  ],
+  "original_workflow_run_id_before": "01a101b3-b81e-7234-84af-7f91fd1f8a0b",
+  "original_workflow_run_id_after_redelivery": "01a101b3-b81e-7234-84af-7f91fd1f8a0b",
+  "history_event_count": 29,
+  "recovery_verified": true,
+  "rejection_no_payment_verified": true,
+  "completed_kafka_redelivery_no_duplicate_verified": true
+}

@@ -25,7 +25,8 @@ def main():
 
     # Switch to profile w2
     print("\n[Segment 1: 0–5 min] Threat Scenario - Reading Adversarial Support Case")
-    run_cmd("./scripts/workshop switch w2")
+    switch_res = run_cmd("./scripts/workshop switch w2")
+    assert switch_res.returncode == 0, f"Failed to switch to profile w2: {switch_res.stderr}"
 
     base_url = "http://127.0.0.1:9080"
     mcp_url = f"{base_url}/mcp"
@@ -39,6 +40,16 @@ def main():
     headers = {"Authorization": f"Bearer {token_support}"}
 
     with httpx.Client(timeout=10.0) as client:
+        # Upstream readiness verification
+        for _ in range(15):
+            try:
+                r_ready = client.get(f"{base_url}/api/v1/accounts/acc-101", headers={"X-API-Key": "gate3-secret-token"})
+                if r_ready.status_code == 200:
+                    break
+            except Exception:
+                pass
+            time.sleep(1)
+
         # Step 1: Read case-502 containing indirect prompt injection
         print("Reading dispute ticket case-502...")
         r_case = client.post(
@@ -58,6 +69,7 @@ def main():
         print("✓ Injected Prompt Case Read Successfully:")
         print(f"  Description: {case_desc}")
         assert "Ignore all previous rules" in case_desc
+
 
         # Step 2: Unsafe Execution Blocked (12–22 min)
         print("\n[Segment 2: 12–22 min] Adversarial Model Request Blocked by Policy")
@@ -128,7 +140,21 @@ def main():
         med_text = med_res.get("result", {}).get("content", [{}])[0].get("text", "")
         evidence["approval_required_response"] = med_text
         assert "APPROVAL_REQUIRED" in med_text or "AMOUNT_EXCEEDS_UNSUPERVISED_LIMIT" in med_text
+        
+        # Verify durable proposal lookup on Gate 3 API
+        try:
+            med_json = json.loads(med_text)
+            prop_id = med_json.get("proposal_id")
+            if prop_id:
+                r_prop = client.get(f"{base_url}/api/v1/approvals/{prop_id}", headers={"X-API-Key": "gate3-secret-token"})
+                assert r_prop.status_code == 200, f"Expected 200 on proposal lookup, got {r_prop.status_code}"
+                assert r_prop.json()["status"] == "pending"
+                print(f"✓ Durable proposal verified in backend database: {prop_id}")
+        except json.JSONDecodeError:
+            pass
+
         print("✓ Medium payment triggered 'APPROVAL_REQUIRED' without executing backend debit")
+
 
         # 3c. Large payment (INR 50,000.00) -> Denied
         r_large = client.post(

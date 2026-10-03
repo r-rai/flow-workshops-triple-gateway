@@ -1,0 +1,9 @@
+=====================================================================
+ CAUTION: Lab State Reset for Profile 'w1'
+=====================================================================
+This action will restore the initial seeded accounts, cases, and incidents.
+Existing Caddy, monitoring, and host services will NOT be touched.
+=====================================================================
+[0;34m[INFO][0m Resetting database using API admin reset endpoint...
+[0;32m[OK][0m Lab state reset completed successfully!
+{"status":"success","message":"Database successfully reset and seeded","seed_version":"1.0.0","accounts_seeded":3,"cases_seeded":2,"incidents_seeded":2}

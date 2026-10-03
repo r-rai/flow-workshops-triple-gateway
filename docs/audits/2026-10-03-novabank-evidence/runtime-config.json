@@ -1,0 +1,167 @@
+{
+  "services": [
+    {
+      "service": "adapter",
+      "image": "novabank/adapter:1.0.0",
+      "image_id": "sha256:f0f051a16ef2fed6ea5e7eae050bd1152accbd8f7cb88b28456994358efd9957",
+      "memory_limit_bytes": 268435456,
+      "port_bindings": {},
+      "networks": [
+        "novabank-capability",
+        "novabank-edge"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "api",
+      "image": "novabank/api:1.0.0",
+      "image_id": "sha256:8d65f3eac93efcb9b2df40caec5f56fc510d8a5bdd4789827a5abbcfdc185aa9",
+      "memory_limit_bytes": 268435456,
+      "port_bindings": {},
+      "networks": [
+        "novabank-backend",
+        "novabank-persistence"
+      ],
+      "database_url": "sqlite:////app/data/novabank.sqlite",
+      "telemetry_enabled": "true",
+      "restart_count": 0
+    },
+    {
+      "service": "apisix",
+      "image": "apache/apisix:3.19.0-debian",
+      "image_id": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "memory_limit_bytes": 402653184,
+      "port_bindings": {
+        "9080/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "9080"
+          }
+        ]
+      },
+      "networks": [
+        "novabank-backend",
+        "novabank-capability",
+        "novabank-edge"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "jaeger",
+      "image": "jaegertracing/all-in-one:1.57",
+      "image_id": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "memory_limit_bytes": 268435456,
+      "port_bindings": {
+        "16686/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "16686"
+          }
+        ]
+      },
+      "networks": [
+        "novabank-backend",
+        "novabank-capability",
+        "novabank-edge"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "kafka",
+      "image": "apache/kafka:3.7.0",
+      "image_id": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "memory_limit_bytes": 536870912,
+      "port_bindings": {
+        "9092/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "9092"
+          }
+        ]
+      },
+      "networks": [
+        "novabank-workflow"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "opa",
+      "image": "openpolicyagent/opa:0.68.0-static",
+      "image_id": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "memory_limit_bytes": 134217728,
+      "port_bindings": {},
+      "networks": [
+        "novabank-capability"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "postgres",
+      "image": "postgres:16-alpine",
+      "image_id": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "memory_limit_bytes": 402653184,
+      "port_bindings": {},
+      "networks": [
+        "novabank-persistence"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "temporal",
+      "image": "novabank/temporal:1.0.0",
+      "image_id": "sha256:eb774af7c70705978d612ac6464f54456e7cb823ce96b035b33127bd62f61229",
+      "memory_limit_bytes": 402653184,
+      "port_bindings": {
+        "7233/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "7233"
+          }
+        ]
+      },
+      "networks": [
+        "novabank-workflow"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    },
+    {
+      "service": "worker",
+      "image": "novabank/worker:1.0.0",
+      "image_id": "sha256:aeade12d9e3ee5de7f1954435bea8bb891225aaa27b927c434cbe9f4b18c0880",
+      "memory_limit_bytes": 536870912,
+      "port_bindings": {},
+      "networks": [
+        "novabank-backend",
+        "novabank-capability",
+        "novabank-workflow"
+      ],
+      "database_url": null,
+      "telemetry_enabled": null,
+      "restart_count": 0
+    }
+  ],
+  "networks": [
+    {
+      "name": "novabank-backend",
+      "internal": false
+    },
+    {
+      "name": "novabank-persistence",
+      "internal": false
+    }
+  ]
+}

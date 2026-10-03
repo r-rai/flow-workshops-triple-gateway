@@ -1,0 +1,34 @@
+[
+  {
+    "name": "/caddy",
+    "id": "4fb849fe3735388e7a89501941e294d3c6efbd301104a634047cc4b0d92fad15",
+    "started_at": "2026-10-03T07:02:12.693105028Z",
+    "restart_count": 0,
+    "status": "running",
+    "health": null
+  },
+  {
+    "name": "/portainer",
+    "id": "213548e843519605f7b0f3bd408f3d6bd419074593e6da400417457e868adb2d",
+    "started_at": "2026-10-03T07:02:12.671373642Z",
+    "restart_count": 0,
+    "status": "running",
+    "health": null
+  },
+  {
+    "name": "/uptime-kuma",
+    "id": "a639610c56a5fbf071111877ec4d6dc539a04a900bc77c3ace307ed1e4135cd5",
+    "started_at": "2026-10-03T07:02:12.691368402Z",
+    "restart_count": 0,
+    "status": "running",
+    "health": "healthy"
+  },
+  {
+    "name": "/dozzle",
+    "id": "01b6c58bd991f78719e1bef8be8d414f5ec0eaa976238ea3131d1076e1962a65",
+    "started_at": "2026-10-03T07:02:12.674736638Z",
+    "restart_count": 0,
+    "status": "running",
+    "health": null
+  }
+]

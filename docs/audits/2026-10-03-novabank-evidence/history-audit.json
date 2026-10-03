@@ -1,0 +1,19 @@
+{
+  "commits": [
+    "cde4fb2cd98abf074f79ef35b3a628a53bb4869c",
+    "eff6cdeb4887efc9d373fde089f6b3c7f955e7f9",
+    "957e19ecb36385a8fda1958cf36eb1cac1226b46",
+    "eec932ad304dd82ec8187aab4104655ddc8d6b62",
+    "ae543538d6c6197cd1dcf596b8ce5b6678613190",
+    "a44dffc24cdf960c4e6e218f5675c8f07add5521",
+    "e8c4678aaa682c67282c36c699bfbd550a8eac6e"
+  ],
+  "refs": {
+    "HEAD": "6003764bcacdeaabcb8dfc804e5cdab81f452521",
+    "main": "2bcc58763298018c076430d340e10fd8772882c9",
+    "origin/feat/implement-novabank-platform": "6003764bcacdeaabcb8dfc804e5cdab81f452521"
+  },
+  "changed_file_versions_scanned": 105,
+  "credential_pattern_hits": [],
+  "scope": "Common key formats only; excludes ignored local environment; not a comprehensive secret scanner."
+}

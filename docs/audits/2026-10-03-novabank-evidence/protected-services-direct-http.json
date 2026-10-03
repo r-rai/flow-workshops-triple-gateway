@@ -1,0 +1,18 @@
+{
+  "caddy": {
+    "status": 308,
+    "location": "https://172.21.0.3/"
+  },
+  "portainer": {
+    "status": 200,
+    "location": null
+  },
+  "uptime-kuma": {
+    "status": 302,
+    "location": "/dashboard"
+  },
+  "dozzle": {
+    "status": 200,
+    "location": null
+  }
+}

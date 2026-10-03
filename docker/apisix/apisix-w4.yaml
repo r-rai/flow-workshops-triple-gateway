@@ -34,6 +34,15 @@ routes:
       nodes:
         "api:8000": 1
 
+  # OAuth RFC 8693 Token Exchange route
+  - id: w4_oauth_token
+    uri: /oauth/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
+
 consumers:
   - username: lab_participant
     plugins:

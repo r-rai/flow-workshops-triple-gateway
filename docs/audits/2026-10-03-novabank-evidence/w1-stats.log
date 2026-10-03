@@ -1,0 +1,12 @@
+=====================================================================
+ Active Workshop Profile: w1
+=====================================================================
+NAME                          IMAGE                         COMMAND                  SERVICE   CREATED         STATUS                   PORTS
+novabank-workshops-api-1      novabank/api:1.0.0            "uvicorn src.api.mai…"   api       7 seconds ago   Up 6 seconds (healthy)   8000/tcp
+novabank-workshops-apisix-1   apache/apisix:3.19.0-debian   "/docker-entrypoint.…"   apisix    7 seconds ago   Up 7 seconds             0.0.0.0:9080->9080/tcp, [::]:9080->9080/tcp, 9443/tcp
+
+Memory & Resource Usage:
+CONTAINER ID   NAME                          CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O         PIDS
+afde482dc084   novabank-workshops-api-1      0.64%     70.89MiB / 256MiB   27.69%    5.38kB / 47.4kB   21MB / 582kB      10
+3e67bca3f667   novabank-workshops-apisix-1   0.78%     113.3MiB / 384MiB   29.51%    59.7kB / 24kB     13.5MB / 28.7kB   13
+=====================================================================

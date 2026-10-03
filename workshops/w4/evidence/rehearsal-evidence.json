@@ -1,6 +1,6 @@
 {
   "workshop": "w4",
-  "timestamp": 1791024688.0521326,
+  "timestamp": 1791032103.0227046,
   "segments": {
     "segment1": {
       "baseline_reset": "success"
@@ -18,9 +18,9 @@
     },
     "segment3": {
       "gate1_response": {
-        "id": "chatcmpl-replay-1791024688",
+        "id": "chatcmpl-replay-1791032103",
         "object": "chat.completion",
-        "created": 1791024688,
+        "created": 1791032103,
         "model": "novabank-replay-fixture",
         "choices": [
           {
@@ -40,7 +40,7 @@
       }
     },
     "segment4": {
-      "gate2_rejection": "Argument validation failed: Missing required argument 'beneficiary'"
+      "gate2_rejection": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: PROHIBITED_BENEFICIARY"
     },
     "segment5": {
       "checkpoint_status": "green"
@@ -50,20 +50,23 @@
       "insufficient_scope_status": 403
     },
     "segment7": {
-      "proposal_id": "prop-14285155",
+      "proposal_id": "prop-c7980c66",
       "self_approval_denied": true,
       "tamper_detected": true,
       "single_use_enforced": true,
-      "payment_id": "pay-4f1f0e7e"
+      "payment_id": "pay-96fedda5"
     },
     "segment8": {
       "agent_card": "NovaBank PaymentsAgent",
-      "delegated_task_id": "task-bfb41992",
-      "unrelated_agent_denied": true
+      "delegated_task_id": "task-c5feea54",
+      "unrelated_agent_denied": true,
+      "foreign_mutation_denied": true,
+      "viewer_creation_denied": true
     },
     "segment9": {
       "traced_services": [
-        "novabank-api"
+        "novabank-api",
+        "jaeger-all-in-one"
       ]
     }
   }

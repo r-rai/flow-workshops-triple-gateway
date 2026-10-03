@@ -1,0 +1,74 @@
+====================================================================
+ WORKSHOP 3 REHEARSAL: Architecting the Agentic Enterprise
+ Middleware, Durable State, and Event-Driven AI
+ 45-Minute Session Automated Verification & Evidence Capture
+====================================================================
+
+[Segment 1: 0–6 min] Autonomous System Resolver - Inspecting Incident
+✓ Target dispute case loaded: case-501 - Customer claims unapproved charge of 45000 INR on checking account.
+
+[Segment 2: 6–13 min] Event-Driven Dispatch - Publishing to Kafka Topic
+[Kafka] Emitting dispute event for case 'case-501' to topic 'novabank.disputes'...
+[Kafka] Successfully emitted dispute event for 'case-501'.
+
+[Segment 3: 13–23 min] Diagnosis & Durable Pause for Approval
+✓ Workflow reached durable wait: WAITING_FOR_APPROVAL
+  Proposed refund: INR 750.00 to acc-101
+  Rationale: Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.
+
+[Segment 4: 23–35 min] Guided Recovery Exercise - Worker Crash & Redelivery
+Simulating worker crash: killing 'novabank-workshops-worker-1'...
+✓ Worker container stopped.
+Redelivering duplicate event to Kafka while worker is down...
+[Kafka] Emitting dispute event for case 'case-501' to topic 'novabank.disputes'...
+[Kafka] Successfully emitted dispute event for 'case-501'.
+✓ Duplicate event emitted to Kafka.
+Restarting worker container...
+✓ Worker restarted and reconnected to Temporal & Kafka.
+✓ INVARIANT CONFIRMED: Workflow state preserved in durable Temporal history across worker crash!
+
+[Segment 5: 35–41 min] Approve and Inspect Settlement
+[Temporal] Sending APPROVE signal to workflow 'dispute-case-case-501' by ops-lead...
+[Temporal] Signal delivered. Awaiting completion...
+[Temporal] Workflow 'dispute-case-case-501' completed with result:
+{
+  "approval": {
+    "approved": true,
+    "comments": "Approved by Ops Lead: double charge confirmed on card statement",
+    "reviewer": "ops-lead"
+  },
+  "case_id": "case-501",
+  "phase": "COMPLETED",
+  "proposal": {
+    "amount": 75000,
+    "case_id": "case-501",
+    "customer_id": "cust-8801",
+    "destination_account": "acc-101",
+    "rationale": "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00.",
+    "requires_approval": true
+  },
+  "result": {
+    "case_id": "case-501",
+    "notification_sent": true,
+    "payment": {
+      "account_id": "acc-102",
+      "amount": 75000,
+      "beneficiary": "acc-101",
+      "currency": "INR",
+      "idempotent_replay": false,
+      "payment_id": "pay-045120c2",
+      "remaining_balance": 8425000,
+      "status": "COMPLETED"
+    },
+    "status": "RESOLVED"
+  }
+}
+✓ Case status in API: resolved
+✓ Settlement payments in backend matching idempotency key: 1
+✓ ZERO DUPLICATE PAYMENTS INVARIANT VERIFIED: Exact single settlement payment confirmed!
+
+✓ Saved rehearsal evidence to workshops/w3/evidence/rehearsal-evidence.json
+
+====================================================================
+🎉 WORKSHOP 3 REHEARSAL COMPLETE in 34.57s: ALL DURABILITY CONTRACTS VERIFIED!
+====================================================================

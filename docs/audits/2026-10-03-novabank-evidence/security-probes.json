@@ -1,0 +1,208 @@
+{
+  "owner_task_create": {
+    "status": 200,
+    "body": {
+      "task_id": "task-4a3cdfc3",
+      "owner_id": "audit-owner",
+      "owner_role": "agent",
+      "type": "propose_payment",
+      "status": "pending_approval",
+      "input": {
+        "amount": 100
+      },
+      "output": null,
+      "created_at": 1791030026.6197784
+    }
+  },
+  "foreign_task_read": {
+    "status": 403,
+    "body": {
+      "detail": "Access denied: caller 'audit-rogue' does not own task 'task-4a3cdfc3'"
+    }
+  },
+  "foreign_task_complete": {
+    "status": 200,
+    "body": {
+      "task_id": "task-4a3cdfc3",
+      "owner_id": "audit-owner",
+      "owner_role": "agent",
+      "type": "propose_payment",
+      "status": "completed",
+      "input": {
+        "amount": 100
+      },
+      "output": {
+        "audit": "foreign principal overwrote task"
+      },
+      "created_at": 1791030026.6197784
+    }
+  },
+  "owner_task_after_foreign_completion": {
+    "status": 200,
+    "body": {
+      "task_id": "task-4a3cdfc3",
+      "owner_id": "audit-owner",
+      "owner_role": "agent",
+      "type": "propose_payment",
+      "status": "completed",
+      "input": {
+        "amount": 100
+      },
+      "output": {
+        "audit": "foreign principal overwrote task"
+      },
+      "created_at": 1791030026.6197784
+    }
+  },
+  "task_create_without_scope": {
+    "status": 200,
+    "body": {
+      "task_id": "task-23536259",
+      "owner_id": "audit-viewer",
+      "owner_role": "viewer",
+      "type": "propose_payment",
+      "status": "pending_approval",
+      "input": {},
+      "output": null,
+      "created_at": 1791030026.6471245
+    }
+  },
+  "mcp_approval_required": {
+    "status": 200,
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"status\": \"APPROVAL_REQUIRED\",\n  \"proposal_id\": \"prop-1791030026759\",\n  \"reason\": \"AMOUNT_EXCEEDS_UNSUPERVISED_LIMIT\",\n  \"message\": \"Payment amount requires supervisory approval. Proposal recorded.\"\n}"
+          }
+        ]
+      }
+    }
+  },
+  "mcp_proposal_lookup": {
+    "status": 404,
+    "body": {
+      "detail": "Proposal not found"
+    }
+  },
+  "api_proposal_create": {
+    "status": 200,
+    "body": {
+      "proposal_id": "prop-167a978a",
+      "requester_id": "audit-pay-agent",
+      "account_id": "acc-102",
+      "amount": 150000,
+      "currency": "INR",
+      "beneficiary": "acc-101",
+      "status": "pending",
+      "expires_at": 1791030626.7759202
+    }
+  },
+  "self_approval": {
+    "status": 403,
+    "body": {
+      "detail": "Self-approval prohibited: Requester cannot approve their own proposal"
+    }
+  },
+  "manager_approval": {
+    "status": 200,
+    "body": {
+      "proposal_id": "prop-167a978a",
+      "status": "approved",
+      "approver_id": "audit-manager",
+      "message": "Proposal successfully approved"
+    }
+  },
+  "tamper_above_threshold": {
+    "status": 400,
+    "body": {
+      "detail": "Execution arguments do not match the approved proposal arguments"
+    }
+  },
+  "tamper_below_threshold": {
+    "status": 200,
+    "body": {
+      "payment_id": "pay-1e2b4f17",
+      "status": "COMPLETED",
+      "account_id": "acc-102",
+      "amount": 1000,
+      "currency": "INR",
+      "beneficiary": "fraud-account-66",
+      "remaining_balance": 8349000,
+      "idempotent_replay": false
+    }
+  },
+  "proposal_after_low_tamper": {
+    "status": 200,
+    "body": {
+      "proposal_id": "prop-167a978a",
+      "requester_id": "audit-pay-agent",
+      "account_id": "acc-102",
+      "amount": 150000,
+      "currency": "INR",
+      "beneficiary": "acc-101",
+      "status": "approved",
+      "expires_at": 1791030626.7759202
+    }
+  },
+  "viewer_rejects_other_proposal": {
+    "status": 200,
+    "body": {
+      "proposal_id": "prop-3d2a3cac",
+      "status": "rejected",
+      "approver_id": "audit-viewer",
+      "message": "Proposal rejected"
+    }
+  },
+  "wrong_issuer_api": {
+    "status": 200,
+    "body": {
+      "id": "acc-101",
+      "name": "Acme Retail Checking",
+      "balance": 1500000,
+      "currency": "INR",
+      "status": "active"
+    }
+  },
+  "bearer_without_static_key": {
+    "status": 401,
+    "body": "{\"message\":\"Missing API key in request\"}\n"
+  },
+  "missing_mcp_scope_read": {
+    "status": 200,
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": {
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"id\":\"acc-101\",\"name\":\"Acme Retail Checking\",\"balance\":1500000,\"currency\":\"INR\",\"status\":\"active\"}"
+          }
+        ]
+      }
+    }
+  },
+  "oauth_token_endpoint": {
+    "status": 404,
+    "body": "{\"error_msg\":\"404 Route Not Found\"}\n"
+  },
+  "jaeger_services": {
+    "status": 200,
+    "body": {
+      "data": [
+        "jaeger-all-in-one",
+        "novabank-api"
+      ],
+      "total": 2,
+      "limit": 0,
+      "offset": 0,
+      "errors": null
+    }
+  }
+}

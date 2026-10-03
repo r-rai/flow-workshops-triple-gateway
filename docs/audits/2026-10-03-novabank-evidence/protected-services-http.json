@@ -1,0 +1,11 @@
+{
+  "uptime-kuma": {
+    "status": 400
+  },
+  "dozzle": {
+    "status": 400
+  },
+  "portainer": {
+    "status": 400
+  }
+}

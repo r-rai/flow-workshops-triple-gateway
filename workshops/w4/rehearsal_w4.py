@@ -73,7 +73,12 @@ async def run_rehearsal():
 
     # Segment 4: Gate 2 - Argument-Aware OPA Policy Enforcement
     print("\n[Segment 4: 40–60 min] Gate 2 - OPA Argument-Aware Policy Enforcement")
-    # Call adapter tool invocation with fraudulent beneficiary
+    token_agent = create_jwt_token(
+        subject="payments-agent-w4",
+        audience="novabank-mcp",
+        scopes=["mcp:tools"],
+        role="agent"
+    )
     async with httpx.AsyncClient(timeout=5.0) as client:
         attack_tool_call = {
             "jsonrpc": "2.0",
@@ -82,13 +87,18 @@ async def run_rehearsal():
             "params": {
                 "name": "create_payment",
                 "arguments": {
-                    "destination_account": "fraud-account-66",
+                    "account_id": "acc-101",
+                    "beneficiary": "fraud-account-66",
                     "amount": 90000000,
                     "currency": "INR"
                 }
             }
         }
-        r_gate2 = await client.post(f"{BASE_URL}/mcp", json=attack_tool_call)
+        r_gate2 = await client.post(
+            f"{BASE_URL}/mcp",
+            headers={"Authorization": f"Bearer {token_agent}"},
+            json=attack_tool_call
+        )
         assert r_gate2.status_code == 200
         res = r_gate2.json().get("result", {})
         assert res.get("isError") is True
@@ -141,10 +151,19 @@ async def run_rehearsal():
     proposal_id = proposal["proposal_id"]
     print(f"✓ Created Payment Proposal: {proposal_id} for INR 1,500.00")
 
-    # 2. PaymentsAgent attempts self-approval
+    # 2a. PaymentsAgent attempts self-approval with Bearer token -> 403
     self_appr = await payments_agent.attempt_self_approval(proposal_id)
     assert self_appr["status_code"] == 403, f"Expected 403, got {self_appr['status_code']}"
     print("✓ ANTI-SELF-APPROVAL VERIFIED: Agent prevented from approving its own proposal (HTTP 403)")
+
+    # 2b. Anti-Self-Approval Bypass Attempt: Agent removes Bearer token and attempts self-approval via static lab API key
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r_static_bypass = await client.post(
+            f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
+            headers={"X-API-Key": GATE3_KEY}
+        )
+        assert r_static_bypass.status_code == 403, f"Expected 403, got {r_static_bypass.status_code}"
+        print("✓ ANTI-SELF-APPROVAL HARDENED: Static lab API key cannot approve proposals (HTTP 403)")
 
     # 3. Manager approves proposal
     manager_token = create_jwt_token("risk-manager-99", audience="novabank-api", scopes=["api:payments:write"], role="manager")
@@ -156,7 +175,7 @@ async def run_rehearsal():
         assert r_mgr.status_code == 200
         print("✓ Authorized Risk Manager successfully approved proposal")
 
-    # 4. Attempt to execute payment with TAMPERED arguments (amount changed from 150000 to 200000)
+    # 4a. Tampered arguments (above threshold: amount changed from 150000 to 200000)
     async with httpx.AsyncClient(timeout=5.0) as client:
         tampered_headers = {**payments_agent.get_headers(), "Idempotency-Key": f"tamper-{proposal_id}"}
         r_tamper = await client.post(
@@ -173,30 +192,46 @@ async def run_rehearsal():
         assert r_tamper.status_code == 400
         print("✓ ARGUMENT BINDING VERIFIED: Gate 3 rejected tampered execution arguments (HTTP 400)")
 
-    # 5. Execute with exact arguments
-    idempotency_key = f"w4-exec-{proposal_id}"
-    exec_result = await payments_agent.execute_approved_payment(
-        account_id="acc-102",
-        beneficiary="acc-101",
-        amount=150000,
-        proposal_id=proposal_id,
-        idempotency_key=idempotency_key
-    )
-    print(f"✓ Payment executed successfully: {exec_result['payment_id']}")
-
-    # 6. Attempt second execution with same proposal (Atomic Single-Use Check)
-    try:
-        await payments_agent.execute_approved_payment(
-            account_id="acc-102",
-            beneficiary="acc-101",
-            amount=150000,
-            proposal_id=proposal_id,
-            idempotency_key=f"duplicate-try-{proposal_id}"
+    # 4b. Tampered arguments (below threshold: amount lowered to 1000 with altered beneficiary)
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r_tamper_low = await client.post(
+            f"{BASE_URL}/api/v1/payments",
+            headers={**payments_agent.get_headers(), "Idempotency-Key": f"tamper-low-{proposal_id}"},
+            json={
+                "account_id": "acc-102",
+                "beneficiary": "fraud-account-66", # Altered beneficiary!
+                "amount": 1000,                    # Low amount below threshold!
+                "currency": "INR",
+                "proposal_id": proposal_id
+            }
         )
-        assert False, "Should have failed on already consumed proposal"
-    except RuntimeError as e:
-        assert "400" in str(e)
-        print("✓ ATOMIC SINGLE-USE INVARIANT VERIFIED: Replay of consumed proposal strictly rejected!")
+        assert r_tamper_low.status_code == 400
+        print("✓ BELOW-THRESHOLD TAMPERING PREVENTED: Bound proposal arguments strictly enforced (HTTP 400)")
+
+    # 5. Concurrent Execution (Double-Spend / Atomic Single-Use Check)
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        async def call_exec(key):
+            return await client.post(
+                f"{BASE_URL}/api/v1/payments",
+                headers={**payments_agent.get_headers(), "Idempotency-Key": key},
+                json={
+                    "account_id": "acc-102",
+                    "beneficiary": "acc-101",
+                    "amount": 150000,
+                    "currency": "INR",
+                    "proposal_id": proposal_id
+                }
+            )
+
+        res1, res2 = await asyncio.gather(
+            call_exec(f"concurrent-1-{proposal_id}"),
+            call_exec(f"concurrent-2-{proposal_id}"),
+        )
+        statuses = sorted([res1.status_code, res2.status_code])
+        # Exactly one must succeed (200), and the concurrent second request must be rejected (400 or 409)
+        assert statuses[0] == 200 and statuses[1] in (400, 409), f"Concurrent execution failed: statuses {statuses}"
+        print(f"✓ ATOMIC SINGLE-USE INVARIANT VERIFIED CONCURRENTLY: Statuses {statuses}")
+        exec_result = res1.json() if res1.status_code == 200 else res2.json()
 
     evidence["segments"]["segment7"] = {
         "proposal_id": proposal_id,
@@ -229,7 +264,7 @@ async def run_rehearsal():
     assert my_task["task_id"] == task_id
     print("✓ NegotiatorBot queried own task successfully.")
 
-    # 4. Another unrelated agent tries to access NegotiatorBot's task
+    # 4a. Another unrelated agent tries to access NegotiatorBot's task
     unrelated_token = create_jwt_token("unrelated-rogue-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
     async with httpx.AsyncClient(timeout=5.0) as client:
         r_intruder = await client.get(
@@ -239,11 +274,35 @@ async def run_rehearsal():
         assert r_intruder.status_code == 403
         print("✓ OWNER-SCOPED TASK ACCESS VERIFIED: Unrelated agent denied task access with HTTP 403!")
 
+    # 4b. Rogue agent with payments:write tries to complete and overwrite NegotiatorBot's task -> 403
+    rogue_writer_token = create_jwt_token("rogue-writer-agent", audience="novabank-api", scopes=["api:payments:write"], role="agent")
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r_rogue_complete = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
+            headers={"Authorization": f"Bearer {rogue_writer_token}", "X-API-Key": GATE3_KEY},
+            json={"fake_output": "malicious overwrite"}
+        )
+        assert r_rogue_complete.status_code == 403
+        print("✓ OWNER-SCOPED TASK COMPLETION VERIFIED: Foreign agent denied task mutation with HTTP 403!")
+
+    # 4c. Viewer token with no write/task scope tries to create a task -> 403
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r_viewer_create = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks",
+            headers={"Authorization": f"Bearer {read_only_token}", "X-API-Key": GATE3_KEY},
+            json={"task_type": "propose_payment", "input": {"amount": 1000}}
+        )
+        assert r_viewer_create.status_code == 403
+        print("✓ SCOPE ENFORCEMENT VERIFIED: Viewer token denied task creation with HTTP 403!")
+
     evidence["segments"]["segment8"] = {
         "agent_card": card["name"],
         "delegated_task_id": task_id,
-        "unrelated_agent_denied": True
+        "unrelated_agent_denied": True,
+        "foreign_mutation_denied": True,
+        "viewer_creation_denied": True
     }
+
 
     # Segment 9: Incident Reconstruction & Distributed Tracing
     print("\n[Segment 9: 120–130 min] Incident Reconstruction & Trace Correlation")

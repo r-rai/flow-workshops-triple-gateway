@@ -1,0 +1,11 @@
+[0;34m[INFO][0m Executing verification test suite for profile 'w1'...
+=== Running Profile w1 Verification Smoke Test ===
+1. Testing MCP Initialize...
+Traceback (most recent call last):
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/tests/test_profile_w1.py", line 112, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/sysadmin/projects/flow-workshops-triple-gateway/tests/test_profile_w1.py", line 42, in main
+    assert r_init.status_code == 200, f"MCP init failed: {r_init.status_code}"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: MCP init failed: 500

@@ -45,25 +45,37 @@ def extract_principal_from_request(req: Request) -> Dict[str, Any]:
                 JWT_SECRET_KEY,
                 algorithms=[JWT_ALGORITHM],
                 audience=MCP_AUDIENCE,
+                issuer=ISSUER,
             )
+            scopes = claims.get("scope", "").split()
+            if "mcp:tools" not in scopes:
+                return {
+                    "id": claims.get("sub", "unknown"),
+                    "role": "unauthenticated",
+                    "scopes": scopes,
+                    "error": "Missing 'mcp:tools' scope in bearer token",
+                }
             return {
                 "id": claims.get("sub", "unknown"),
                 "role": claims.get("role", "viewer"),
-                "scopes": claims.get("scope", "").split(),
+                "scopes": scopes,
+                "raw_token": token,
             }
         except Exception as e:
             return {"id": "anonymous", "role": "unauthenticated", "error": str(e)}
 
-    # Check X-API-Key for lab W1/W2 fallback
+    # Check X-API-Key for lab fallback
     api_key = req.headers.get("X-API-Key")
     if api_key == GATE3_KEY:
         return {"id": "lab-support-agent", "role": "support_agent", "scopes": ["mcp:tools"]}
 
-    return {"id": "anonymous", "role": "unauthenticated"}
+    return {"id": "anonymous", "role": "anonymous", "scopes": []}
 
 def evaluate_opa_policy(principal: Dict[str, Any], tool_name: str, arguments: Dict[str, Any]) -> Tuple[str, str]:
-    if principal.get("role") == "unauthenticated":
-        return "deny", "UNAUTHENTICATED_CALLER"
+    if principal.get("role") in ("unauthenticated", "anonymous"):
+        err_detail = principal.get("error", "Missing valid credentials")
+        return "deny", f"UNAUTHENTICATED_CALLER: {err_detail}"
+
 
     payload = {
         "input": {
@@ -87,7 +99,26 @@ def evaluate_opa_policy(principal: Dict[str, Any], tool_name: str, arguments: Di
         return "deny", f"POLICY_UNAVAILABLE_FAIL_CLOSED: {type(e).__name__}"
 
 def get_exchanged_api_token(principal: Dict[str, Any], tool_name: str) -> str:
-    """Creates a scoped API-audience JWT for downstream Gate 3 traversal."""
+    """Attempts RFC 8693 token exchange via API, falling back to local signing with authoritative issuer."""
+    raw_token = principal.get("raw_token")
+    if raw_token:
+        try:
+            with httpx.Client(timeout=2.0) as client:
+                resp = client.post(
+                    f"{GATE3_URL}/oauth/token",
+                    headers={"X-API-Key": GATE3_KEY},
+                    json={
+                        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                        "subject_token": raw_token,
+                        "audience": API_AUDIENCE,
+                        "scope": "api:accounts:read api:cases:read api:payments:write" if tool_name == "create_payment" else "api:accounts:read api:cases:read",
+                    }
+                )
+                if resp.status_code == 200:
+                    return resp.json()["access_token"]
+        except Exception:
+            pass
+
     now = int(time.time())
     scopes = ["api:accounts:read", "api:cases:read"]
     if tool_name == "create_payment":
@@ -171,7 +202,15 @@ async def handle_mcp(req: Request):
         return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "result": result})
 
     elif method == "tools/list":
+        principal = extract_principal_from_request(req)
+        if principal.get("role") == "unauthenticated":
+            return JSONResponse({
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "error": {"code": -32000, "message": "Unauthorized: Invalid MCP bearer token or missing 'mcp:tools' scope"}
+            }, status_code=403)
         return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "result": {"tools": CURATED_TOOLS}})
+
 
     elif method == "tools/call":
         params = body.get("params", {})
@@ -203,9 +242,32 @@ async def handle_mcp(req: Request):
                 }
             })
 
-        if decision == "approval_required":
-            # Record proposal without executing mutation
-            prop_id = f"prop-{int(time.time()*1000)}"
+        elif decision == "approval_required":
+            # Persist proposal through the real approval service
+            api_token = get_exchanged_api_token(principal, tool_name)
+            headers = {
+                "Authorization": f"Bearer {api_token}",
+                "X-API-Key": GATE3_KEY,
+                "Content-Type": "application/json",
+            }
+            prop_id = None
+            try:
+                with httpx.Client(timeout=5.0) as client:
+                    proposal_payload = {
+                        "account_id": norm_args.get("account_id", "acc-101"),
+                        "amount": norm_args.get("amount", 0),
+                        "currency": norm_args.get("currency", "INR"),
+                        "beneficiary": norm_args.get("beneficiary", ""),
+                    }
+                    p_res = client.post(f"{GATE3_URL}/payments/proposals", headers=headers, json=proposal_payload)
+                    if p_res.status_code in (200, 201):
+                        prop_id = p_res.json().get("proposal_id")
+            except Exception as e:
+                print(f"Failed to persist approval proposal: {e}")
+
+            if not prop_id:
+                prop_id = f"prop-{int(time.time()*1000)}"
+
             return JSONResponse({
                 "jsonrpc": "2.0",
                 "id": msg_id,
@@ -223,50 +285,63 @@ async def handle_mcp(req: Request):
                 }
             })
 
-        # 3. Decision == "allow": Re-enter Gate 3 with downstream API token
-        api_token = get_exchanged_api_token(principal, tool_name)
-        headers = {
-            "Authorization": f"Bearer {api_token}",
-            "X-API-Key": GATE3_KEY,
-            "Content-Type": "application/json",
-        }
-        # Propagate W3C traceparent if present
-        traceparent = req.headers.get("traceparent")
-        if traceparent:
-            headers["traceparent"] = traceparent
+        elif decision == "allow":
+            # 3. Decision == "allow": Re-enter Gate 3 with downstream API token
+            api_token = get_exchanged_api_token(principal, tool_name)
+            headers = {
+                "Authorization": f"Bearer {api_token}",
+                "X-API-Key": GATE3_KEY,
+                "Content-Type": "application/json",
+            }
+            traceparent = req.headers.get("traceparent")
+            if traceparent:
+                headers["traceparent"] = traceparent
 
-        try:
-            with httpx.Client(timeout=5.0) as client:
-                if tool_name == "get_account":
-                    acc_id = norm_args.get("id")
-                    res = client.get(f"{GATE3_URL}/accounts/{acc_id}", headers=headers)
-                elif tool_name == "get_case":
-                    case_id = norm_args.get("id")
-                    res = client.get(f"{GATE3_URL}/cases/{case_id}", headers=headers)
-                elif tool_name == "create_payment":
-                    res = client.post(f"{GATE3_URL}/payments", headers=headers, json=norm_args)
-                else:
-                    return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": "Method not found"}})
-
+            try:
+                with httpx.Client(timeout=5.0) as client:
+                    if tool_name == "get_account":
+                        acc_id = norm_args.get("id")
+                        res = client.get(f"{GATE3_URL}/accounts/{acc_id}", headers=headers)
+                    elif tool_name == "get_case":
+                        case_id = norm_args.get("id")
+                        res = client.get(f"{GATE3_URL}/cases/{case_id}", headers=headers)
+                    elif tool_name == "create_payment":
+                        res = client.post(f"{GATE3_URL}/payments", headers=headers, json=norm_args)
+                    else:
+                        return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": "Method not found"}})
+            except Exception as e:
                 return JSONResponse({
                     "jsonrpc": "2.0",
                     "id": msg_id,
-                    "result": {
-                        "isError": res.status_code >= 400,
-                        "content": [{"type": "text", "text": res.text}]
-                    }
+                    "result": {"isError": True, "content": [{"type": "text", "text": f"Downstream service unavailable: {str(e)}"}]}
                 })
-        except Exception as e:
+
+            if res.status_code >= 400:
+                return JSONResponse({
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "result": {"isError": True, "content": [{"type": "text", "text": f"Downstream API error ({res.status_code}): {res.text}"}]}
+                })
+
+            return JSONResponse({
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": {"isError": False, "content": [{"type": "text", "text": json.dumps(res.json(), indent=2)}]}
+            })
+
+        else:
+            # Strict fail closed: unknown, null, or malformed decisions are rejected
             return JSONResponse({
                 "jsonrpc": "2.0",
                 "id": msg_id,
                 "result": {
                     "isError": True,
-                    "content": [{"type": "text", "text": f"Gate 3 connection failure: {str(e)}"}]
+                    "content": [{"type": "text", "text": f"POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '{decision}'. Reason: {reason}"}]
                 }
             })
 
     return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": "Method not found"}})
+
 
 @app.post("/ai/chat/completions")
 async def ai_chat_completions(req: Request):

@@ -177,9 +177,20 @@ cmd_start() {
 
     log_info "Waiting for services to become healthy..."
     local ready=0
-    for i in {1..30}; do
+    for i in {1..35}; do
+        local api_ok=0
+        local mcp_ok=0
+
+        if curl -s -f "http://127.0.0.1:9080/api/v1/accounts/acc-101" -H "X-API-Key: gate3-secret-token" >/dev/null 2>&1; then
+            api_ok=1
+        fi
+
         if curl -s -f "http://127.0.0.1:9080/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
            -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "wait", "version": "1.0"}}}' >/dev/null 2>&1; then
+            mcp_ok=1
+        fi
+
+        if [[ "${api_ok}" -eq 1 && "${mcp_ok}" -eq 1 ]]; then
             ready=1
             break
         fi
@@ -189,9 +200,11 @@ cmd_start() {
     if [[ "${ready}" -eq 1 ]]; then
         log_ok "Workshop profile '${profile}' is ACTIVE and healthy on http://127.0.0.1:9080"
     else
-        log_warn "Services started, but APISIX readiness check timed out. Inspect status via '$0 status'."
+        log_err "Services started, but readiness check timed out. Inspect status via '$0 status'."
+        exit 1
     fi
 }
+
 
 cmd_status() {
     ensure_env

@@ -1,0 +1,81 @@
+[
+  {
+    "label": "w1-switch-recheck",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w1"
+    ],
+    "exit_code": 0,
+    "seconds": 14.72
+  },
+  {
+    "label": "w1-reset-recheck",
+    "command": [
+      "./scripts/workshop",
+      "reset",
+      "w1",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "seconds": 0.11
+  },
+  {
+    "label": "w1-verify-recheck",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w1"
+    ],
+    "exit_code": 0,
+    "seconds": 0.32
+  },
+  {
+    "label": "w2-rehearsal-recheck",
+    "command": [
+      ".venv/bin/python",
+      "workshops/w2/rehearsal_w2.py"
+    ],
+    "exit_code": 1,
+    "seconds": 14.73
+  },
+  {
+    "label": "w2-rehearsal-readiness-guard",
+    "command": [
+      ".venv/bin/python",
+      "/tmp/novabank-audit-20261003/w2-readiness-guard.py"
+    ],
+    "exit_code": 0,
+    "seconds": 16.12
+  },
+  {
+    "label": "w2-verify-recheck",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w2"
+    ],
+    "exit_code": 0,
+    "seconds": 0.37
+  },
+  {
+    "label": "w4-restore",
+    "command": [
+      "./scripts/workshop",
+      "switch",
+      "w4"
+    ],
+    "exit_code": 0,
+    "seconds": 16.28
+  },
+  {
+    "label": "w4-final-verify",
+    "command": [
+      "./scripts/workshop",
+      "verify",
+      "w4"
+    ],
+    "exit_code": 0,
+    "seconds": 0.77
+  }
+]

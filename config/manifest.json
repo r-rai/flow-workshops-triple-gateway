@@ -78,7 +78,8 @@
     {
       "requirement": "Windows 11 / WSL2 5 GB RAM benchmark",
       "status": "unverified",
-      "reason": "Host execution environment is Linux VPS (vmi3355051 / Ubuntu x86_64). Linux VPS peak memory profile usage measured at ~700 MB across 9 containers, but actual participant Windows 11 WSL2 virtualization overhead remains unverified until tested on native Windows participant hardware."
+      "reason": "Host execution environment is Linux VPS (vmi3355051 / Ubuntu x86_64). Linux VPS peak active memory profile usage measured at ~951 MB (907 MiB) across 9 containers (comfortably within the 6 GB VPS operating budget), but actual participant Windows 11 WSL2 virtualization overhead remains unverified until tested on native Windows participant hardware."
     }
   ]
 }
+

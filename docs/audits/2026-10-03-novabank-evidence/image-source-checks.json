@@ -1,0 +1,42 @@
+[
+  {
+    "service": "api",
+    "file": "src/core/security.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "api",
+    "file": "src/services/banking.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "api",
+    "file": "src/api/routes/a2a.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "api",
+    "file": "src/services/approvals.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "adapter",
+    "file": "src/adapter/server.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "worker",
+    "file": "src/worker/workflow.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "worker",
+    "file": "src/worker/kafka_consumer.py",
+    "matches_checked_out_source": true
+  },
+  {
+    "service": "worker",
+    "file": "src/worker/activities.py",
+    "matches_checked_out_source": true
+  }
+]
