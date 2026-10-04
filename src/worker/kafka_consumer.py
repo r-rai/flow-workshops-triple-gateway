@@ -14,8 +14,8 @@ logger = logging.getLogger("kafka_consumer")
 
 async def run_consumer():
     kafka_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    topic = os.getenv("DISPUTES_TOPIC", "novabank.disputes")
-    group_id = os.getenv("KAFKA_GROUP_ID", "novabank-dispute-workers")
+    topic = os.getenv("DISPUTES_TOPIC", "flobank.disputes")
+    group_id = os.getenv("KAFKA_GROUP_ID", "flobank-dispute-workers")
     temporal_host = os.getenv("TEMPORAL_HOST", "localhost:7233")
     
     logger.info(f"Connecting to Temporal at {temporal_host}...")

@@ -14,7 +14,7 @@
 - Keep `DEMO_BACKEND_MODE=simulated` as default for profile `demo`.
 - Dedicated demo accounts (`demo-checking`, `demo-savings`) in `seed/v1_seed.json` must be isolated from workshop rehearsal accounts (`acc-101`, `case-501`).
 - All currency calculations remain in integer minor units (paise).
-- Gate 3 requests must require valid cryptographic JWT tokens with `aud="novabank-api"`.
+- Gate 3 requests must require valid cryptographic JWT tokens with `aud="flobank-api"`.
 - Workshop profiles (`w1`–`w4`) and preflight checks must remain 100% passing.
 
 ---
@@ -149,7 +149,7 @@ In `tests/test_api_foundation.py`:
 ```python
 def test_cards_and_case_creation_endpoints(client):
     from src.core.security import create_jwt_token
-    token = create_jwt_token("cust-maya", audience="novabank-api", scopes=["api:cards:read", "api:cards:write", "api:cases:write"], role="customer")
+    token = create_jwt_token("cust-maya", audience="flobank-api", scopes=["api:cards:read", "api:cards:write", "api:cases:write"], role="customer")
     headers = {"Authorization": f"Bearer {token}", "X-API-Key": "gate3-secret-token"}
 
     # Read card
@@ -401,7 +401,7 @@ Expected: FAIL (`backend_mode` not present or not set to enterprise)
 
 - In `DemoSession`, add `api_token: str | None = None` and `backend_mode: str = "simulated"`.
 - Add `get_backend_mode()`: defaults to `os.getenv("DEMO_BACKEND_MODE", "simulated").lower()`.
-- On login in enterprise mode, generate an authentic JWT token for customer Maya (`sub="cust-maya"`, `aud="novabank-api"`, `scopes=["api:accounts:read", "api:cards:read", "api:cards:write", "api:cases:read", "api:cases:write"]`).
+- On login in enterprise mode, generate an authentic JWT token for customer Maya (`sub="cust-maya"`, `aud="flobank-api"`, `scopes=["api:accounts:read", "api:cards:read", "api:cards:write", "api:cases:read", "api:cases:write"]`).
 - In `snapshot()`, return `backend_mode: get_backend_mode()`.
 - In `run_demo_chat_turn`, pass `backend_mode`, `gate3_url`, and `session.api_token` to `execute_demo_tool`.
 

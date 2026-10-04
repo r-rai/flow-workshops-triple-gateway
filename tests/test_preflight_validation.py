@@ -82,7 +82,7 @@ def test_preflight_cli_negative_missing_image_inspection():
         manifest = json.load(f)
 
     manifest["pinned_images"]["nonexistent"] = {
-        "image": "novabank-nonexistent-image:latest",
+        "image": "flobank-nonexistent-image:latest",
         "digest": "sha256:deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
     }
 

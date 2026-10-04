@@ -1,6 +1,6 @@
 {
-  "id": "novabank",
-  "realm": "novabank",
+  "id": "flobank",
+  "realm": "flobank",
   "enabled": true,
   "sslRequired": "none",
   "clients": [
@@ -42,7 +42,7 @@
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "config": {
-            "included.client.audience": "novabank-mcp",
+            "included.client.audience": "flobank-mcp",
             "access.token.claim": "true"
           }
         }
@@ -57,7 +57,7 @@
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "config": {
-            "included.client.audience": "novabank-api",
+            "included.client.audience": "flobank-api",
             "access.token.claim": "true"
           }
         }
@@ -72,7 +72,7 @@
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "config": {
-            "included.client.audience": "novabank-api",
+            "included.client.audience": "flobank-api",
             "access.token.claim": "true"
           }
         }

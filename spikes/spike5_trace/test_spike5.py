@@ -17,7 +17,7 @@ def main():
     print("SPIKE 5: W3C Trace Context Propagation across Triple-Gate Boundaries")
     print("=====================================================================")
 
-    jaeger_container = "novabank-spike5-jaeger"
+    jaeger_container = "flobank-spike5-jaeger"
     subprocess.run(["docker", "rm", "-f", jaeger_container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # 1. Start Jaeger container
@@ -56,13 +56,13 @@ def main():
             return 1
 
         # 2. Setup OpenTelemetry SDK
-        resource = Resource.create({"service.name": "novabank-triple-gate"})
+        resource = Resource.create({"service.name": "flobank-triple-gate"})
         provider = TracerProvider(resource=resource)
         otlp_exporter = OTLPSpanExporter(endpoint="http://127.0.0.1:4318/v1/traces")
         processor = BatchSpanProcessor(otlp_exporter)
         provider.add_span_processor(processor)
         trace.set_tracer_provider(provider)
-        tracer = trace.get_tracer("novabank.workshops.tracer")
+        tracer = trace.get_tracer("flobank.workshops.tracer")
         propagator = TraceContextTextMapPropagator()
 
         print("\n--- Simulating Multi-Boundary Flow with W3C Tracecontext ---")
@@ -71,7 +71,7 @@ def main():
         with tracer.start_as_current_span("agent.negotiator_run") as agent_span:
             agent_span.set_attribute("gen_ai.system", "langgraph")
             agent_span.set_attribute("gen_ai.workflow.name", "payment_negotiation")
-            agent_span.set_attribute("novabank.principal.id", "agent-support-01")
+            agent_span.set_attribute("flobank.principal.id", "agent-support-01")
             
             trace_id_hex = format(agent_span.get_span_context().trace_id, "032x")
             print(f"Generated Root Trace ID: {trace_id_hex}")
@@ -121,9 +121,9 @@ def main():
 
                     ctx_backend = propagator.extract(headers_to_backend)
                     with tracer.start_as_current_span("backend.execute_payment", context=ctx_backend) as backend_span:
-                        backend_span.set_attribute("novabank.payment.id", "pay-90210")
-                        backend_span.set_attribute("novabank.amount", 50000)
-                        backend_span.set_attribute("novabank.currency", "INR")
+                        backend_span.set_attribute("flobank.payment.id", "pay-90210")
+                        backend_span.set_attribute("flobank.amount", 50000)
+                        backend_span.set_attribute("flobank.currency", "INR")
                         time.sleep(0.05)
 
         # Force flush to Jaeger

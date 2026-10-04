@@ -4,7 +4,7 @@ routes:
     plugins:
       openapi-to-mcp:
         transport: streamable_http
-        openapi_url: "http://novabank-api-spike:8000/openapi.json"
+        openapi_url: "http://flobank-api-spike:8000/openapi.json"
         base_url: "http://127.0.0.1:9080"
         headers:
           X-API-Key: "$http_x_api_key"
@@ -16,7 +16,7 @@ routes:
     upstream:
       type: roundrobin
       nodes:
-        "novabank-api-spike:8000": 1
+        "flobank-api-spike:8000": 1
 
 consumers:
   - username: gate3_authorized_client

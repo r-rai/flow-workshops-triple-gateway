@@ -233,7 +233,7 @@ async def login(payload: LoginRequest, request: Request, response: Response):
             from src.core.security import create_jwt_token
             api_token = create_jwt_token(
                 subject='cust-maya',
-                audience='novabank-api',
+                audience=os.getenv('API_AUDIENCE', 'flobank-api'),
                 scopes=['api:accounts:read', 'api:cards:read', 'api:cards:write', 'api:cases:read', 'api:cases:write'],
                 role='customer',
             )

@@ -8,7 +8,7 @@ async def read_dispute_ticket(case_id: str) -> dict:
     gate3_url = os.getenv("GATE3_URL", os.getenv("API_URL", "http://apisix:9080/api/v1"))
     token = create_jwt_token(
         subject="system-workflow-engine",
-        audience="novabank-api",
+        audience=os.getenv("API_AUDIENCE", "flobank-api"),
         scopes=["api:accounts:read", "api:cases:read", "api:cases:write", "api:payments:write"]
     )
     headers = {
@@ -41,7 +41,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
     gate3_url = os.getenv("GATE3_URL", os.getenv("API_URL", "http://apisix:9080/api/v1"))
     token = create_jwt_token(
         subject="system-workflow-engine",
-        audience="novabank-api",
+        audience=os.getenv("API_AUDIENCE", "flobank-api"),
         scopes=["api:accounts:read", "api:cases:read", "api:cases:write", "api:payments:write"]
     )
     headers = {
@@ -71,7 +71,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
                     prop_id = prop_resp.json()["proposal_id"]
                     manager_token = create_jwt_token(
                         subject="system-risk-manager",
-                        audience="novabank-api",
+                        audience=os.getenv("API_AUDIENCE", "flobank-api"),
                         scopes=["api:payments:write"],
                         role="manager"
                     )

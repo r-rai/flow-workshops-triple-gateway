@@ -17,7 +17,7 @@ PAYMENT_RECORDS: Dict[str, Dict[str, Any]] = {}
 AGENT_CARD = {
     "name": "Flo Bank PaymentsAgent",
     "description": "Agent-to-Agent interface for compliant payment proposal and execution",
-    "url": "https://api.novabank.internal/a2a",
+    "url": "https://api.flobank.internal/a2a",
     "version": "1.0.0",
     "protocolVersion": "0.2.0",
     "skills": [
@@ -34,7 +34,7 @@ AGENT_CARD = {
     ],
     "authentication": {
         "type": "oauth2",
-        "tokenUrl": "https://identity.novabank.internal/realms/novabank/protocol/openid-connect/token"
+        "tokenUrl": "https://identity.flobank.internal/realms/flobank/protocol/openid-connect/token"
     }
 }
 

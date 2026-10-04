@@ -19,7 +19,7 @@ To run the complete automated 45-minute rehearsal simulation:
 In `workshops/w2/checkpoints/initial/policy-broad.rego`, OPA only checks coarse tool names:
 ```rego
 # INSECURE INITIAL CHECKPOINT
-package novabank.authz
+package flobank.policy
 
 default allow = false
 
@@ -29,7 +29,7 @@ allow if {
 ```
 **Fix (Hardened Rego)** in `workshops/w2/checkpoints/completed/policy-hardened.rego`:
 ```rego
-package novabank.authz
+package flobank.policy
 
 import future.keywords.if
 import future.keywords.in
@@ -96,7 +96,7 @@ In adapter code (`src/adapter/server.py`):
 ```python
 try:
     async with httpx.AsyncClient(timeout=1.0) as client:
-        resp = await client.post("http://opa:8181/v1/data/novabank/authz", json=policy_input)
+        resp = await client.post("http://opa:8181/v1/data/flobank/policy", json=policy_input)
         if resp.status_code == 200:
             result = resp.json().get("result", {})
             return result

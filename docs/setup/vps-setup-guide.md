@@ -9,9 +9,8 @@ workshop evidence and remaining requirements are in
 benchmark remains unverified. Keep the presenter deployment within the **6 GB
 host operating budget**, including existing services, Docker, and the OS.
 
-Flo Bank is the public brand. Internal `novabank` project, network, volume, issuer,
-and audience names remain compatible with existing installations. Historical
-audit evidence retains its original branding.
+Flo Bank is the unified brand across all UI, APIs, and infrastructure (Docker images,
+networks, volumes, and cryptographic JWT audiences). Historical audit evidence retains its original branding.
 
 ## 1. Customer demo with one Compose command
 

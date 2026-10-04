@@ -122,7 +122,7 @@ infrastructure; each command uses the main Compose file.
 
 The demo supports two backend modes:
 - **Simulated (`DEMO_BACKEND_MODE=simulated`, default):** Uses in-memory session fixtures and deterministic responses. Card controls and disputes are isolated per session; signing out or restarting resets them. Sessions expire after 30 minutes.
-- **Enterprise (`DEMO_BACKEND_MODE=enterprise`):** Directly queries and mutates Core Banking data via APISIX Gate 3 (`:9080/api/v1`) using cryptographic customer JWT authentication (`aud="novabank-api"`), full distributed trace propagation into Jaeger, and real database updates for card state and support case disputes. Start via `docker compose --profile demo-enterprise up -d --build`.
+- **Enterprise (`DEMO_BACKEND_MODE=enterprise`):** Directly queries and mutates Core Banking data via APISIX Gate 3 (`:9080/api/v1`) using cryptographic customer JWT authentication (`aud="flobank-api"`), full distributed trace propagation into Jaeger, and real database updates for card state and support case disputes. Start via `docker compose --profile demo-enterprise up -d --build`.
 
 **Real LLM Integration:** The customer Flo bot connects to a real hosted LLM
 (**MiniMax 2.7 Fast** - `MiniMax-M2.7-highspeed`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`)
@@ -135,11 +135,10 @@ For offline environments or tests without a key, explicit scripted mode
 (`DEMO_CHAT_MODE=scripted`) is supported. See the
 [implementation plan](docs/implementation/demo-real-llm-plan.md).
 
-Flo Bank is the public brand throughout the UI, APIs, and workshop material.
-Existing `novabank` infrastructure identifiers (JWT audiences/issuer, OPA
-namespace, image tags, volumes, and database names) remain for compatibility
-with existing installations. Historical audit and rehearsal evidence retains
-its original branding.
+Flo Bank is the unified brand across the UI, APIs, and workshop infrastructure.
+All infrastructure identifiers (Docker images `flobank/*`, networks `flobank-*`, volumes `flobank_*`,
+JWT audiences `flobank-api` / `flobank-mcp`, and OPA policy `flobank.policy`) are standard.
+Historical audit evidence retains original timestamps.
 
 The customer demo tests are `tests/test_demo_bank.py`. An optional Chromium
 smoke test covers login, chat, card controls, disputes, responsive widths,

@@ -9,14 +9,14 @@ from fastapi import FastAPI, Request, Response, HTTPException, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 from jose import jwt, JWTError
 
-OPA_URL = os.getenv("OPA_URL", "http://opa:8181/v1/data/novabank/policy")
+OPA_URL = os.getenv("OPA_URL", "http://opa:8181/v1/data/flobank/policy")
 GATE3_URL = os.getenv("GATE3_URL", "http://apisix:9080/api/v1")
 GATE3_KEY = os.getenv("GATE3_API_KEY", "gate3-secret-token")
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "novabank-super-secret-signing-key-for-lab")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "flobank-super-secret-signing-key-for-lab")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ISSUER = os.getenv("JWT_ISSUER", "https://identity.novabank.internal/realms/novabank")
-MCP_AUDIENCE = os.getenv("MCP_AUDIENCE", "novabank-mcp")
-API_AUDIENCE = os.getenv("API_AUDIENCE", "novabank-api")
+ISSUER = os.getenv("JWT_ISSUER", "https://identity.flobank.internal/realms/flobank")
+MCP_AUDIENCE = os.getenv("MCP_AUDIENCE", "flobank-mcp")
+API_AUDIENCE = os.getenv("API_AUDIENCE", "flobank-api")
 ENABLE_TELEMETRY = os.getenv("ENABLE_TELEMETRY", "true").lower() in ("true", "1", "yes")
 OTEL_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4318/v1/traces")
 
@@ -31,7 +31,7 @@ if ENABLE_TELEMETRY:
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-        res = Resource.create({"service.name": "novabank-adapter"})
+        res = Resource.create({"service.name": "flobank-adapter"})
         provider = TracerProvider(resource=res)
         exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT)
         provider.add_span_processor(BatchSpanProcessor(exporter, schedule_delay_millis=500))
@@ -235,7 +235,7 @@ async def handle_mcp(req: Request):
         result = {
             "protocolVersion": "2024-11-05",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "novabank-curated-mcp-adapter", "version": "1.0.0"}
+            "serverInfo": {"name": "flobank-curated-mcp-adapter", "version": "1.0.0"}
         }
         return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "result": result})
 
@@ -613,7 +613,7 @@ async def ai_chat_completions(req: Request):
                             "id": f"chatcmpl-demo-reply-{int(time.time())}",
                             "object": "chat.completion",
                             "created": int(time.time()),
-                            "model": "novabank-replay-fixture",
+                            "model": "flobank-replay-fixture",
                             "choices": [{
                                 "index": 0,
                                 "message": {"role": "assistant", "content": content},
@@ -632,7 +632,7 @@ async def ai_chat_completions(req: Request):
                         "id": f"chatcmpl-demo-tool-{int(time.time())}",
                         "object": "chat.completion",
                         "created": int(time.time()),
-                        "model": "novabank-replay-fixture",
+                        "model": "flobank-replay-fixture",
                         "choices": [{
                             "index": 0,
                             "message": {
@@ -710,7 +710,7 @@ async def ai_chat_completions(req: Request):
                     "id": f"chatcmpl-demo-finish-{int(time.time())}",
                     "object": "chat.completion",
                     "created": int(time.time()),
-                    "model": "novabank-replay-fixture",
+                    "model": "flobank-replay-fixture",
                     "choices": [{
                         "index": 0,
                         "message": {"role": "assistant", "content": content},
@@ -750,7 +750,7 @@ async def ai_chat_completions(req: Request):
                     "id": f"chatcmpl-replay-tool-{int(time.time())}",
                     "object": "chat.completion",
                     "created": int(time.time()),
-                    "model": "novabank-replay-fixture",
+                    "model": "flobank-replay-fixture",
                     "choices": [{
                         "index": 0,
                         "message": {
@@ -787,7 +787,7 @@ async def ai_chat_completions(req: Request):
                     "id": f"chatcmpl-replay-tool-{int(time.time())}",
                     "object": "chat.completion",
                     "created": int(time.time()),
-                    "model": "novabank-replay-fixture",
+                    "model": "flobank-replay-fixture",
                     "choices": [{
                         "index": 0,
                         "message": {
@@ -847,7 +847,7 @@ async def ai_chat_completions(req: Request):
                 "id": f"chatcmpl-replay-finish-{int(time.time())}",
                 "object": "chat.completion",
                 "created": int(time.time()),
-                "model": "novabank-replay-fixture",
+                "model": "flobank-replay-fixture",
                 "choices": [{
                     "index": 0,
                     "message": {
@@ -867,7 +867,7 @@ async def ai_chat_completions(req: Request):
 
         # Standard replay path without tools (backward compatible with existing test cases)
         actual_tokens = 35
-        model_name = "novabank-replay-fixture"
+        model_name = "flobank-replay-fixture"
         last_msg = messages[-1]["content"] if messages else ""
         content = f"[REPLAY] Simulated reasoning complete for input: '{last_msg[:80]}'. Tool proposed: get_account"
         return JSONResponse({

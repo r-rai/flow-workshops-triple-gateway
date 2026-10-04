@@ -41,7 +41,7 @@ async def run_rehearsal():
     subprocess.run(["./scripts/workshop", "reset"], env={**os.environ, "FORCE": "true"}, check=True, stdout=subprocess.DEVNULL)
     # Stop writers before resetting storage to ensure clean state without open-handle corruption
     subprocess.run(["docker", "compose", "--profile", "w3", "stop", "temporal", "worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["docker", "run", "--rm", "-v", "novabank-workshops_novabank_temporal_data:/data", "alpine", "rm", "-f", "/data/temporal.sqlite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["docker", "run", "--rm", "-v", "flobank-workshops_flobank_temporal_data:/data", "alpine", "rm", "-f", "/data/temporal.sqlite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     subprocess.run(["docker", "compose", "--profile", "w3", "start", "temporal", "worker"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     await asyncio.sleep(4)
     
@@ -85,8 +85,8 @@ async def run_rehearsal():
 
     # Segment 4: Guided Recovery Exercise - Worker crash & duplicate event redelivery
     print("\n[Segment 4: 23–35 min] Guided Recovery Exercise - Worker Hard Crash (SIGKILL) & Redelivery")
-    print("Simulating ungraceful worker crash: terminating 'novabank-workshops-worker-1' with SIGKILL...")
-    subprocess.run(["docker", "kill", "--signal=SIGKILL", "novabank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
+    print("Simulating ungraceful worker crash: terminating 'flobank-workshops-worker-1' with SIGKILL...")
+    subprocess.run(["docker", "kill", "--signal=SIGKILL", "flobank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
     print("✓ Worker container terminated with real SIGKILL.")
 
     print("Redelivering duplicate event to Kafka while worker is down...")
@@ -94,7 +94,7 @@ async def run_rehearsal():
     print("✓ Duplicate event emitted to Kafka.")
 
     print("Restarting worker container...")
-    subprocess.run(["docker", "start", "novabank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(["docker", "start", "flobank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
     # Give worker a moment to reconnect
     await asyncio.sleep(4)
     print("✓ Worker restarted and reconnected to Temporal & Kafka.")

@@ -12,7 +12,7 @@
     },
     {
       "gate": 3,
-      "mechanism": "RFC 8693 token exchange with audience separation (novabank-mcp vs novabank-api) and fine-grained scope downscoping"
+      "mechanism": "RFC 8693 token exchange with audience separation (flobank-mcp vs flobank-api) and fine-grained scope downscoping"
     },
     {
       "approval": "Anti-self-approval enforcement, canonical argument hash binding, and single-use atomic consumption"

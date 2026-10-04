@@ -25,9 +25,9 @@ def main():
     print("SPIKE 1 & 2: APISIX Standalone + OpenAPI-to-MCP + Gate 3 Loopback")
     print("=====================================================================")
     
-    net_name = "novabank-spike-net"
-    api_container = "novabank-api-spike"
-    apisix_container = "novabank-apisix-spike"
+    net_name = "flobank-spike-net"
+    api_container = "flobank-api-spike"
+    apisix_container = "flobank-apisix-spike"
     
     run_cmd(f"docker rm -f {api_container} {apisix_container}")
     run_cmd(f"docker network rm {net_name}")

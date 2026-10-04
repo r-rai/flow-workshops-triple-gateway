@@ -257,13 +257,13 @@ PYTHONPATH=. .venv/bin/python workshops/w3/client.py query --case-id case-501
 ### Step 5: Test Worker Crash & Duplicate Redelivery Resilience
 ```bash
 # Simulate unexpected worker crash:
-docker stop novabank-workshops-worker-1
+docker stop flobank-workshops-worker-1
 
 # Redeliver duplicate Kafka event:
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py emit --case-id case-501 --customer-id cust-8801
 
 # Restart worker and query workflow state:
-docker start novabank-workshops-worker-1
+docker start flobank-workshops-worker-1
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py query --case-id case-501
 ```
 *Verify*: Temporal maintains exact workflow identity and state; zero duplicate executions or payments occur.
@@ -393,7 +393,7 @@ docker compose --profile demo --profile demo-enterprise --profile w1 --profile w
 ```
 
 ### Complete Factory Reset (Purging All Lab Volumes)
-To remove all containers, networks, and persistent database volumes (`novabank_api_data`, `novabank_postgres_data`, `novabank_temporal_data`):
+To remove all containers, networks, and persistent database volumes (`flobank_api_data`, `flobank_postgres_data`, `flobank_temporal_data`):
 ```bash
 docker compose --profile demo --profile demo-enterprise --profile w1 --profile w2 --profile w3 --profile w4 down -v --remove-orphans
 ```

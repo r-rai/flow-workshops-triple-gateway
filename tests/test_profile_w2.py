@@ -46,7 +46,7 @@ def main():
 
         # 4. Gate 2 Policy - Small payment allowed
         print("4. Testing Gate 2 Policy: Small Payment...")
-        token_mcp = issue_token("agent-support-1", audience="novabank-mcp", scopes=["mcp:tools"], role="support_agent")
+        token_mcp = issue_token("agent-support-1", audience="flobank-mcp", scopes=["mcp:tools"], role="support_agent")
         headers = {"Authorization": f"Bearer {token_mcp}"}
 
         r_small = client.post(

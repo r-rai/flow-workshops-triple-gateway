@@ -44,22 +44,22 @@
       "memory_limit": "256m"
     },
     "api": {
-      "tag": "novabank/api:1.0.0",
+      "tag": "flobank/api:1.0.0",
       "dockerfile": "docker/api/Dockerfile",
       "memory_limit": "256m"
     },
     "adapter": {
-      "tag": "novabank/adapter:1.0.0",
+      "tag": "flobank/adapter:1.0.0",
       "dockerfile": "docker/adapter/Dockerfile",
       "memory_limit": "256m"
     },
     "worker": {
-      "tag": "novabank/worker:1.0.0",
+      "tag": "flobank/worker:1.0.0",
       "dockerfile": "docker/worker/Dockerfile",
       "memory_limit": "512m"
     },
     "temporal": {
-      "tag": "novabank/temporal:1.0.0",
+      "tag": "flobank/temporal:1.0.0",
       "dockerfile": "docker/temporal/Dockerfile",
       "memory_limit": "384m"
     }

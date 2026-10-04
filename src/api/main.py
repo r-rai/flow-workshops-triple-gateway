@@ -23,7 +23,7 @@ if settings.ENABLE_TELEMETRY:
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-        res = Resource.create({"service.name": "novabank-api"})
+        res = Resource.create({"service.name": "flobank-api"})
         provider = TracerProvider(resource=res)
         exporter = OTLPSpanExporter(endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT)
         provider.add_span_processor(BatchSpanProcessor(exporter, schedule_delay_millis=500))

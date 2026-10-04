@@ -39,14 +39,13 @@ VALID_TOKEN_TYPES = {
 }
 
 VALID_SUBJECT_AUDIENCES = {
-    "novabank-mcp",
-    "novabank-api",
-    "novabank-auth",
+    settings.MCP_AUDIENCE,
+    settings.API_AUDIENCE,
+    "flobank-auth",
 }
 
 VALID_TARGET_AUDIENCES = {
     settings.API_AUDIENCE,
-    "novabank-api",
 }
 
 @router.post("/oauth/token", response_model=TokenResponse)
@@ -158,7 +157,7 @@ async def token_exchange_endpoint(request: Request):
     max_entitled = ROLE_ENTITLED_SCOPES.get(role, {"api:accounts:read", "api:cases:read"})
     granted_scopes = set(claims.get("scope", "").split())
 
-    if token_aud == "novabank-mcp":
+    if token_aud == settings.MCP_AUDIENCE:
         # MCP token exchanging for API execution
         # Verify caller has MCP execution authorization
         if not ({"mcp:tools", "tools:call"}.intersection(granted_scopes) or role in ("agent", "payments_agent", "service", "admin")):

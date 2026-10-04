@@ -45,10 +45,10 @@ Ensure profile `w4` is active and healthy:
 ```
 
 ### Step 2: Testing Gate 3 Audience Separation
-Attempt to call Gate 3 Core Banking API using a token issued for the MCP capability layer (`aud=novabank-mcp`):
+Attempt to call Gate 3 Core Banking API using a token issued for the MCP capability layer (`aud=flobank-mcp`):
 ```python
 # The gateway enforces audience separation:
-token = create_jwt_token("attacker", audience="novabank-mcp", scopes=["api:accounts:read"])
+token = create_jwt_token("attacker", audience="flobank-mcp", scopes=["api:accounts:read"])
 # Result: HTTP 401 Unauthorized
 ```
 

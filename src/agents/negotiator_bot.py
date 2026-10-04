@@ -15,7 +15,7 @@ class NegotiatorBot:
         # Restricted scope: only cases and a2a tasks, no payments:write
         self.token = create_jwt_token(
             subject=self.agent_id,
-            audience="novabank-api",
+            audience=os.getenv("API_AUDIENCE", "flobank-api"),
             scopes=["api:cases:read", "api:a2a:tasks"],
             role="agent"
         )

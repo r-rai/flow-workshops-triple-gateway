@@ -1,4 +1,4 @@
-package novabank.policy
+package flobank.policy
 
 import future.keywords.in
 

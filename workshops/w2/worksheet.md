@@ -52,7 +52,7 @@ In support ticket `case-502`, an external attacker submitted a dispute with hidd
 If an unconstrained AI agent reads this ticket and directly calls `create_payment`, funds would be siphoned out.
 
 ### Step 3: Gate 2 OPA Policy Enforcement
-The curated MCP adapter (`http://localhost:8001`) consults OPA (`http://localhost:8181/v1/data/novabank/authz`) before every state-changing tool call.
+The curated MCP adapter (`http://localhost:8080`) consults OPA (`http://localhost:8181/v1/data/flobank/policy`) before every state-changing tool call.
 
 Observe the policy rule in `workshops/w2/checkpoints/completed/policy-hardened.rego`:
 ```rego
@@ -81,11 +81,11 @@ What happens when OPA crashes or network partitions occur?
 A naive implementation might fail open (allowing traffic). Our adapter enforces **Fail-Closed**:
 ```python
 try:
-    opa_resp = await client.post("http://opa:8181/v1/data/novabank/authz", json=policy_input, timeout=1.0)
+    opa_resp = await client.post("http://opa:8181/v1/data/flobank/policy", json=policy_input, timeout=1.0)
 except Exception:
     return {"decision": "deny", "reason": "POLICY_TIMEOUT_FAIL_CLOSED"}
 ```
-Confirm during rehearsal that when `novabank-workshops-opa-1` is paused, invocations are rejected with `POLICY_TIMEOUT_FAIL_CLOSED`.
+Confirm during rehearsal that when `flobank-workshops-opa-1` is paused, invocations are rejected with `POLICY_TIMEOUT_FAIL_CLOSED`.
 
 ---
 

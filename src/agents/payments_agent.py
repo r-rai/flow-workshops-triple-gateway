@@ -14,7 +14,7 @@ class PaymentsAgent:
         self.agent_id = "payments-agent-executor"
         self.token = create_jwt_token(
             subject=self.agent_id,
-            audience="novabank-api",
+            audience=os.getenv("API_AUDIENCE", "flobank-api"),
             scopes=["api:payments:write", "api:a2a:tasks"],
             role="agent"
         )

@@ -23,8 +23,8 @@ This document is the resume context and the implementation handoff for agy.
 - The prior verification passed 49 Python tests, Compose startup/health,
   and `tests/demo_bank_browser.cjs`. That verifies the scripted baseline,
   not this planned live customer chatbot.
-- Preserve internal `novabank` infrastructure identifiers and historical
-  evidence. Public branding is Flo Bank. Preserve existing host services
+- Use Flo Bank identifiers for current infrastructure and preserve historical
+  evidence as written. Public branding is Flo Bank. Preserve existing host services
   and any unrelated working-tree changes.
 
 ## Outcome and scope

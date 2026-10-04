@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Ensure sqlite for tests
-os.environ["DATABASE_URL"] = "sqlite:///./test_novabank.sqlite"
+os.environ["DATABASE_URL"] = "sqlite:///./test_flobank.sqlite"
 os.environ["GATE3_API_KEY"] = "gate3-test-key"
 os.environ["SEED_FILE_PATH"] = "seed/v1_seed.json"
 
@@ -33,9 +33,9 @@ def setup_db():
     yield
     settings.API_KEY_SECRET = orig_key
     Base.metadata.drop_all(bind=engine)
-    if os.path.exists("./test_novabank.sqlite"):
+    if os.path.exists("./test_flobank.sqlite"):
         try:
-            os.remove("./test_novabank.sqlite")
+            os.remove("./test_flobank.sqlite")
         except Exception:
             pass
 
@@ -51,7 +51,7 @@ def lab_headers():
 def manager_jwt_headers():
     token = issue_token(
         subject="manager-priya",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:accounts:read", "api:payments:write", "api:cases:read", "api:incidents:write"],
         role="manager",
     )
@@ -61,7 +61,7 @@ def manager_jwt_headers():
 def agent_jwt_headers():
     token = issue_token(
         subject="agent-support-01",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:accounts:read", "api:payments:write", "api:cases:read"],
         role="support_agent",
     )
@@ -236,7 +236,7 @@ def test_delegated_anti_self_approval_regression(client, agent_jwt_headers, mana
     # 2. Direct delegation: manager token with delegated_by = requester -> 403
     direct_delegated_token = create_jwt_token(
         subject="delegated-manager-01",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:payments:write", "api:accounts:read"],
         role="manager",
         delegated_by=requester_id
@@ -252,7 +252,7 @@ def test_delegated_anti_self_approval_regression(client, agent_jwt_headers, mana
     nested_claims = {
         "iss": settings.JWT_ISSUER,
         "sub": "nested-manager-02",
-        "aud": "novabank-api",
+        "aud": "flobank-api",
         "role": "manager",
         "scope": "api:payments:write api:accounts:read",
         "iat": 1700000000,
@@ -280,7 +280,7 @@ def test_delegated_anti_self_approval_regression(client, agent_jwt_headers, mana
             "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
             "subject_token": direct_delegated_token,
             "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-            "audience": "novabank-api",
+            "audience": "flobank-api",
             "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
             "scope": "api:payments:write api:accounts:read"
         }
@@ -302,7 +302,7 @@ def test_delegated_anti_self_approval_regression(client, agent_jwt_headers, mana
             "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
             "subject_token": exchanged_token1,
             "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-            "audience": "novabank-api",
+            "audience": "flobank-api",
             "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
             "scope": "api:payments:write"
         }
@@ -320,7 +320,7 @@ def test_delegated_anti_self_approval_regression(client, agent_jwt_headers, mana
     # 6. Legitimate independent manager approval succeeds -> 200
     clean_manager_token = create_jwt_token(
         subject="manager-priya",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:payments:write", "api:accounts:read"],
         role="manager",
         delegated_by="different-unrelated-agent"
@@ -337,9 +337,9 @@ def test_a2a_settlement_binding_regression(client):
     from src.core.security import create_jwt_token
 
     # Setup tokens
-    negotiator_token = create_jwt_token("negotiator-bot-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
-    payments_token = create_jwt_token("payments-agent-executor", audience="novabank-api", scopes=["api:payments:write", "api:a2a:tasks"], role="agent")
-    foreign_agent_token = create_jwt_token("foreign-agent-99", audience="novabank-api", scopes=["api:payments:write"], role="agent")
+    negotiator_token = create_jwt_token("negotiator-bot-agent", audience="flobank-api", scopes=["api:a2a:tasks"], role="agent")
+    payments_token = create_jwt_token("payments-agent-executor", audience="flobank-api", scopes=["api:payments:write", "api:a2a:tasks"], role="agent")
+    foreign_agent_token = create_jwt_token("foreign-agent-99", audience="flobank-api", scopes=["api:payments:write"], role="agent")
 
     # 1. Negotiator creates task
     task_payload = {
@@ -531,7 +531,7 @@ def test_delegation_chain_depth_limit_regression(client):
     act_20 = make_nested_act(20, innermost_sub="agent-requester")
     token_depth_20 = create_jwt_token(
         subject="manager-priya",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:accounts:read", "api:payments:write"],
         role="manager",
         act=act_20
@@ -545,7 +545,7 @@ def test_delegation_chain_depth_limit_regression(client):
     act_21 = make_nested_act(21, innermost_sub="agent-requester")
     token_depth_21 = create_jwt_token(
         subject="manager-priya",
-        audience="novabank-api",
+        audience="flobank-api",
         scopes=["api:accounts:read", "api:payments:write"],
         role="manager",
         act=act_21
@@ -563,7 +563,7 @@ def test_delegation_chain_depth_limit_regression(client):
             "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
             "subject_token": token_depth_21,
             "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-            "audience": "novabank-api",
+            "audience": "flobank-api",
             "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
             "scope": "api:payments:write"
         }
@@ -574,7 +574,7 @@ def test_delegation_chain_depth_limit_regression(client):
     # 4. Token exchange that would push depth from 20 to 21 fails with 400
     token_mcp_20 = create_jwt_token(
         subject="agent-requester",
-        audience="novabank-mcp",
+        audience="flobank-mcp",
         scopes=["mcp:tools", "tools:call"],
         role="agent",
         act=act_20
@@ -585,7 +585,7 @@ def test_delegation_chain_depth_limit_regression(client):
             "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
             "subject_token": token_mcp_20,
             "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-            "audience": "novabank-api",
+            "audience": "flobank-api",
             "requested_token_type": "urn:ietf:params:oauth:token-type:access_token",
             "scope": "api:payments:write"
         }
@@ -599,8 +599,8 @@ def test_a2a_concurrent_settlement_binding_race(client):
     from src.core.database import SessionLocal
     from src.models.db_models import A2ATask, PaymentTaskBinding
 
-    negotiator_token = create_jwt_token("negotiator-bot-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
-    payments_token = create_jwt_token("payments-agent-executor", audience="novabank-api", scopes=["api:payments:write", "api:a2a:tasks"], role="agent")
+    negotiator_token = create_jwt_token("negotiator-bot-agent", audience="flobank-api", scopes=["api:a2a:tasks"], role="agent")
+    payments_token = create_jwt_token("payments-agent-executor", audience="flobank-api", scopes=["api:payments:write", "api:a2a:tasks"], role="agent")
 
     # 1. Create two separate tasks expecting the same payment parameters
     task1_res = client.post(
@@ -688,7 +688,7 @@ def test_seed_contains_demo_accounts_and_card():
 
 def test_cards_and_case_creation_endpoints(client):
     from src.core.security import create_jwt_token
-    token = create_jwt_token("cust-maya", audience="novabank-api", scopes=["api:cards:read", "api:cards:write", "api:cases:write"], role="customer")
+    token = create_jwt_token("cust-maya", audience="flobank-api", scopes=["api:cards:read", "api:cards:write", "api:cases:write"], role="customer")
     headers = {"Authorization": f"Bearer {token}", "X-API-Key": "gate3-test-key"}
 
     # Read card

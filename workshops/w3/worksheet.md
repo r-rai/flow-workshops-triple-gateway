@@ -54,7 +54,7 @@ Inspect the Temporal workflow state:
 ### Step 4: Simulate Worker Crash & Duplicate Redelivery
 In another terminal, stop the worker:
 ```bash
-docker stop novabank-workshops-worker-1
+docker stop flobank-workshops-worker-1
 ```
 Now redeliver the exact same dispute event:
 ```bash
@@ -62,7 +62,7 @@ Now redeliver the exact same dispute event:
 ```
 Restart the worker:
 ```bash
-docker start novabank-workshops-worker-1
+docker start flobank-workshops-worker-1
 ```
 Query the workflow again:
 ```bash

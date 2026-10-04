@@ -1,4 +1,4 @@
-package novabank.policy
+package flobank.policy
 
 # VULNERABLE / BROAD POLICY CHECKPOINT
 # Exposes excessive capability: permits any authenticated caller to execute any tool

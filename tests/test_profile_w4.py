@@ -24,7 +24,7 @@ def main():
         print("✓ Gate 2 MCP tools discovery OK")
 
         # Gate 3 API direct authorization
-        token = create_jwt_token("auditor-01", audience="novabank-api", scopes=["api:accounts:read"], role="auditor")
+        token = create_jwt_token("auditor-01", audience="flobank-api", scopes=["api:accounts:read"], role="auditor")
         r_acc = client.get(
             f"{base_url}/api/v1/accounts/acc-101",
             headers={"Authorization": f"Bearer {token}", "X-API-Key": "gate3-secret-token"}

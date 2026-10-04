@@ -7,7 +7,7 @@ from aiokafka import AIOKafkaProducer
 from temporalio.client import Client
 
 async def emit_dispute(kafka_servers: str, case_id: str, customer_id: str = ""):
-    print(f"[Kafka] Emitting dispute event for case '{case_id}' to topic 'novabank.disputes'...")
+    print(f"[Kafka] Emitting dispute event for case '{case_id}' to topic 'flobank.disputes'...")
     producer = AIOKafkaProducer(bootstrap_servers=kafka_servers)
     await producer.start()
     try:
@@ -16,7 +16,7 @@ async def emit_dispute(kafka_servers: str, case_id: str, customer_id: str = ""):
             "customer_id": customer_id or "cust-101",
             "timestamp": "2026-10-03T10:14:00Z"
         }
-        await producer.send_and_wait("novabank.disputes", json.dumps(payload).encode("utf-8"))
+        await producer.send_and_wait("flobank.disputes", json.dumps(payload).encode("utf-8"))
         print(f"[Kafka] Successfully emitted dispute event for '{case_id}'.")
     finally:
         await producer.stop()

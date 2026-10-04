@@ -75,7 +75,7 @@ async def run_rehearsal():
     print("\n[Segment 4: 40–60 min] Gate 2 - OPA Argument-Aware Policy Enforcement")
     token_agent = create_jwt_token(
         subject="payments-agent-w4",
-        audience="novabank-mcp",
+        audience="flobank-mcp",
         scopes=["mcp:tools"],
         role="agent"
     )
@@ -108,7 +108,7 @@ async def run_rehearsal():
         # Authorized tool call through Gate 2 adapter forwarding to Gate 3 API (for trace generation)
         token_support = create_jwt_token(
             subject="support-agent-w4",
-            audience="novabank-mcp",
+            audience="flobank-mcp",
             scopes=["mcp:tools"],
             role="support_agent"
         )
@@ -143,8 +143,8 @@ async def run_rehearsal():
     # Segment 6: Gate 3 - Cryptographic Audience & Scope Enforcement
     print("\n[Segment 6: 65–85 min] Gate 3 - Audience Separation & Scope Enforcement")
     async with httpx.AsyncClient(timeout=5.0) as client:
-        # 1. Wrong Audience Token (aud='novabank-mcp' presented to Gate 3 API)
-        wrong_aud_token = create_jwt_token("attacker", audience="novabank-mcp", scopes=["api:accounts:read"])
+        # 1. Wrong Audience Token (aud='flobank-mcp' presented to Gate 3 API)
+        wrong_aud_token = create_jwt_token("attacker", audience="flobank-mcp", scopes=["api:accounts:read"])
         r_wrong_aud = await client.get(
             f"{BASE_URL}/api/v1/accounts/acc-101",
             headers={"Authorization": f"Bearer {wrong_aud_token}", "X-API-Key": GATE3_KEY}
@@ -153,7 +153,7 @@ async def run_rehearsal():
         print("✓ Invariant: Wrong audience token rejected by Gate 3 with HTTP 401")
 
         # 2. Insufficient Scope Token (missing payments:write)
-        read_only_token = create_jwt_token("viewer", audience="novabank-api", scopes=["api:accounts:read"])
+        read_only_token = create_jwt_token("viewer", audience="flobank-api", scopes=["api:accounts:read"])
         r_no_scope = await client.post(
             f"{BASE_URL}/api/v1/payments",
             headers={"Authorization": f"Bearer {read_only_token}", "X-API-Key": GATE3_KEY},
@@ -164,7 +164,7 @@ async def run_rehearsal():
 
         # 3. RFC 8693 Token Exchange Protocol & Entitlement Tests
         print("Testing RFC 8693 Token Exchange endpoints...")
-        mcp_agent_token = create_jwt_token("payments-agent-executor", audience="novabank-mcp", scopes=["mcp:tools"], role="agent")
+        mcp_agent_token = create_jwt_token("payments-agent-executor", audience="flobank-mcp", scopes=["mcp:tools"], role="agent")
         
         # 3a. Form-encoded RFC 8693 token exchange (standard §2.1)
         r_exch_ok = await client.post(
@@ -174,7 +174,7 @@ async def run_rehearsal():
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": mcp_agent_token,
                 "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "audience": "novabank-api",
+                "audience": "flobank-api",
                 "scope": "api:accounts:read api:payments:write"
             }
         )
@@ -185,7 +185,7 @@ async def run_rehearsal():
         print("✓ RFC 8693 Token Exchange verified with form-urlencoded request (HTTP 200)")
 
         # 3b. Unauthorized Scope Escalation Attempt (viewer attempts to exchange for payments:write) -> 403
-        viewer_mcp_token = create_jwt_token("viewer-agent", audience="novabank-mcp", scopes=["mcp:tools"], role="viewer")
+        viewer_mcp_token = create_jwt_token("viewer-agent", audience="flobank-mcp", scopes=["mcp:tools"], role="viewer")
         r_exch_escalate = await client.post(
             f"{BASE_URL}/oauth/token",
             headers={"Content-Type": "application/x-www-form-urlencoded", "X-API-Key": GATE3_KEY},
@@ -193,7 +193,7 @@ async def run_rehearsal():
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": viewer_mcp_token,
                 "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "audience": "novabank-api",
+                "audience": "flobank-api",
                 "scope": "api:payments:write"
             }
         )
@@ -207,7 +207,7 @@ async def run_rehearsal():
             data={
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": mcp_agent_token,
-                "audience": "novabank-api"
+                "audience": "flobank-api"
             }
         )
         assert r_exch_missing_type.status_code == 400
@@ -222,7 +222,7 @@ async def run_rehearsal():
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": untrusted_aud_token,
                 "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "audience": "novabank-api"
+                "audience": "flobank-api"
             }
         )
         assert r_exch_bad_aud.status_code == 401
@@ -263,7 +263,7 @@ async def run_rehearsal():
         # Direct delegation: Manager delegated by the proposal requester -> 403
         token_direct_del = create_jwt_token(
             "deputy-manager-1",
-            audience="novabank-api",
+            audience="flobank-api",
             scopes=["api:payments:write"],
             role="manager",
             act={"sub": requester_id}
@@ -278,7 +278,7 @@ async def run_rehearsal():
         # Exchanged delegation: Manager delegated by requester exchanges token -> 403
         mcp_del_token = create_jwt_token(
             "deputy-manager-2",
-            audience="novabank-mcp",
+            audience="flobank-mcp",
             scopes=["mcp:tools"],
             role="manager",
             act={"sub": requester_id}
@@ -290,7 +290,7 @@ async def run_rehearsal():
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": mcp_del_token,
                 "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "audience": "novabank-api",
+                "audience": "flobank-api",
                 "scope": "api:payments:write"
             }
         )
@@ -306,7 +306,7 @@ async def run_rehearsal():
         # Nested delegation: Multi-hop delegation chain containing requester -> 403
         token_nested_del = create_jwt_token(
             "regional-executive",
-            audience="novabank-api",
+            audience="flobank-api",
             scopes=["api:payments:write"],
             role="manager",
             act={"sub": "mid-manager", "act": {"sub": requester_id}}
@@ -326,7 +326,7 @@ async def run_rehearsal():
                 "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
                 "subject_token": token_exchanged_del,
                 "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
-                "audience": "novabank-api",
+                "audience": "flobank-api",
                 "scope": "api:payments:write"
             }
         )
@@ -348,7 +348,7 @@ async def run_rehearsal():
         print("✓ ANTI-SELF-APPROVAL HARDENED: Static lab API key cannot approve proposals (HTTP 403)")
 
         # 3. Independent Risk Manager approves proposal
-        manager_token = create_jwt_token("risk-manager-99", audience="novabank-api", scopes=["api:payments:write"], role="manager")
+        manager_token = create_jwt_token("risk-manager-99", audience="flobank-api", scopes=["api:payments:write"], role="manager")
         r_mgr = await client.post(
             f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
             headers={"Authorization": f"Bearer {manager_token}", "X-API-Key": GATE3_KEY}
@@ -448,7 +448,7 @@ async def run_rehearsal():
 
     async with httpx.AsyncClient(timeout=5.0) as client:
         # 4a. Another unrelated agent tries to access NegotiatorBot's task
-        unrelated_token = create_jwt_token("unrelated-rogue-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
+        unrelated_token = create_jwt_token("unrelated-rogue-agent", audience="flobank-api", scopes=["api:a2a:tasks"], role="agent")
         r_intruder = await client.get(
             f"{BASE_URL}/api/v1/a2a/tasks/{task_id}",
             headers={"Authorization": f"Bearer {unrelated_token}", "X-API-Key": GATE3_KEY}
@@ -457,7 +457,7 @@ async def run_rehearsal():
         print("✓ OWNER-SCOPED TASK ACCESS VERIFIED: Unrelated agent denied task access with HTTP 403!")
 
         # 4b. Rogue agent with payments:write tries to complete and overwrite NegotiatorBot's task -> 403
-        rogue_writer_token = create_jwt_token("rogue-writer-agent", audience="novabank-api", scopes=["api:payments:write"], role="agent")
+        rogue_writer_token = create_jwt_token("rogue-writer-agent", audience="flobank-api", scopes=["api:payments:write"], role="agent")
         r_rogue_complete = await client.post(
             f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
             headers={"Authorization": f"Bearer {rogue_writer_token}", "X-API-Key": GATE3_KEY},
@@ -583,33 +583,33 @@ async def run_rehearsal():
         assert r_jaeger.status_code == 200, f"Jaeger API unreachable: {r_jaeger.status_code}"
         services = r_jaeger.json().get("data", [])
         print(f"✓ Jaeger Telemetry active. Discovered services: {services}")
-        assert "novabank-api" in services, f"Expected 'novabank-api' in Jaeger services: {services}"
-        assert "novabank-adapter" in services, f"Expected 'novabank-adapter' in Jaeger services: {services}"
+        assert "flobank-api" in services, f"Expected 'flobank-api' in Jaeger services: {services}"
+        assert "flobank-adapter" in services, f"Expected 'flobank-adapter' in Jaeger services: {services}"
 
-        # Query traces for novabank-adapter to find correlated cross-boundary trace (retry up to 10s for ingestion)
+        # Query traces for flobank-adapter to find correlated cross-boundary trace (retry up to 10s for ingestion)
         correlated_trace = None
         traces = []
         for attempt in range(10):
-            r_traces = await client.get("http://127.0.0.1:16686/api/traces?service=novabank-adapter&limit=20")
+            r_traces = await client.get("http://127.0.0.1:16686/api/traces?service=flobank-adapter&limit=20")
             assert r_traces.status_code == 200, f"Jaeger trace query failed: {r_traces.status_code}"
             traces = r_traces.json().get("data", [])
             for trace in traces:
                 processes = trace.get("processes", {})
                 proc_services = {p.get("serviceName") for p in processes.values()}
-                if "novabank-adapter" in proc_services and "novabank-api" in proc_services:
+                if "flobank-adapter" in proc_services and "flobank-api" in proc_services:
                     correlated_trace = trace
                     break
             if correlated_trace:
                 break
             await asyncio.sleep(1.0)
 
-        assert correlated_trace is not None, f"FAIL-CLOSED: No correlated trace found spanning BOTH novabank-adapter and novabank-api in {len(traces)} traces!"
+        assert correlated_trace is not None, f"FAIL-CLOSED: No correlated trace found spanning BOTH flobank-adapter and flobank-api in {len(traces)} traces!"
 
         trace_id = correlated_trace["traceID"]
         spans = correlated_trace.get("spans", [])
         processes = correlated_trace.get("processes", {})
-        adapter_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "novabank-adapter"]
-        api_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "novabank-api"]
+        adapter_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "flobank-adapter"]
+        api_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "flobank-api"]
         assert len(adapter_spans) > 0 and len(api_spans) > 0, "Missing spans in correlated trace"
 
         # Verify parent-child relationship: api_span must reference adapter_span
@@ -625,8 +625,8 @@ async def run_rehearsal():
 
         assert has_parent_link, "FAIL-CLOSED: Parent-child relationship between adapter and api spans not found!"
         print(f"✓ CORRELATED DISTRIBUTED TRACE CONFIRMED: traceID={trace_id}")
-        print(f"  novabank-adapter spans: {len(adapter_spans)}, novabank-api spans: {len(api_spans)}")
-        print(f"✓ Parent-child span hierarchy validated: novabank-api child span linked to novabank-adapter parent span.")
+        print(f"  flobank-adapter spans: {len(adapter_spans)}, flobank-api spans: {len(api_spans)}")
+        print(f"✓ Parent-child span hierarchy validated: flobank-api child span linked to flobank-adapter parent span.")
 
     evidence["segments"]["segment9"] = {
         "traced_services": services,

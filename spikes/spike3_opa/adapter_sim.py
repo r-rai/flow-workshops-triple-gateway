@@ -6,8 +6,8 @@ import subprocess
 import httpx
 from typing import Dict, Any, Tuple
 
-class NovaBankMcpPolicyEngine:
-    def __init__(self, opa_url: str = "http://127.0.0.1:8181/v1/data/novabank/policy", timeout_sec: float = 0.5):
+class FloBankMcpPolicyEngine:
+    def __init__(self, opa_url: str = "http://127.0.0.1:8181/v1/data/flobank/policy", timeout_sec: float = 0.5):
         self.opa_url = opa_url
         self.timeout_sec = timeout_sec
 
@@ -111,7 +111,7 @@ def main():
     print("SPIKE 3: Argument-Aware OPA Policy Engine & MCP Adapter Contract")
     print("=====================================================================")
     
-    opa_container = "novabank-spike3-opa"
+    opa_container = "flobank-spike3-opa"
     subprocess.run(["docker", "rm", "-f", opa_container], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
     policy_path = os.path.abspath("spikes/spike3_opa/policy.rego")
@@ -150,7 +150,7 @@ def main():
         return 1
 
     try:
-        engine = NovaBankMcpPolicyEngine(opa_url="http://127.0.0.1:8181/v1/data/novabank/policy")
+        engine = FloBankMcpPolicyEngine(opa_url="http://127.0.0.1:8181/v1/data/flobank/policy")
         
         # Test Case 1: Read tool allowed
         print("\n--- Test Case 1: Read tool (get_account) ---")

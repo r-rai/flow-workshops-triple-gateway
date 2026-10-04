@@ -33,7 +33,7 @@ def main():
 
     token_support = issue_token(
         subject="agent-support-01",
-        audience="novabank-mcp",
+        audience="flobank-mcp",
         scopes=["mcp:tools"],
         role="support_agent",
     )
@@ -174,7 +174,7 @@ def main():
 
         # Step 4: Failure & Audit (34–41 min) - OPA Outage Simulation
         print("\n[Segment 4: 34–41 min] Failure & Audit - OPA Outage Fail-Closed Test")
-        opa_container = "novabank-workshops-opa-1"
+        opa_container = "flobank-workshops-opa-1"
         print(f"Pausing OPA container '{opa_container}'...")
         run_cmd(f"docker pause {opa_container}")
 

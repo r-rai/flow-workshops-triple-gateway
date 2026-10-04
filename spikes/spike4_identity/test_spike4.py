@@ -1,11 +1,14 @@
+import os
 import time
 import json
 from jose import jwt, JWTError
 from typing import Dict, Any, List, Optional
 
-SECRET_KEY = "novabank-super-secret-signing-key-for-lab"
-ALGORITHM = "HS256"
-ISSUER = "https://identity.novabank.internal/realms/novabank"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "flobank-super-secret-signing-key-for-lab")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ISSUER = os.getenv("JWT_ISSUER", "https://identity.flobank.internal/realms/flobank")
+MCP_AUDIENCE = os.getenv("MCP_AUDIENCE", "flobank-mcp")
+API_AUDIENCE = os.getenv("API_AUDIENCE", "flobank-api")
 
 def issue_token(
     subject: str,
@@ -13,12 +16,13 @@ def issue_token(
     scopes: List[str],
     role: str,
     expires_in_sec: int = 3600,
-    issuer: str = ISSUER,
+    issuer: str = None,
     custom_claims: Optional[Dict[str, Any]] = None,
 ) -> str:
     now = int(time.time())
+    token_issuer = issuer or ISSUER
     payload = {
-        "iss": issuer,
+        "iss": token_issuer,
         "sub": subject,
         "aud": audience,
         "exp": now + expires_in_sec,
@@ -40,8 +44,8 @@ def exchange_token(
     """
     Implements RFC 8693 Token Exchange semantics:
     - Validates subject_token (incoming MCP token)
-    - Verifies subject_token audience is 'novabank-mcp'
-    - Issues exchanged API-facing token for 'requested_audience' ('novabank-api')
+    - Verifies subject_token audience is MCP audience
+    - Issues exchanged API-facing token for 'requested_audience'
     - Downscopes permissions so requested_scopes cannot exceed adapter privileges
     - Preserves trusted subject and role, adds delegation/act claim
     """
@@ -51,7 +55,7 @@ def exchange_token(
             SECRET_KEY,
             algorithms=[ALGORITHM],
             issuer=ISSUER,
-            audience="novabank-mcp",
+            audience=MCP_AUDIENCE,
         )
     except JWTError as e:
         raise ValueError(f"Invalid subject token: {e}")
@@ -83,21 +87,22 @@ def exchange_token(
         "scope": " ".join(effective_scopes),
     }
 
-def gate3_authorize(token: str, required_scope: str, expected_audience: str = "novabank-api") -> Dict[str, Any]:
+def gate3_authorize(token: str, required_scope: str, expected_audience: str = None) -> Dict[str, Any]:
     """
     Gate 3 API verification contract:
     - Validates signature and issuer
-    - Validates audience == 'novabank-api'
+    - Validates audience == expected_audience
     - Checks required scope
     - Returns verified principal
     """
+    target_aud = expected_audience or API_AUDIENCE
     try:
         claims = jwt.decode(
             token,
             SECRET_KEY,
             algorithms=[ALGORITHM],
             issuer=ISSUER,
-            audience=expected_audience,
+            audience=target_aud,
         )
     except JWTError as e:
         raise PermissionError(f"Gate 3 Authentication Failed: {e}")
@@ -124,11 +129,11 @@ def main():
     print("\n--- Step 1: Issue MCP-facing token ---")
     mcp_token = issue_token(
         subject="agent-support-42",
-        audience="novabank-mcp",
+        audience=MCP_AUDIENCE,
         scopes=["mcp:tools"],
         role="support_agent",
     )
-    print("MCP Token generated for audience 'novabank-mcp'")
+    print(f"MCP Token generated for audience '{MCP_AUDIENCE}'")
 
     # 2. Test Direct Presentation to Gate 3 (Must Fail - Wrong Audience)
     print("\n--- Step 2: Attempt direct presentation of MCP token to Gate 3 ---")
@@ -143,7 +148,7 @@ def main():
     print("\n--- Step 3: Perform RFC 8693 Token Exchange for 'api:accounts:read' ---")
     exchange_res = exchange_token(
         subject_token=mcp_token,
-        requested_audience="novabank-api",
+        requested_audience=API_AUDIENCE,
         requested_scopes=["api:accounts:read"],
     )
     api_token = exchange_res["access_token"]
@@ -172,7 +177,7 @@ def main():
     print("\n--- Step 6: Test Expired Token Denial ---")
     expired_token = issue_token(
         subject="agent-support-42",
-        audience="novabank-api",
+        audience=API_AUDIENCE,
         scopes=["api:accounts:read"],
         role="support_agent",
         expires_in_sec=-10,
@@ -194,7 +199,7 @@ def main():
 
     print("\n=====================================================================")
     print("✅ SPIKE 4 PASSED COMPLETELY!")
-    print("1. MCP audience ('novabank-mcp') separated from API audience ('novabank-api').")
+    print(f"1. MCP audience ('{MCP_AUDIENCE}') separated from API audience ('{API_AUDIENCE}').")
     print("2. Gate 3 strictly enforces audience check (MCP token rejected).")
     print("3. RFC 8693 token exchange downscopes permissions and binds adapter delegation.")
     print("4. Gate 3 enforces required scopes (read token cannot execute payments).")

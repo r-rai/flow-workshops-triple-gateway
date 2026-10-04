@@ -102,7 +102,7 @@ Current service sets and configured limits are in the
 
 ## 🔒 Security Invariants Enforced
 
-1. **Loopback Gate 3 Enforcement**: The core banking backend (`api:8000`) is bound exclusively to internal Docker networks (`novabank-backend`, `novabank-persistence`). External clients must access the API via APISIX Gate 3 (`http://127.0.0.1:9080/api/v1/*`), requiring valid cryptographic authentication (`X-API-Key` and/or RFC 8693 Bearer JWT).
+1. **Loopback Gate 3 Enforcement**: The core banking backend (`api:8000`) is bound exclusively to internal Docker networks (`flobank-backend`, `flobank-persistence`). External clients must access the API via APISIX Gate 3 (`http://127.0.0.1:9080/api/v1/*`), requiring valid cryptographic authentication (`X-API-Key` and/or RFC 8693 Bearer JWT).
 2. **Deterministic Argument Evaluation (Gate 2)**: Open Policy Agent (OPA) strictly evaluates extracted runtime arguments (`account_id`, `destination_account`, `amount`) before tools can be invoked, blocking prohibited beneficiaries (`fraud-account-66`) and enforcing tiered risk approvals.
 3. **Fail-Closed Resiliency**: If OPA crashes, times out, or becomes partitioned, the adapter strictly denies execution with `POLICY_TIMEOUT_FAIL_CLOSED`.
 4. **Anti-Self-Approval**: Agents are strictly prohibited from approving their own financial proposals (`403 Forbidden`). Only authorized manager principals can approve proposals.
