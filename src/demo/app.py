@@ -18,6 +18,7 @@ from typing import Any
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+import httpx
 from pydantic import BaseModel, Field, field_validator
 
 from src.demo.tools import (
@@ -53,6 +54,19 @@ def get_chat_mode() -> str:
     return 'live'
 
 
+def get_backend_mode() -> str:
+    """Resolve active backend data mode (simulated vs enterprise)."""
+    explicit = os.getenv('DEMO_BACKEND_MODE')
+    if explicit:
+        return explicit.lower().strip()
+    return 'simulated'
+
+
+def get_gate3_url() -> str:
+    """Resolve APISIX Gate 3 URL for core banking calls."""
+    return os.getenv('GATE3_URL', 'http://apisix:9080/api/v1').rstrip('/')
+
+
 @dataclass
 class DemoSession:
     expires_at: float
@@ -60,6 +74,9 @@ class DemoSession:
     cases: dict[str, dict[str, Any]] = field(default_factory=dict)
     history: list[dict[str, Any]] = field(default_factory=list)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    backend_mode: str = "simulated"
+    api_token: str | None = None
+
 
 
 sessions: dict[str, DemoSession] = {}
@@ -96,6 +113,33 @@ def snapshot(session: DemoSession) -> dict[str, Any]:
     data['card']['locked'] = session.card_locked
     data['cases'] = list(session.cases.values())
     data['chat_mode'] = get_chat_mode()
+    data['backend_mode'] = session.backend_mode
+    if session.backend_mode == 'enterprise':
+        data['mode'] = 'enterprise'
+        gate3_url = get_gate3_url()
+        headers = {"Authorization": f"Bearer {session.api_token}"} if session.api_token else {}
+        try:
+            rc = httpx.get(f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=5.0)
+            rs = httpx.get(f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=5.0)
+            accs = []
+            if rc.status_code == 200:
+                d = rc.json()
+                accs.append({'id': d['id'], 'name': d['name'], 'number': '•••• 2048', 'balance': d['balance'], 'currency': d.get('currency', 'INR')})
+            if rs.status_code == 200:
+                d = rs.json()
+                accs.append({'id': d['id'], 'name': d['name'], 'number': '•••• 8821', 'balance': d['balance'], 'currency': d.get('currency', 'INR')})
+            if accs:
+                data['accounts'] = accs
+        except Exception as e:
+            logger.warning(f"Failed to fetch accounts from Gate 3: {e}")
+        try:
+            rcard = httpx.get(f"{gate3_url}/cards/card-2048", headers=headers, timeout=5.0)
+            if rcard.status_code == 200:
+                cd = rcard.json()
+                data['card']['locked'] = cd.get('locked', False)
+                session.card_locked = data['card']['locked']
+        except Exception as e:
+            logger.warning(f"Failed to fetch card from Gate 3: {e}")
     return data
 
 
@@ -108,11 +152,14 @@ async def private_responses(request: Request, call_next):
 
 @demo_api.get('/status')
 async def chat_status():
-    mode = get_chat_mode()
-    if mode == 'scripted':
+    chat_mode = get_chat_mode()
+    backend_mode = get_backend_mode()
+    mode_label = 'enterprise' if backend_mode == 'enterprise' else 'simulation'
+    if chat_mode == 'scripted':
         return {
             'chat_mode': 'scripted',
-            'mode': 'simulation',
+            'backend_mode': backend_mode,
+            'mode': mode_label,
             'configured': True,
             'available': True,
             'model': None,
@@ -120,12 +167,14 @@ async def chat_status():
     gw_status = await check_gateway_status()
     return {
         'chat_mode': 'live',
-        'mode': 'simulation',
+        'backend_mode': backend_mode,
+        'mode': mode_label,
         'configured': gw_status.get('configured', False),
         'available': gw_status.get('available', False),
         'model': gw_status.get('model', 'MiniMax-M2.7'),
         'headroom_tokens': gw_status.get('headroom_tokens'),
     }
+
 
 
 @demo_api.post('/login')
@@ -140,8 +189,23 @@ async def login(payload: LoginRequest, request: Request, response: Response):
     sessions.pop(old_token, None)
     if len(sessions) >= MAX_SESSIONS:
         raise HTTPException(503, 'The demo is busy. Please try again shortly.')
+
+    b_mode = get_backend_mode()
+    api_token = None
+    if b_mode == 'enterprise':
+        try:
+            from src.core.security import create_jwt_token
+            api_token = create_jwt_token(
+                subject='cust-maya',
+                audience='novabank-api',
+                scopes=['api:accounts:read', 'api:cards:read', 'api:cards:write', 'api:cases:read', 'api:cases:write'],
+                role='customer',
+            )
+        except Exception as e:
+            logger.warning(f"Failed to mint customer JWT token: {e}")
+
     token = secrets.token_urlsafe(32)
-    session = DemoSession(expires_at=now + SESSION_TTL)
+    session = DemoSession(expires_at=now + SESSION_TTL, backend_mode=b_mode, api_token=api_token)
     sessions[token] = session
     response.set_cookie(COOKIE, token, max_age=SESSION_TTL, httponly=True,
                         samesite='strict', secure=request.url.scheme == 'https', path='/demo-api')
@@ -182,7 +246,7 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
             session.history.append({'role': 'assistant', 'content': reply})
             return {
                 'reply': reply,
-                'mode': 'simulation',
+                'mode': 'enterprise' if session.backend_mode == 'enterprise' else 'simulation',
                 'chat_mode': 'scripted',
                 'dashboard': snapshot(session),
             }
@@ -195,6 +259,9 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
                 user_message=payload.message,
                 history=session.history,
                 staged_state=staged,
+                backend_mode=session.backend_mode,
+                gate3_url=get_gate3_url(),
+                api_token=session.api_token,
             )
         except LLMConfigError as e:
             logger.warning(f"Demo chat config error: {e.message}")
@@ -223,11 +290,12 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
 
         return {
             'reply': reply,
-            'mode': 'simulation',
+            'mode': 'enterprise' if session.backend_mode == 'enterprise' else 'simulation',
             'chat_mode': 'live',
             'model': metadata.get('model'),
             'dashboard': snapshot(session),
         }
+
 
 
 app.mount('/demo-api', demo_api)

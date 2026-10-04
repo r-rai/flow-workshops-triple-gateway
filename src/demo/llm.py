@@ -144,7 +144,11 @@ async def run_demo_chat_turn(
     model: str | None = None,
     timeout_sec: float | None = None,
     max_history_turns: int = DEFAULT_MAX_HISTORY_TURNS,
+    backend_mode: str = "simulated",
+    gate3_url: str | None = None,
+    api_token: str | None = None,
 ) -> tuple[str, list[dict[str, Any]], dict[str, Any]]:
+
     """
     Execute a single multi-turn chat interaction with the LLM via Gate 1.
 
@@ -283,8 +287,16 @@ async def run_demo_chat_turn(
                     fn_args = {}
                     tool_result = {"error": f"Invalid tool arguments JSON: {str(e)}"}
                 else:
-                    tool_result = execute_demo_tool(fn_name, fn_args, staged_state)
+                    tool_result = execute_demo_tool(
+                        fn_name,
+                        fn_args,
+                        staged_state,
+                        backend_mode=backend_mode,
+                        gate3_url=gate3_url,
+                        api_token=api_token,
+                    )
                     executed_tools.append(fn_name)
+
 
                 tool_message = {
                     "role": "tool",

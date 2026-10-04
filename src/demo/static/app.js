@@ -152,8 +152,11 @@ function showDashboard(data) {
       .then((status) => {
         if (!badge || !desc) return;
         if (status.configured && status.available) {
-          badge.textContent = `LIVE AI · ${(status.model || "MINIMAX-M2.7").toUpperCase()}`;
-          desc.textContent = "Real model · Fictional data";
+          const enterpriseSuffix = status.backend_mode === "enterprise" ? " · GATEWAY" : "";
+          badge.textContent = `LIVE AI · ${(status.model || "MINIMAX-M2.7").toUpperCase()}${enterpriseSuffix}`;
+          desc.textContent = status.backend_mode === "enterprise"
+            ? "Real model · APISIX Gate 3 Core Banking"
+            : "Real model · Fictional data";
         } else {
           badge.textContent = "SETUP NEEDED";
           desc.textContent = "Configure MINIMAX_API_KEY in .env";
@@ -161,8 +164,8 @@ function showDashboard(data) {
       })
       .catch(() => {});
   } else {
-    if (badge) badge.textContent = "SCRIPTED DEMO";
-    if (desc) desc.textContent = "Always here to help";
+    if (badge) badge.textContent = data && data.backend_mode === "enterprise" ? "SCRIPTED · GATEWAY" : "SCRIPTED DEMO";
+    if (desc) desc.textContent = data && data.backend_mode === "enterprise" ? "APISIX Gate 3 Core Banking" : "Always here to help";
     addMessage(
       "Hey Maya, I’m Flo. ✳\n\nThink of me as a little help with your everyday banking. Want to check your balance, talk through a charge, or try freezing your card?\n\nEverything here is a simulation. Let’s explore.",
     );

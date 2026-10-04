@@ -495,3 +495,24 @@ def test_enterprise_mode_tool_calls_gate3(monkeypatch):
     assert res_disp["mode"] == "enterprise"
     assert "case-9999" in res_disp["case"]["id"]
 
+
+def test_enterprise_mode_login_and_dashboard(live_client, monkeypatch):
+    monkeypatch.setenv("DEMO_BACKEND_MODE", "enterprise")
+    monkeypatch.setenv("GATE3_URL", "http://mock-apisix:9080/api/v1")
+
+    def mock_get(url, headers=None, timeout=None, **kwargs):
+        if "/accounts/demo-checking" in url:
+            return httpx.Response(200, json={"id": "demo-checking", "name": "Everyday account", "balance": 12485000, "currency": "INR", "status": "active"})
+        elif "/accounts/demo-savings" in url:
+            return httpx.Response(200, json={"id": "demo-savings", "name": "Savings pocket", "balance": 35000000, "currency": "INR", "status": "active"})
+        elif "/cards/card-2048" in url:
+            return httpx.Response(200, json={"id": "card-2048", "locked": False})
+        return httpx.Response(404)
+
+    monkeypatch.setattr(httpx, "get", mock_get)
+    res = live_client.post("/demo-api/login", json={"email": "maya@flobank.demo", "password": "flo-demo"})
+    assert res.status_code == 200
+    assert res.json()["backend_mode"] == "enterprise"
+    assert res.json()["accounts"][0]["balance"] == 12485000
+
+
