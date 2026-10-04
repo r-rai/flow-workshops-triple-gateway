@@ -349,7 +349,7 @@ cmd_switch() {
     log_info "Switching profile: '${current}' -> '${target}'..."
 
     log_info "Stopping current workshop containers (preserving named volumes)..."
-    docker compose --profile w1 --profile w2 --profile w3 --profile w4 down --remove-orphans || true
+    docker compose --profile demo --profile demo-enterprise --profile w1 --profile w2 --profile w3 --profile w4 down --remove-orphans || true
     echo "none" > "${STATE_FILE}"
 
     cmd_start "${target}"
