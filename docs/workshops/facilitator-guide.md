@@ -18,17 +18,25 @@ docker compose --profile demo up -d --build
 ```
 
 Open **http://localhost:8000**; the prefilled login is
-`maya@flobank.demo` / `flo-demo`. Show a balance query, card freeze/unfreeze,
-and a simulated dispute. This scripted Flo bot is separate from the W3
-LangGraph investigation agent. In a running workshop profile, the UI is also
-available through APISIX at **http://localhost:9080**. No additional UI service
-or scripts are needed for that workshop route.
+`maya@flobank.demo` / `flo-demo`. Demonstrate a balance query, card freeze/unfreeze,
+and a dispute. The customer Flo bot connects to live inference (`MiniMax-M2.7`)
+via APISIX Gate 1 when `MINIMAX_API_KEY` is set in `.env`, or falls back to
+deterministic scripted replies.
 
-Use `docker compose stop demo` to stop the standalone simulation. Use the
+For a live demonstration of real-time API Gateway integration across APISIX Gate 3:
+```bash
+docker compose --profile demo-enterprise up -d --build
+```
+
+In a running workshop profile (`w1`–`w4`), the customer UI is also
+available through APISIX at **http://localhost:9080**.
+
+Use `docker compose --profile demo down` to stop the standalone simulation. Use the
 existing launcher below for workshop readiness, verification, and switching.
+For complete step-by-step attendee instructions, see the
+[Participant Infrastructure Guide](participant-infra-guide.md).
 Current service sets and configured limits are in the
-[VPS runbook](../setup/vps-setup-guide.md); the [participant guide](../setup/participant-requirements.md)
-contains laptop setup commands.
+[VPS runbook](../setup/vps-setup-guide.md).
 
 ## ⚙️ VPS Architecture & Resource Protection Policy
 

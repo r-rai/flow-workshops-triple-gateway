@@ -86,8 +86,10 @@ The first build downloads the base image and dependencies.
 Stop the demo with:
 
 ```bash
-docker compose stop demo
+docker compose --profile demo down
 ```
+
+> 📖 **Participant Guide**: For step-by-step setup, profile switching, and teardown instructions across all workshops (`w1`–`w4`) and demos, see the **[Participant Infrastructure Guide](docs/workshops/participant-infra-guide.md)**.
 
 Demo sessions reset when the container stops. If port 8000 is busy, set
 `DEMO_HTTP_PORT=8001` in `.env` and open **http://localhost:8001** instead.

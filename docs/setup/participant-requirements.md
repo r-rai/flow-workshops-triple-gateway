@@ -31,21 +31,28 @@ internet access to download images and dependencies. Open **http://localhost:800
 and sign in with `maya@flobank.demo` / `flo-demo` (already filled in).
 
 Try a balance query, recent transactions, card freeze/unfreeze, and
-`Dispute tx-1004`, followed by a dispute-status query. The assistant is scripted;
-accounts, money, and disputes are fictional. Demo actions are isolated per
-session, expire after 30 minutes, and reset on sign-out or container restart.
+`Dispute tx-1004`, followed by a dispute-status query. When configured with
+`MINIMAX_API_KEY` in `.env`, the assistant connects to live inference (`MiniMax-M2.7`)
+via APISIX Gate 1 (`demo-gateway`); in offline environments, it falls back to
+deterministic scripted replies.
+
+The demo supports two backend modes:
+- **Simulated (`demo`)**: Fictional fixtures, in-memory session isolation.
+- **Enterprise (`demo-enterprise`)**: Real-time integration with APISIX Gate 3 (`:9080/api/v1`) using scoped customer JWTs and SQLite/PostgreSQL persistence.
 
 Check status or stop the demo:
 
 ```bash
 docker compose --profile demo ps
 docker compose logs --tail 50 demo
-docker compose stop demo
+docker compose --profile demo down
 ```
+
+For complete step-by-step instructions for all workshop profiles (`w1`–`w4`) and teardown procedures, see the [Participant Infrastructure Guide](../workshops/participant-infra-guide.md).
 
 If port 8000 is busy, add `DEMO_HTTP_PORT=8001` to a repository-root `.env` file,
 rerun the startup command, and open **http://localhost:8001**. Otherwise `.env`
-configuration is optional for the demo.
+configuration is optional for the simulated demo.
 
 ## Workshop laptop target
 
@@ -94,9 +101,13 @@ global preflight also requires the pinned third-party images from W2–W4; run
 starting services. Prepare the Python environment described in the
 [VPS runbook](vps-setup-guide.md) before using the launcher.
 
-The customer bot always uses scripted replies. The W3 investigation agent is a
-separate LangGraph workflow: replay is the default; live inference requires a
-participant-owned provider key in ignored local configuration. Never commit keys.
+The customer bot connects to live hosted inference (`MiniMax-M2.7`) via APISIX
+Gate 1 when `MINIMAX_API_KEY` is present, and falls back gracefully to scripted
+replies in offline environments. The W3 investigation agent is a separate LangGraph
+workflow: replay is the default; live inference requires a participant-owned provider
+key in ignored local configuration (`.env`). Never commit keys.
+
+For detailed workshop instructions and clean teardown, see the [Participant Infrastructure Guide](../workshops/participant-infra-guide.md).
 
 If local Docker fails, use presenter demonstration or an explicitly secured,
 isolated fallback. The initial limit of two concurrent fallback runs remains an

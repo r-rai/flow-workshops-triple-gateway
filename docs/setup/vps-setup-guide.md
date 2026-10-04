@@ -22,16 +22,25 @@ docker compose --profile demo up -d --build
 ```
 
 Open **http://localhost:8000** and use `maya@flobank.demo` / `flo-demo`.
-No `.env` setup, Python environment, LLM key, or workshop launcher is required.
-The profile runs `src.demo.app:app` in one container, with fictional fixtures and
-scripted replies. It does not access the enterprise ledger, MCP, or the live LLM.
-Sessions expire after 30 minutes and reset on sign-out or process restart.
+The standalone profile runs a three-service topology (`demo`, `demo-gateway`, `demo-inference`).
+When configured with `MINIMAX_API_KEY` in `.env`, Flo connects to live hosted LLM inference
+(`MiniMax-M2.7`) via APISIX Gate 1; otherwise, it falls back gracefully to deterministic scripted replies.
+Fictional banking data is session-scoped. Sessions expire after 30 minutes and reset on sign-out or process restart.
+
+For live APISIX Gate 3 integration against real Core Banking SQLite/PostgreSQL data:
+```bash
+docker compose --profile demo-enterprise up -d --build
+```
+
+Check status or stop the demo:
 
 ```bash
 docker compose --profile demo ps
 docker compose logs --tail 50 demo
-docker compose stop demo
+docker compose --profile demo down
 ```
+
+For complete step-by-step instructions for all workshop profiles and teardown procedures, see the [Participant Infrastructure Guide](../workshops/participant-infra-guide.md).
 
 The host binding defaults to `127.0.0.1:8000`; change `DEMO_HTTP_PORT` in `.env`
 if this port is occupied. For remote access, forward the selected port over SSH:
@@ -50,7 +59,8 @@ All profiles use the original `docker-compose.yml`:
 
 | Profile | Compose services | Sum of configured container memory limits |
 |---|---|---:|
-| `demo` | demo | 256 MiB |
+| `demo` | demo, demo-gateway, demo-inference | 896 MiB |
+| `demo-enterprise` | demo, apisix, api, adapter | 1,152 MiB |
 | `w1` | apisix, api | 640 MiB |
 | `w2` | apisix, api, adapter, opa, postgres, jaeger | 1,664 MiB |
 | `w3` | W2 services plus temporal, kafka, worker | 3,072 MiB |

@@ -395,10 +395,10 @@ cmd_reset() {
 }
 
 cmd_stop() {
-    log_info "Stopping Novabank workshop services..."
-    docker compose --profile w1 --profile w2 --profile w3 --profile w4 down --remove-orphans
+    log_info "Stopping Flo Bank workshop services..."
+    docker compose --profile demo --profile demo-enterprise --profile w1 --profile w2 --profile w3 --profile w4 down --remove-orphans
     echo "none" > "${STATE_FILE}"
-    log_ok "Novabank workshop services stopped. Persistent data preserved."
+    log_ok "Flo Bank workshop services stopped. Persistent data preserved."
 }
 
 # Main Command Dispatch
