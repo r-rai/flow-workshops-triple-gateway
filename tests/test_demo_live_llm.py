@@ -449,3 +449,49 @@ def test_status_endpoint_scripted_and_live(live_client, monkeypatch):
     res_scripted = live_client.get("/demo-api/status")
     assert res_scripted.status_code == 200
     assert res_scripted.json()["chat_mode"] == "scripted"
+
+
+# ---------------------------------------------------------------------------
+# 8. Enterprise mode tool execution via APISIX Gate 3
+# ---------------------------------------------------------------------------
+
+def test_enterprise_mode_tool_calls_gate3(monkeypatch):
+    from src.demo.tools import execute_demo_tool, StagedDemoState
+    staged = StagedDemoState(card_locked=False)
+
+    mock_calls = []
+    def mock_request(method, url, headers=None, json=None, **kwargs):
+        mock_calls.append((method, url, headers, json))
+        if "/accounts/demo-checking" in url:
+            return httpx.Response(200, json={"id": "demo-checking", "name": "Everyday account", "balance": 12485000, "currency": "INR"})
+        elif "/accounts/demo-savings" in url:
+            return httpx.Response(200, json={"id": "demo-savings", "name": "Savings pocket", "balance": 35000000, "currency": "INR"})
+        elif "/cards/card-2048/state" in url:
+            return httpx.Response(200, json={"id": "card-2048", "locked": True, "status": "frozen"})
+        elif "/cards/card-2048" in url:
+            return httpx.Response(200, json={"id": "card-2048", "last_four": "2048", "holder_name": "MAYA SHAH", "expiry": "09/29", "locked": False})
+        elif "/cases" in url and method == "POST":
+            return httpx.Response(201, json={"id": "case-9999", "customer_id": "cust-maya", "status": "open", "issue_type": "disputed_transaction"})
+        elif "/cases" in url and method == "GET":
+            return httpx.Response(200, json=[{"id": "case-9999", "customer_id": "cust-maya", "status": "open", "issue_type": "disputed_transaction", "description": "Stream+ dispute"}])
+        return httpx.Response(404)
+
+    monkeypatch.setattr(httpx, "request", mock_request)
+
+    # 1. Accounts read via Gate 3
+    res_acc = execute_demo_tool("get_demo_accounts", {}, staged, backend_mode="enterprise", gate3_url="http://apisix:9080/api/v1", api_token="test-token")
+    assert res_acc["accounts"][0]["balance_paise"] == 12485000
+    assert res_acc["mode"] == "enterprise"
+
+    # 2. Card freeze via Gate 3
+    res_card = execute_demo_tool("set_demo_card_state", {"locked": True}, staged, backend_mode="enterprise", gate3_url="http://apisix:9080/api/v1", api_token="test-token")
+    assert res_card["card_locked"] is True
+    assert staged.card_locked is True
+    assert res_card["mode"] == "enterprise"
+
+    # 3. Dispute creation via Gate 3
+    res_disp = execute_demo_tool("create_demo_dispute", {"transaction_id": "tx-1004"}, staged, backend_mode="enterprise", gate3_url="http://apisix:9080/api/v1", api_token="test-token")
+    assert res_disp["status"] == "created"
+    assert res_disp["mode"] == "enterprise"
+    assert "case-9999" in res_disp["case"]["id"]
+

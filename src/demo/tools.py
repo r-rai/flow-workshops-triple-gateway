@@ -14,6 +14,9 @@ import json
 import re
 from typing import Any
 
+import httpx
+
+
 DEMO = {
     'mode': 'simulation',
     'customer': {'name': 'Maya Shah', 'email': 'maya@flobank.demo'},
@@ -153,12 +156,56 @@ DEMO_TOOLS_SCHEMA = [
 ALLOWLISTED_TOOL_NAMES = {tool["function"]["name"] for tool in DEMO_TOOLS_SCHEMA}
 
 
-def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -> dict[str, Any]:
-    """Execute allowlisted tool against staged session state."""
+def execute_demo_tool(
+    name: str,
+    args: dict[str, Any],
+    state: StagedDemoState,
+    backend_mode: str = "simulated",
+    gate3_url: str | None = None,
+    api_token: str | None = None,
+) -> dict[str, Any]:
+    """Execute allowlisted tool against staged session state in simulated or enterprise mode."""
     if name not in ALLOWLISTED_TOOL_NAMES:
         return {"error": f"Tool '{name}' is not in the allowlist of permitted demo tools."}
 
+    is_enterprise = (backend_mode == "enterprise") and bool(gate3_url)
+    headers = {"Authorization": f"Bearer {api_token}"} if api_token else {}
+    try:
+        from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+        TraceContextTextMapPropagator().inject(headers)
+    except Exception:
+        pass
+
     if name == "get_demo_accounts":
+        if is_enterprise:
+            try:
+                res_c = httpx.request("GET", f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=10.0)
+                res_s = httpx.request("GET", f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=10.0)
+                accounts = []
+                if res_c.status_code == 200:
+                    c_data = res_c.json()
+                    accounts.append({
+                        "id": c_data["id"],
+                        "name": c_data["name"],
+                        "number": "•••• 2048",
+                        "balance_paise": c_data["balance"],
+                        "formatted_balance": rupees(c_data["balance"]),
+                        "currency": c_data.get("currency", "INR"),
+                    })
+                if res_s.status_code == 200:
+                    s_data = res_s.json()
+                    accounts.append({
+                        "id": s_data["id"],
+                        "name": s_data["name"],
+                        "number": "•••• 8821",
+                        "balance_paise": s_data["balance"],
+                        "formatted_balance": rupees(s_data["balance"]),
+                        "currency": s_data.get("currency", "INR"),
+                    })
+                return {"accounts": accounts, "mode": "enterprise"}
+            except Exception as e:
+                return {"error": f"Failed to retrieve accounts from enterprise gateway: {e}"}
+
         accounts = []
         for acc in DEMO['accounts']:
             accounts.append({
@@ -172,6 +219,7 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
         return {"accounts": accounts, "mode": "simulation"}
 
     elif name == "get_demo_transactions":
+        mode_label = "enterprise" if is_enterprise else "simulation"
         transactions = []
         for tx in DEMO['transactions']:
             transactions.append({
@@ -184,9 +232,10 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
                 "direction": tx["direction"],
                 "icon": tx["icon"],
             })
-        return {"transactions": transactions, "mode": "simulation"}
+        return {"transactions": transactions, "mode": mode_label}
 
     elif name == "get_demo_spending":
+        mode_label = "enterprise" if is_enterprise else "simulation"
         debit_txs = [tx for tx in DEMO['transactions'] if tx['direction'] == 'debit']
         total = sum(tx['amount'] for tx in debit_txs)
         largest = max(debit_txs, key=lambda tx: tx['amount']) if debit_txs else None
@@ -200,10 +249,28 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
                 "amount_paise": largest["amount"],
                 "formatted_amount": rupees(largest["amount"]),
             } if largest else None,
-            "mode": "simulation",
+            "mode": mode_label,
         }
 
     elif name == "get_demo_card":
+        if is_enterprise:
+            try:
+                res = httpx.request("GET", f"{gate3_url}/cards/card-2048", headers=headers, timeout=10.0)
+                if res.status_code == 200:
+                    data = res.json()
+                    state.card_locked = data.get("locked", False)
+                    return {
+                        "id": data.get("id", "card-2048"),
+                        "last_four": data.get("last_four", "2048"),
+                        "holder": data.get("holder_name", data.get("holder", "MAYA SHAH")),
+                        "expiry": data.get("expiry", "09/29"),
+                        "locked": state.card_locked,
+                        "status": "frozen" if state.card_locked else "active",
+                        "mode": "enterprise",
+                    }
+            except Exception as e:
+                return {"error": f"Failed to retrieve card from enterprise gateway: {e}"}
+
         card = deepcopy(DEMO['card'])
         card['locked'] = state.card_locked
         card['status'] = 'frozen' if state.card_locked else 'active'
@@ -216,6 +283,25 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
         locked_val = args["locked"]
         if not isinstance(locked_val, bool):
             return {"error": "Argument 'locked' must be a boolean."}
+
+        if is_enterprise:
+            try:
+                res = httpx.request("POST", f"{gate3_url}/cards/card-2048/state", headers=headers, json={"locked": locked_val}, timeout=10.0)
+                if res.status_code == 200:
+                    data = res.json()
+                    state.card_locked = data.get("locked", locked_val)
+                    status_text = "frozen" if state.card_locked else "active"
+                    return {
+                        "status": "success",
+                        "card_locked": state.card_locked,
+                        "card_status": status_text,
+                        "message": f"Demo card ending 2048 is now {status_text} in Core Banking.",
+                        "mode": "enterprise",
+                    }
+                return {"error": f"Core Banking rejected card update: status {res.status_code}"}
+            except Exception as e:
+                return {"error": f"Failed to update card via enterprise gateway: {e}"}
+
         state.card_locked = locked_val
         status_text = "frozen" if state.card_locked else "active"
         return {
@@ -223,6 +309,7 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
             "card_locked": state.card_locked,
             "card_status": status_text,
             "message": f"Demo card ending 2048 is now {status_text}. This only affects this demo session.",
+            "mode": "simulation",
         }
 
     elif name == "create_demo_dispute":
@@ -244,8 +331,41 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
             return {
                 "status": "already_exists",
                 "case": existing,
-                "message": f"Simulated dispute {existing['id']} for {existing['merchant']} is already under review.",
+                "message": f"Dispute {existing['id']} for {existing['merchant']} is already under review.",
+                "mode": "enterprise" if is_enterprise else "simulation",
             }
+
+        if is_enterprise:
+            try:
+                case_id = f"DEMO-{1001 + len(state.cases)}"
+                payload = {
+                    "id": case_id,
+                    "customer_id": "cust-maya",
+                    "issue_type": "disputed_transaction",
+                    "description": f"Dispute for {tx['merchant']} ({rupees(tx['amount'])}) tx: {tx_id}",
+                    "priority": "medium",
+                }
+                res = httpx.request("POST", f"{gate3_url}/cases", headers=headers, json=payload, timeout=10.0)
+                if res.status_code in (200, 201):
+                    c_resp = res.json()
+                    new_case = {
+                        "id": c_resp.get("id", case_id),
+                        "transaction_id": tx_id,
+                        "merchant": tx["merchant"],
+                        "amount": tx["amount"],
+                        "formatted_amount": rupees(tx["amount"]),
+                        "status": c_resp.get("status", "open"),
+                    }
+                    state.cases[tx_id] = new_case
+                    return {
+                        "status": "created",
+                        "case": new_case,
+                        "message": f"Dispute case {new_case['id']} for {tx['merchant']} ({rupees(tx['amount'])}) recorded in Core Banking.",
+                        "mode": "enterprise",
+                    }
+                return {"error": f"Core Banking rejected case creation: status {res.status_code}"}
+            except Exception as e:
+                return {"error": f"Failed to create dispute via enterprise gateway: {e}"}
 
         case_id = f"DEMO-{1001 + len(state.cases)}"
         new_case = {
@@ -261,9 +381,24 @@ def execute_demo_tool(name: str, args: dict[str, Any], state: StagedDemoState) -
             "status": "created",
             "case": new_case,
             "message": f"Simulated dispute {case_id} for {tx['merchant']} ({rupees(tx['amount'])}) is under review. This is a simulation; no real case or refund was created.",
+            "mode": "simulation",
         }
 
     elif name == "get_demo_disputes":
+        if is_enterprise:
+            try:
+                res = httpx.request("GET", f"{gate3_url}/cases", headers=headers, timeout=10.0)
+                if res.status_code == 200:
+                    all_cases = res.json()
+                    maya_cases = [c for c in all_cases if c.get("customer_id") == "cust-maya"]
+                    return {
+                        "cases": maya_cases,
+                        "count": len(maya_cases),
+                        "mode": "enterprise",
+                    }
+            except Exception as e:
+                return {"error": f"Failed to retrieve cases from enterprise gateway: {e}"}
+
         return {
             "cases": list(state.cases.values()),
             "count": len(state.cases),
