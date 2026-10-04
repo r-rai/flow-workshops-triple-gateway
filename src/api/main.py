@@ -7,7 +7,8 @@ from src.core.config import settings
 from src.core.database import engine, Base, SessionLocal
 from src.services.seed import reset_and_seed_db
 from src.models.db_models import Account
-from src.api.routes import health, accounts, cases, payments, approvals, incidents, admin, a2a, oauth
+from src.api.routes import health, accounts, cases, payments, approvals, incidents, admin, a2a, oauth, cards
+
 
 
 # Optional OpenTelemetry instrumentation
@@ -86,6 +87,8 @@ app.include_router(incidents.router)
 app.include_router(admin.router)
 app.include_router(a2a.router)
 app.include_router(oauth.router)
+app.include_router(cards.router)
+
 
 
 @app.get("/.well-known/agent.json")

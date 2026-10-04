@@ -116,7 +116,7 @@ def get_current_principal(
             return Principal(
                 id="w1-lab-operator",
                 role="operator",
-                scopes=["api:accounts:read", "api:payments:write", "api:cases:read", "api:incidents:write"],
+                scopes=["api:accounts:read", "api:cards:read", "api:cards:write", "api:payments:write", "api:cases:read", "api:cases:write", "api:incidents:write"],
                 auth_method="api_key",
             )
         raise HTTPException(

@@ -19,16 +19,17 @@ class TokenResponse(BaseModel):
 
 # Entitlement matrix: Maximum permitted target API scopes per subject role
 ROLE_ENTITLED_SCOPES: Dict[str, Set[str]] = {
-    "viewer": {"api:accounts:read", "api:cases:read"},
+    "customer": {"api:accounts:read", "api:cards:read", "api:cards:write", "api:cases:read", "api:cases:write"},
+    "viewer": {"api:accounts:read", "api:cases:read", "api:cards:read"},
     "auditor": {"api:accounts:read", "api:cases:read"},
-    "support_agent": {"api:accounts:read", "api:cases:read", "api:payments:write"},
+    "support_agent": {"api:accounts:read", "api:cases:read", "api:cases:write", "api:cards:read", "api:payments:write"},
     "teller": {"api:accounts:read", "api:cases:read", "api:payments:write"},
-    "operator": {"api:accounts:read", "api:cases:read"},
+    "operator": {"api:accounts:read", "api:cases:read", "api:cards:read", "api:cards:write", "api:cases:write"},
     "agent": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
     "payments_agent": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
     "negotiator_bot": {"api:accounts:read", "api:cases:read", "api:a2a:tasks"},
     "manager": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
-    "admin": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:incidents:write", "api:a2a:tasks"},
+    "admin": {"api:accounts:read", "api:cases:read", "api:cases:write", "api:cards:read", "api:cards:write", "api:payments:write", "api:incidents:write", "api:a2a:tasks"},
     "service": {"api:accounts:read", "api:cases:read", "api:payments:write", "api:a2a:tasks"},
 }
 

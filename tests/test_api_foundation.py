@@ -686,6 +686,32 @@ def test_seed_contains_demo_accounts_and_card():
     finally:
         db.close()
 
+def test_cards_and_case_creation_endpoints(client):
+    from src.core.security import create_jwt_token
+    token = create_jwt_token("cust-maya", audience="novabank-api", scopes=["api:cards:read", "api:cards:write", "api:cases:write"], role="customer")
+    headers = {"Authorization": f"Bearer {token}", "X-API-Key": "gate3-test-key"}
+
+    # Read card
+    r_card = client.get("/api/v1/cards/card-2048", headers=headers)
+    assert r_card.status_code == 200
+    assert r_card.json()["last_four"] == "2048"
+    assert r_card.json()["locked"] is False
+
+    # Freeze card
+    r_freeze = client.post("/api/v1/cards/card-2048/state", headers=headers, json={"locked": True})
+    assert r_freeze.status_code == 200
+    assert r_freeze.json()["locked"] is True
+
+    # Create dispute case
+    r_case = client.post("/api/v1/cases", headers=headers, json={
+        "id": "DEMO-CASE-1001",
+        "customer_id": "cust-maya",
+        "issue_type": "disputed_transaction",
+        "description": "Simulated dispute for Stream+ charge tx-1004"
+    })
+    assert r_case.status_code == 201
+    assert r_case.json()["id"] == "DEMO-CASE-1001"
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main(["-v", __file__]))
