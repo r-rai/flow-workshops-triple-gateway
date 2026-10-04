@@ -124,10 +124,16 @@ are isolated per session; signing out or restarting the process resets them.
 Sessions expire after 30 minutes. Run one API process for this in-memory demo.
 This is simulated authentication, not a production customer identity system.
 
-**Next planned work:** connect the customer Flo bot to a real hosted LLM through
-Gate 1 while keeping fictional banking data and the same Compose command.
-See the [implementation plan and agy handoff](docs/implementation/demo-real-llm-plan.md).
-This is not implemented yet; the current customer bot remains scripted.
+**Real LLM Integration:** The customer Flo bot connects to a real hosted LLM
+(`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference`) while
+keeping fictional banking data strictly session-scoped and retaining the single Compose
+startup command (`docker compose --profile demo up -d --build`). When `MINIMAX_API_KEY`
+is configured in `.env`, Flo provides natural, tool-grounded AI conversation backed by
+session tools (`get_demo_accounts`, `get_demo_transactions`, `get_demo_spending`,
+`get_demo_card`, `set_demo_card_state`, `create_demo_dispute`, `get_demo_disputes`).
+For offline environments or tests without a key, explicit scripted mode
+(`DEMO_CHAT_MODE=scripted`) is supported. See the
+[implementation plan](docs/implementation/demo-real-llm-plan.md).
 
 Flo Bank is the public brand throughout the UI, APIs, and workshop material.
 Existing `novabank` infrastructure identifiers (JWT audiences/issuer, OPA

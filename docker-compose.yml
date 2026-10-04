@@ -11,6 +11,8 @@ networks:
     name: novabank-persistence
   workflow:
     name: novabank-workflow
+  demo:
+    name: novabank-demo
 
 volumes:
   novabank_api_data:
@@ -18,7 +20,7 @@ volumes:
   novabank_temporal_data:
 
 services:
-  # Customer simulation only: docker compose --profile demo up -d --build
+  # Customer simulation with live LLM chat: docker compose --profile demo up -d --build
   # Workshop profiles also serve the UI through the API at the gateway URL.
   demo:
     build:
@@ -29,6 +31,17 @@ services:
     command: ["uvicorn", "src.demo.app:app", "--host", "0.0.0.0", "--port", "8000"]
     ports:
       - "127.0.0.1:${DEMO_HTTP_PORT:-8000}:8000"
+    environment:
+      - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-live}
+      - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://demo-gateway:9080/ai/chat/completions}
+      - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://demo-gateway:9080/ai/status}
+      - DEMO_MODEL=${LLM_MODEL:-MiniMax-M2.7}
+      - DEMO_TURN_TIMEOUT_SEC=${DEMO_TURN_TIMEOUT_SEC:-45.0}
+    networks:
+      - demo
+    depends_on:
+      - demo-gateway
+      - demo-inference
     deploy:
       resources:
         limits:
@@ -39,6 +52,50 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
+    profiles: ["demo"]
+
+  demo-gateway:
+    image: apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
+    restart: unless-stopped
+    volumes:
+      - ./docker/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./docker/apisix/apisix-demo.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    networks:
+      - demo
+    depends_on:
+      - demo-inference
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+    profiles: ["demo"]
+
+  demo-inference:
+    build:
+      context: .
+      dockerfile: docker/adapter/Dockerfile
+    image: novabank/adapter:1.0.0
+    restart: unless-stopped
+    environment:
+      - USE_REPLAY_FIXTURES=${USE_REPLAY_FIXTURES:-false}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_PROVIDER_URL=${LLM_PROVIDER_URL:-https://api.minimax.io/v1/chat/completions}
+      - LLM_MODEL=${LLM_MODEL:-MiniMax-M2.7}
+      - INFERENCE_BUDGET_TOKENS=${DEMO_INFERENCE_BUDGET_TOKENS:-50000}
+      - ENABLE_TELEMETRY=false
+    networks:
+      - demo
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     profiles: ["demo"]
 
   apisix:
@@ -79,6 +136,9 @@ services:
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://jaeger:4318/v1/traces}
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
+      - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-scripted}
+      - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://apisix:9080/ai/chat/completions}
+      - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://apisix:9080/ai/status}
     volumes:
       - novabank_api_data:/app/data
       - ./seed/v1_seed.json:/app/seed/v1_seed.json:ro

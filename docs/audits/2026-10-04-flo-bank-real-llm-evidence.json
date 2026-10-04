@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-10-04T16:03:00+05:30",
+  "feature": "Flo Bank Customer Demo Real Hosted LLM Chat",
+  "branch": "feat/flo-bank-real-llm",
+  "status": "verified",
+  "startup_command": "docker compose --profile demo up -d --build",
+  "topology": {
+    "ui_api": "demo (port 8000)",
+    "gateway": "demo-gateway (APISIX Gate 1, internal:9080)",
+    "inference": "demo-inference (Adapter server, internal:8080)",
+    "network": "novabank-demo (isolated from enterprise backends)"
+  },
+  "provider": {
+    "name": "MiniMax",
+    "model": "MiniMax-M2.7",
+    "endpoint": "https://api.minimax.io/v1/chat/completions"
+  },
+  "bounded_live_evidence": {
+    "login": {
+      "customer": "Maya Shah",
+      "email": "maya@flobank.demo",
+      "http_status": 200
+    },
+    "status_endpoint": {
+      "chat_mode": "live",
+      "mode": "simulation",
+      "configured": true,
+      "available": true,
+      "model": "MiniMax-M2.7",
+      "headroom_tokens": 50000
+    },
+    "turn_1": {
+      "user_message": "What is my current everyday account balance and what is my card status?",
+      "executed_tools": ["get_demo_accounts", "get_demo_card"],
+      "model": "MiniMax-M2.7",
+      "chat_mode": "live",
+      "reply_snippet": "Everyday account: ₹1,24,850.00 ... Card ending •••• 2048 Status: Active",
+      "http_status": 200
+    },
+    "turn_2": {
+      "user_message": "Please freeze my card.",
+      "executed_tools": ["set_demo_card_state"],
+      "staged_state_committed": {
+        "card_locked": true
+      },
+      "reply_snippet": "Your card has been frozen successfully! 🔒 Card ending •••• 2048 Status: ❄️ Frozen",
+      "http_status": 200
+    },
+    "turn_3": {
+      "user_message": "What about my savings pocket?",
+      "context_retained": true,
+      "reply_snippet": "Savings pocket: ₹3,50,000.00",
+      "http_status": 200
+    }
+  },
+  "automated_tests": {
+    "python_suite": "62 passed (0 failed, 2 warnings)",
+    "browser_smoke_test": "Playwright Chromium passed (login, balances, chat, card controls, disputes, refresh, responsive layouts, XSS text handling, logout/reset, stale responses, draft preservation)"
+  }
+}

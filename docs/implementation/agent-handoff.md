@@ -17,16 +17,17 @@
 
 ---
 
-## Next requested work: real LLM in the customer demo
+## Delivered: Real LLM in the Customer Demo
 
-The user decided on 2026-10-04 that the customer-facing Flo bot should use real
-hosted inference. This integration is **pending**; the delivered UI is still
-scripted. W3's live LangGraph mode does not enable live customer chat.
-
-The [implementation plan and resume context](demo-real-llm-plan.md) records the
-approved direction, current baseline, proposed Gate 1/Compose integration,
-tests, and a copyable task for agy or a new chat. Keep the existing one-command
-Compose experience and fictional session-scoped banking data.
+Status: **Delivered and fully verified** on branch `feat/flo-bank-real-llm`.
+- Customer Flo bot connects to real hosted inference (`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference`).
+- Banking data remains fictional and strictly session-scoped with integer minor unit precision (paise).
+- Maintained single Docker Compose startup command: `docker compose --profile demo up -d --build`.
+- Bounded turn loop (max 4 rounds, 8 tool calls) with staged session mutations committed only on turn completion.
+- Rejection of unknown tools, malformed arguments, and foreign transactions.
+- Zero silent fallback to scripted/mock when live mode errors or budget is exceeded.
+- 62 Python tests passing (including 13 dedicated live LLM tests), Playwright browser smoke test passing, and bounded live verification successfully executed against real MiniMax.
+- See the [implementation plan and resume context](demo-real-llm-plan.md).
 
 ## Customer demo and current setup
 

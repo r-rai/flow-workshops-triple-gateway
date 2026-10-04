@@ -13,7 +13,8 @@ import yaml
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    monkeypatch.setenv('DEMO_CHAT_MODE', 'scripted')
     from src.demo.app import app
     with TestClient(app) as client:
         yield client

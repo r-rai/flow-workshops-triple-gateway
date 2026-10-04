@@ -1,0 +1,26 @@
+routes:
+  # Gate 1: Internal AI inference completions route for customer demo
+  - id: demo_ai_completions
+    uri: /ai/chat/completions
+    upstream:
+      type: roundrobin
+      nodes:
+        "demo-inference:8080": 1
+
+  # Gate 1: Status and model readiness check
+  - id: demo_ai_status
+    uri: /ai/status
+    upstream:
+      type: roundrobin
+      nodes:
+        "demo-inference:8080": 1
+
+  # Gateway healthz check
+  - id: demo_healthz
+    uri: /healthz
+    upstream:
+      type: roundrobin
+      nodes:
+        "demo-inference:8080": 1
+
+#END

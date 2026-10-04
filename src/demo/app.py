@@ -1,51 +1,67 @@
 """Standalone customer simulation, isolated from enterprise credentials and data.
 
 Run: uvicorn src.demo.app:app --host 127.0.0.1 --port 8000
-Also mounted by the core API; no LLM/provider dependencies are needed.
+Also mounted by the core API. Supports live hosted LLM chat via Gate 1 and scripted fallback.
 """
+from __future__ import annotations
+
+import asyncio
 from copy import deepcopy
 from dataclasses import dataclass, field
+import logging
+import os
 from pathlib import Path
-import re
 import secrets
 import time
+from typing import Any
 
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+from src.demo.tools import (
+    DEMO,
+    StagedDemoState,
+    rupees,
+    scripted_reply,
+)
+from src.demo.llm import (
+    LLMError,
+    LLMConfigError,
+    LLMLimitExceededError,
+    LLMProviderError,
+    check_gateway_status,
+    run_demo_chat_turn,
+)
+
+logger = logging.getLogger("flobank.demo")
+
 STATIC = Path(__file__).parent / 'static'
 SESSION_TTL = 1800
 MAX_SESSIONS = 128
 COOKIE = 'flo_demo_session'
 
-DEMO = {
-    'mode': 'simulation',
-    'customer': {'name': 'Maya Shah', 'email': 'maya@flobank.demo'},
-    'accounts': [
-        {'id': 'demo-checking', 'name': 'Everyday account', 'number': '•••• 2048', 'balance': 12485000, 'currency': 'INR'},
-        {'id': 'demo-savings', 'name': 'Savings pocket', 'number': '•••• 8821', 'balance': 35000000, 'currency': 'INR'},
-    ],
-    'card': {'last_four': '2048', 'holder': 'MAYA SHAH', 'expiry': '09/29', 'locked': False},
-    'transactions': [
-        {'id': 'tx-1001', 'merchant': 'Acme Studio', 'category': 'Salary', 'date': '2026-10-03', 'amount': 8500000, 'direction': 'credit', 'icon': '↙'},
-        {'id': 'tx-1002', 'merchant': 'Blue Tokai', 'category': 'Food & drink', 'date': '2026-10-03', 'amount': 48000, 'direction': 'debit', 'icon': '☕'},
-        {'id': 'tx-1003', 'merchant': 'Fresh Basket', 'category': 'Groceries', 'date': '2026-10-02', 'amount': 186000, 'direction': 'debit', 'icon': '↗'},
-        {'id': 'tx-1004', 'merchant': 'Stream+', 'category': 'Subscription', 'date': '2026-10-01', 'amount': 249900, 'direction': 'debit', 'icon': '▷'},
-        {'id': 'tx-1005', 'merchant': 'Metro Transit', 'category': 'Travel', 'date': '2026-09-30', 'amount': 65000, 'direction': 'debit', 'icon': '↗'},
-    ],
-}
+
+def get_chat_mode() -> str:
+    """Resolve active chat mode (live vs scripted)."""
+    explicit = os.getenv('DEMO_CHAT_MODE')
+    if explicit:
+        return explicit.lower().strip()
+    if os.getenv('ACTIVE_PROFILE') == 'w1':
+        return 'scripted'
+    return 'live'
 
 
 @dataclass
 class DemoSession:
     expires_at: float
     card_locked: bool = False
-    cases: dict = field(default_factory=dict)
+    cases: dict[str, dict[str, Any]] = field(default_factory=dict)
+    history: list[dict[str, Any]] = field(default_factory=list)
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 
-# One process is sufficient for this small workshop demo. Restarting resets it.
 sessions: dict[str, DemoSession] = {}
 app = FastAPI(title='Flo Bank Customer Demo', docs_url=None, redoc_url=None, openapi_url=None)
 demo_api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -75,24 +91,12 @@ def current_session(flo_demo_session: str | None = Cookie(default=None)) -> Demo
     return session
 
 
-def snapshot(session: DemoSession) -> dict:
+def snapshot(session: DemoSession) -> dict[str, Any]:
     data = deepcopy(DEMO)
     data['card']['locked'] = session.card_locked
     data['cases'] = list(session.cases.values())
+    data['chat_mode'] = get_chat_mode()
     return data
-
-
-def rupees(amount: int) -> str:
-    # Fixtures and monetary calculations use integer paise throughout.
-    whole, paise = divmod(amount, 100)
-    digits = str(whole)
-    prefix = digits[:-3]
-    groups = []
-    while prefix:
-        groups.insert(0, prefix[-2:])
-        prefix = prefix[:-2]
-    groups.append(digits[-3:])
-    return '₹' + ','.join(groups) + f'.{paise:02d}'
 
 
 @demo_api.middleware('http')
@@ -100,6 +104,28 @@ async def private_responses(request: Request, call_next):
     response = await call_next(request)
     response.headers['Cache-Control'] = 'no-store'
     return response
+
+
+@demo_api.get('/status')
+async def chat_status():
+    mode = get_chat_mode()
+    if mode == 'scripted':
+        return {
+            'chat_mode': 'scripted',
+            'mode': 'simulation',
+            'configured': True,
+            'available': True,
+            'model': None,
+        }
+    gw_status = await check_gateway_status()
+    return {
+        'chat_mode': 'live',
+        'mode': 'simulation',
+        'configured': gw_status.get('configured', False),
+        'available': gw_status.get('available', False),
+        'model': gw_status.get('model', 'MiniMax-M2.7'),
+        'headroom_tokens': gw_status.get('headroom_tokens'),
+    }
 
 
 @demo_api.post('/login')
@@ -124,7 +150,11 @@ async def login(payload: LoginRequest, request: Request, response: Response):
 
 @demo_api.post('/logout')
 async def logout(request: Request, response: Response):
-    sessions.pop(request.cookies.get(COOKIE), None)
+    token = request.cookies.get(COOKIE)
+    session = sessions.pop(token, None)
+    if session:
+        session.expires_at = 0
+        session.history.clear()
     response.delete_cookie(COOKIE, path='/demo-api')
     return {'status': 'signed_out'}
 
@@ -136,53 +166,68 @@ async def dashboard(session: DemoSession = Depends(current_session)):
 
 @demo_api.post('/chat')
 async def chat(payload: ChatRequest, session: DemoSession = Depends(current_session)):
-    message = payload.message.lower()
-    words = set(re.findall(r'[a-z]+', message))
-    transactions = DEMO['transactions']
-    if words & {'transfer', 'send', 'pay', 'payment'}:
-        reply = 'This demo cannot move money. You can explore your balance, transactions, card controls, and a simulated dispute.'
-    elif words & {'unfreeze', 'unlock'}:
-        session.card_locked = False
-        reply = 'Your demo card ending 2048 is active again. This only changes your simulation.'
-    elif words & {'freeze', 'lock'}:
-        session.card_locked = True
-        reply = 'Your demo card ending 2048 is now frozen. You can say “unfreeze my card” to reactivate it. This only changes your simulation.'
-    elif words & {'status', 'cases'} and 'card' not in words:
-        if session.cases:
-            reply = '\n'.join(f"{case['id']}: {case['merchant']} — under review. This is a simulated case; no real investigation has started." for case in session.cases.values())
-        else:
-            reply = 'You have no demo disputes yet. Try “Dispute tx-1004” to walk through the Stream+ charge.'
-    elif words & {'dispute', 'unrecognized', 'unrecognised', 'unauthorized', 'unauthorised'}:
-        match = re.search(r'\btx-\d+\b', message)
-        transaction_id = match.group(0) if match else None
-        transaction = next((item for item in transactions if item['id'] == transaction_id), None)
-        if transaction_id and transaction is None:
-            reply = 'I could not find that transaction in your demo account. Choose a transaction from recent activity.'
-        elif transaction is None:
-            reply = 'Which transaction would you like to dispute? Choose “Dispute” beside a charge in recent activity, or try “Dispute tx-1004”.'
-        elif transaction['direction'] == 'credit':
-            reply = 'Please choose a debit charge to simulate a dispute.'
-        else:
-            if transaction_id not in session.cases:
-                session.cases[transaction_id] = {
-                    'id': f'DEMO-{1001 + len(session.cases)}', 'transaction_id': transaction_id,
-                    'merchant': transaction['merchant'], 'status': 'under review',
-                }
-            case = session.cases[transaction_id]
-            reply = f"Simulated dispute {case['id']} for {transaction['merchant']} ({rupees(transaction['amount'])}) is under review. You can ask for its status. No real case or refund was created."
-    elif words & {'balance', 'account', 'accounts', 'savings'}:
-        reply = '\n'.join(f"{account['name']}: {rupees(account['balance'])}" for account in DEMO['accounts']) + '\nThese balances are fictional demo data.'
-    elif words & {'transactions', 'transaction', 'activity', 'recent'}:
-        reply = 'Your recent demo activity:\n' + '\n'.join(
-            f"{item['merchant']} · {'+' if item['direction'] == 'credit' else '−'}{rupees(item['amount'])} · {item['id']}" for item in transactions)
-    elif words & {'spend', 'spent', 'spending'}:
-        total = sum(item['amount'] for item in transactions if item['direction'] == 'debit')
-        reply = f"You spent {rupees(total)} across the charges in your demo activity. Your largest charge is Stream+ at ₹2,499.00."
-    elif 'card' in words:
-        reply = f"Your demo card ending 2048 is {'frozen' if session.card_locked else 'active'}. Try “freeze my card” or “unfreeze my card”."
-    else:
-        reply = 'Hi! I’m Flo, your demo banking assistant. I can show your balance, recent transactions and spending, freeze or unfreeze your demo card, and simulate a transaction dispute. What would you like to try?'
-    return {'reply': reply, 'mode': 'simulation', 'dashboard': snapshot(session)}
+    mode = get_chat_mode()
+
+    # Per-session lock serializes concurrent turns for the same session
+    async with session.lock:
+        now = time.time()
+        if session.expires_at <= now:
+            raise HTTPException(401, 'Your demo session ended. Please sign in again.')
+
+        if mode == 'scripted':
+            reply, new_locked, new_cases = scripted_reply(payload.message, session.card_locked, session.cases)
+            session.card_locked = new_locked
+            session.cases = new_cases
+            session.history.append({'role': 'user', 'content': payload.message})
+            session.history.append({'role': 'assistant', 'content': reply})
+            return {
+                'reply': reply,
+                'mode': 'simulation',
+                'chat_mode': 'scripted',
+                'dashboard': snapshot(session),
+            }
+
+        # Live LLM Turn with staged session changes
+        staged = StagedDemoState(card_locked=session.card_locked, cases=deepcopy(session.cases))
+
+        try:
+            reply, updated_history, metadata = await run_demo_chat_turn(
+                user_message=payload.message,
+                history=session.history,
+                staged_state=staged,
+            )
+        except LLMConfigError as e:
+            logger.warning(f"Demo chat config error: {e.message}")
+            raise HTTPException(status_code=503, detail=e.message)
+        except LLMLimitExceededError as e:
+            logger.warning(f"Demo chat limit error: {e.message}")
+            raise HTTPException(status_code=429, detail=e.message)
+        except LLMProviderError as e:
+            logger.error(f"Demo chat provider error ({e.status_code}): {e.message}")
+            raise HTTPException(status_code=e.status_code, detail=e.message)
+        except LLMError as e:
+            logger.error(f"Demo chat error: {e.message}")
+            raise HTTPException(status_code=e.status_code, detail=e.message)
+        except Exception as e:
+            logger.error(f"Demo chat unexpected error: {str(e)}", exc_info=True)
+            raise HTTPException(status_code=502, detail=f"Flo chat encountered an unexpected error: {str(e)}")
+
+        # Revalidate session validity after awaited I/O
+        if session.expires_at <= time.time():
+            raise HTTPException(401, 'Your demo session ended. Please sign in again.')
+
+        # Atomically commit staged changes and updated history
+        session.card_locked = staged.card_locked
+        session.cases = staged.cases
+        session.history = updated_history
+
+        return {
+            'reply': reply,
+            'mode': 'simulation',
+            'chat_mode': 'live',
+            'model': metadata.get('model'),
+            'dashboard': snapshot(session),
+        }
 
 
 app.mount('/demo-api', demo_api)

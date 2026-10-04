@@ -6,14 +6,14 @@ def main():
     print("=== Running Profile w4 Verification Smoke Test ===")
     base_url = "http://127.0.0.1:9080"
 
-    with httpx.Client(timeout=10.0) as client:
-        # Gate 1 Replay
+    with httpx.Client(timeout=45.0) as client:
+        # Gate 1 Replay / Live completions
         r_ai = client.post(
             f"{base_url}/ai/chat/completions",
             json={"messages": [{"role": "user", "content": "Negotiate settlement for acc-101"}]}
         )
         assert r_ai.status_code == 200
-        print("✓ Gate 1 AI Replay OK")
+        print("✓ Gate 1 AI Replay / Inference OK")
 
         # Gate 2 MCP tools
         r_tools = client.post(

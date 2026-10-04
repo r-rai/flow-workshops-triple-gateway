@@ -140,9 +140,33 @@ function showDashboard(data) {
   $("#login-view").hidden = true;
   $("#dashboard-view").hidden = false;
   $("#messages").replaceChildren();
-  addMessage(
-    "Hey Maya, I’m Flo. ✳\n\nThink of me as a little help with your everyday banking. Want to check your balance, talk through a charge, or try freezing your card?\n\nEverything here is a simulation. Let’s explore.",
-  );
+  const badge = $("#chat-mode-badge");
+  const desc = $("#chat-mode-desc");
+  if (data && data.chat_mode === "live") {
+    if (badge) badge.textContent = "LIVE AI";
+    if (desc) desc.textContent = "Real model · Fictional data";
+    addMessage(
+      "Hey Maya, I’m Flo. ✳\n\nI’m powered by live AI to assist with your everyday banking. You can ask naturally about your balance, spending, card controls, or disputes.\n\nAll accounts and money here are fictional simulation data. Let’s explore.",
+    );
+    api("status")
+      .then((status) => {
+        if (!badge || !desc) return;
+        if (status.configured && status.available) {
+          badge.textContent = `LIVE AI · ${(status.model || "MINIMAX-M2.7").toUpperCase()}`;
+          desc.textContent = "Real model · Fictional data";
+        } else {
+          badge.textContent = "SETUP NEEDED";
+          desc.textContent = "Configure MINIMAX_API_KEY in .env";
+        }
+      })
+      .catch(() => {});
+  } else {
+    if (badge) badge.textContent = "SCRIPTED DEMO";
+    if (desc) desc.textContent = "Always here to help";
+    addMessage(
+      "Hey Maya, I’m Flo. ✳\n\nThink of me as a little help with your everyday banking. Want to check your balance, talk through a charge, or try freezing your card?\n\nEverything here is a simulation. Let’s explore.",
+    );
+  }
   document.title = "Your overview — Flo Bank";
   window.scrollTo(0, 0);
 }
