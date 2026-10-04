@@ -63,3 +63,53 @@ class PaymentsAgent:
             if resp.status_code not in (200, 201):
                 raise RuntimeError(f"Payment execution failed: {resp.status_code} {resp.text}")
             return resp.json()
+
+    async def dispatch_payment_task(self, task_id: str) -> Dict[str, Any]:
+        """
+        Executes an A2A delegated payment task:
+        1. Reads task specifications from A2A API.
+        2. Executes payment via Core Banking API.
+        3. Completes task binding the validated settlement record.
+        """
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            t_res = await client.get(f"{self.base_url}/api/v1/a2a/tasks/{task_id}", headers=self.get_headers())
+            if t_res.status_code != 200:
+                raise RuntimeError(f"Failed to query task {task_id}: {t_res.status_code} {t_res.text}")
+            task = t_res.json()
+            task_input = task.get("input", {})
+
+            amount = int(task_input.get("amount", 50000))
+            destination = task_input.get("destination_account") or "acc-101"
+            source_acc = task_input.get("source_account", "acc-102")
+            case_id = task_input.get("case_id", "case-501")
+
+            idemp_key = f"settle-a2a-{task_id}"
+            pay_payload = {
+                "account_id": source_acc,
+                "beneficiary": destination,
+                "amount": amount,
+                "currency": task_input.get("currency", "INR")
+            }
+            p_res = await client.post(
+                f"{self.base_url}/api/v1/payments",
+                headers={**self.get_headers(), "Idempotency-Key": idemp_key},
+                json=pay_payload
+            )
+            if p_res.status_code not in (200, 201):
+                raise RuntimeError(f"Payment execution failed: {p_res.status_code} {p_res.text}")
+            payment_record = p_res.json()
+
+            comp_res = await client.post(
+                f"{self.base_url}/api/v1/a2a/tasks/{task_id}/complete",
+                headers=self.get_headers(),
+                json={
+                    "payment_id": payment_record["payment_id"],
+                    "status": "SETTLED",
+                    "amount": amount,
+                    "destination_account": destination,
+                    "case_id": case_id
+                }
+            )
+            if comp_res.status_code != 200:
+                raise RuntimeError(f"Failed to complete task: {comp_res.status_code} {comp_res.text}")
+            return comp_res.json()

@@ -1,0 +1,62 @@
+[0;34m[INFO][0m Switching profile: 'w1' -> 'w2'...
+[0;34m[INFO][0m Stopping current workshop containers (preserving named volumes)...
+ Container novabank-workshops-apisix-1 Stopping 
+ Container novabank-workshops-api-1 Stopping 
+ Container novabank-workshops-apisix-1 Stopped 
+ Container novabank-workshops-apisix-1 Removing 
+ Container novabank-workshops-api-1 Stopped 
+ Container novabank-workshops-api-1 Removing 
+ Container novabank-workshops-apisix-1 Removed 
+ Container novabank-workshops-api-1 Removed 
+ Network novabank-backend Removing 
+ Network novabank-edge Removing 
+ Network novabank-persistence Removing 
+ Network novabank-capability Removing 
+ Network novabank-persistence Removed 
+ Network novabank-backend Removed 
+ Network novabank-edge Removed 
+ Network novabank-capability Removed 
+[0;34m[INFO][0m Starting workshop profile 'w2' within 6 GB operating budget...
+ Network novabank-persistence Creating 
+ Network novabank-persistence Creating 
+ Network novabank-backend Creating 
+ Network novabank-backend Creating 
+ Network novabank-capability Creating 
+ Network novabank-capability Creating 
+ Network novabank-edge Creating 
+ Network novabank-edge Creating 
+ Network novabank-persistence Created 
+ Network novabank-persistence Created 
+ Container novabank-workshops-postgres-1 Creating 
+ Network novabank-capability Created 
+ Network novabank-capability Created 
+ Container novabank-workshops-opa-1 Creating 
+ Container novabank-workshops-postgres-1 Created 
+ Network novabank-backend Created 
+ Network novabank-backend Created 
+ Container novabank-workshops-api-1 Creating 
+ Container novabank-workshops-opa-1 Created 
+ Network novabank-edge Created 
+ Network novabank-edge Created 
+ Container novabank-workshops-adapter-1 Creating 
+ Container novabank-workshops-jaeger-1 Creating 
+ Container novabank-workshops-apisix-1 Creating 
+ Container novabank-workshops-api-1 Created 
+ Container novabank-workshops-adapter-1 Created 
+ Container novabank-workshops-jaeger-1 Created 
+ Container novabank-workshops-apisix-1 Created 
+ Container novabank-workshops-adapter-1 Starting 
+ Container novabank-workshops-api-1 Starting 
+ Container novabank-workshops-postgres-1 Starting 
+ Container novabank-workshops-jaeger-1 Starting 
+ Container novabank-workshops-apisix-1 Starting 
+ Container novabank-workshops-opa-1 Starting 
+ Container novabank-workshops-adapter-1 Started 
+ Container novabank-workshops-api-1 Started 
+ Container novabank-workshops-postgres-1 Started 
+ Container novabank-workshops-jaeger-1 Started 
+ Container novabank-workshops-apisix-1 Started 
+ Container novabank-workshops-opa-1 Started 
+[0;34m[INFO][0m Waiting for services to become healthy...
+[0;32m[OK][0m Workshop profile 'w2' is ACTIVE and healthy on http://127.0.0.1:9080
+[0;32m[OK][0m Switched to profile 'w2' successfully.

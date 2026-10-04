@@ -1,0 +1,60 @@
+========================================================================
+ WORKSHOP 4 REHEARSAL: The Day the Agent Broke the Bank
+ Triple-Gate Architecture & A2A Security (135-Minute Automated Rehearsal)
+========================================================================
+
+[Segment 1: 0–10 min] Incident Briefing - Setting Up Lab Baseline
+✓ Lab baseline reset to initial seeded state.
+
+[Segment 2: 10–25 min] Reproducing the Unsafe Action
+Demonstrating how unconstrained LLM proposed an unauthorized 900,000 INR transfer...
+✓ Unsafe action analyzed: direct tool invocation would cause catastrophic loss.
+
+[Segment 3: 25–40 min] Gate 1 - Inference Controls & Fallback Replay
+✓ Gate 1 AI inference responded under local replay budget:
+  Provider: offline-replay
+  Model proposal: [REPLAY] Simulated reasoning complete for input: 'Analyze dispute...
+
+[Segment 4: 40–60 min] Gate 2 - OPA Argument-Aware Policy Enforcement
+✓ Gate 2 intercepted and rejected malicious transfer: POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: PROHIBITED_BENEFICIARY
+
+[Segment 5: 60–65 min] Mid-Session Checkpoint Verification
+✓ Invariants 1 & 2 intact. All containers healthy.
+
+[Segment 6: 65–85 min] Gate 3 - Audience Separation & Scope Enforcement
+✓ Invariant: Wrong audience token rejected by Gate 3 with HTTP 401
+✓ Invariant: Insufficient scope token rejected by Gate 3 with HTTP 403
+Testing RFC 8693 Token Exchange endpoints...
+✓ RFC 8693 Token Exchange verified with form-urlencoded request (HTTP 200)
+✓ TOKEN EXCHANGE ENTITLEMENT ENFORCED: Unauthorized scope escalation rejected with HTTP 403
+✓ RFC 8693 PROTOCOL VALIDATION: Missing subject_token_type rejected with HTTP 400
+✓ SUBJECT TOKEN INTEGRITY: Untrusted subject token audience rejected with HTTP 401
+
+[Segment 7: 85–105 min] Supervisory Approval Engine & Anti-Self-Approval
+✓ Created Payment Proposal: prop-4d9402f2 for INR 1,500.00
+✓ ANTI-SELF-APPROVAL VERIFIED: Agent prevented from approving its own proposal (HTTP 403)
+✓ ANTI-SELF-APPROVAL HARDENED: Static lab API key cannot approve proposals (HTTP 403)
+✓ Authorized Risk Manager successfully approved proposal
+✓ ARGUMENT BINDING VERIFIED: Gate 3 rejected tampered execution arguments (HTTP 400)
+✓ BELOW-THRESHOLD TAMPERING PREVENTED: Bound proposal arguments strictly enforced (HTTP 400)
+✓ ATOMIC SINGLE-USE INVARIANT VERIFIED CONCURRENTLY: Statuses [200, 409]
+
+[Segment 8: 105–120 min] A2A Protocol: Delegation & Owner-Scoped Isolation
+✓ NegotiatorBot discovered Agent Card: 'NovaBank PaymentsAgent' (v1.0.0)
+✓ Delegated A2A task created: task-c7ce7756 (owner: negotiator-bot-agent)
+✓ NegotiatorBot queried own task successfully.
+✓ OWNER-SCOPED TASK ACCESS VERIFIED: Unrelated agent denied task access with HTTP 403!
+✓ OWNER-SCOPED TASK COMPLETION VERIFIED: Foreign agent denied task mutation with HTTP 403!
+✓ SCOPE ENFORCEMENT VERIFIED: Viewer token denied task creation with HTTP 403!
+✓ AUTHORIZED TASK COMPLETION: Owner successfully bound completed payment 'pay-d86082e8' to task 'task-c7ce7756'
+
+[Segment 9: 120–130 min] Incident Reconstruction & Trace Correlation
+✓ Jaeger Telemetry active. Correlated services: ['novabank-api', 'jaeger-all-in-one']
+✓ Jaeger Distributed Traces verified: 0 traces recorded with 0 spans for novabank-api
+
+[Segment 10: 130–135 min] Rehearsal Evidence Compilation
+✓ Saved rehearsal evidence to workshops/w4/evidence/rehearsal-evidence.json
+
+========================================================================
+🎉 WORKSHOP 4 REHEARSAL COMPLETE in 1.53s: ALL TRIPLE-GATE CONTRACTS VERIFIED!
+========================================================================

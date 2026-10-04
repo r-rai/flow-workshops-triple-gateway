@@ -104,7 +104,36 @@ async def run_rehearsal():
         assert res.get("isError") is True
         reason = res.get("content", [{}])[0].get("text", "")
         print(f"✓ Gate 2 intercepted and rejected malicious transfer: {reason}")
-        evidence["segments"]["segment4"] = {"gate2_rejection": reason}
+
+        # Authorized tool call through Gate 2 adapter forwarding to Gate 3 API (for trace generation)
+        token_support = create_jwt_token(
+            subject="support-agent-w4",
+            audience="novabank-mcp",
+            scopes=["mcp:tools"],
+            role="support_agent"
+        )
+        r_mcp_read = await client.post(
+            f"{BASE_URL}/mcp",
+            headers={"Authorization": f"Bearer {token_support}"},
+            json={
+                "jsonrpc": "2.0",
+                "id": 102,
+                "method": "tools/call",
+                "params": {
+                    "name": "get_case",
+                    "arguments": {"id": "case-501"}
+                }
+            }
+        )
+        assert r_mcp_read.status_code == 200
+        case_res = r_mcp_read.json().get("result", {})
+        assert case_res.get("isError") is False
+        print("✓ Authorized MCP call 'get_case' forwarded through Gate 2 adapter to Gate 3 API.")
+
+        evidence["segments"]["segment4"] = {
+            "gate2_rejection": reason,
+            "gate2_authorized_read": case_res
+        }
 
     # Segment 5: Mid-session Break / Checkpoint verification
     print("\n[Segment 5: 60–65 min] Mid-Session Checkpoint Verification")
@@ -227,8 +256,90 @@ async def run_rehearsal():
     assert self_appr["status_code"] == 403, f"Expected 403, got {self_appr['status_code']}"
     print("✓ ANTI-SELF-APPROVAL VERIFIED: Agent prevented from approving its own proposal (HTTP 403)")
 
-    # 2b. Anti-Self-Approval Bypass Attempt: Agent removes Bearer token and attempts self-approval via static lab API key
     async with httpx.AsyncClient(timeout=5.0) as client:
+        # 2b. Delegated Anti-Self-Approval Bypass Attempts (Regression Suite)
+        requester_id = payments_agent.agent_id  # "payments-agent-executor"
+
+        # Direct delegation: Manager delegated by the proposal requester -> 403
+        token_direct_del = create_jwt_token(
+            "deputy-manager-1",
+            audience="novabank-api",
+            scopes=["api:payments:write"],
+            role="manager",
+            act={"sub": requester_id}
+        )
+        r_direct_del = await client.post(
+            f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
+            headers={"Authorization": f"Bearer {token_direct_del}", "X-API-Key": GATE3_KEY}
+        )
+        assert r_direct_del.status_code == 403, f"Direct delegation must be 403, got {r_direct_del.status_code}"
+        print("✓ DELEGATED ANTI-SELF-APPROVAL ENFORCED: Direct delegation rejected with HTTP 403")
+
+        # Exchanged delegation: Manager delegated by requester exchanges token -> 403
+        mcp_del_token = create_jwt_token(
+            "deputy-manager-2",
+            audience="novabank-mcp",
+            scopes=["mcp:tools"],
+            role="manager",
+            act={"sub": requester_id}
+        )
+        r_exch_del = await client.post(
+            f"{BASE_URL}/oauth/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded", "X-API-Key": GATE3_KEY},
+            data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                "subject_token": mcp_del_token,
+                "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+                "audience": "novabank-api",
+                "scope": "api:payments:write"
+            }
+        )
+        assert r_exch_del.status_code == 200, f"Token exchange failed: {r_exch_del.text}"
+        token_exchanged_del = r_exch_del.json()["access_token"]
+        r_appr_exch = await client.post(
+            f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
+            headers={"Authorization": f"Bearer {token_exchanged_del}", "X-API-Key": GATE3_KEY}
+        )
+        assert r_appr_exch.status_code == 403, f"Exchanged delegated token must be 403, got {r_appr_exch.status_code}"
+        print("✓ DELEGATED ANTI-SELF-APPROVAL ENFORCED: Exchanged delegation rejected with HTTP 403")
+
+        # Nested delegation: Multi-hop delegation chain containing requester -> 403
+        token_nested_del = create_jwt_token(
+            "regional-executive",
+            audience="novabank-api",
+            scopes=["api:payments:write"],
+            role="manager",
+            act={"sub": "mid-manager", "act": {"sub": requester_id}}
+        )
+        r_nested_del = await client.post(
+            f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
+            headers={"Authorization": f"Bearer {token_nested_del}", "X-API-Key": GATE3_KEY}
+        )
+        assert r_nested_del.status_code == 403, f"Nested delegation must be 403, got {r_nested_del.status_code}"
+        print("✓ DELEGATED ANTI-SELF-APPROVAL ENFORCED: Nested delegation rejected with HTTP 403")
+
+        # Repeated exchanges: Exchange exchanged token again -> 403
+        r_repeat_exch = await client.post(
+            f"{BASE_URL}/oauth/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded", "X-API-Key": GATE3_KEY},
+            data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+                "subject_token": token_exchanged_del,
+                "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+                "audience": "novabank-api",
+                "scope": "api:payments:write"
+            }
+        )
+        assert r_repeat_exch.status_code == 200
+        token_repeated_exch = r_repeat_exch.json()["access_token"]
+        r_appr_repeat = await client.post(
+            f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
+            headers={"Authorization": f"Bearer {token_repeated_exch}", "X-API-Key": GATE3_KEY}
+        )
+        assert r_appr_repeat.status_code == 403, f"Repeated exchange token must be 403, got {r_appr_repeat.status_code}"
+        print("✓ DELEGATED ANTI-SELF-APPROVAL ENFORCED: Repeated exchange delegation rejected with HTTP 403")
+
+        # 2c. Anti-Self-Approval Bypass Attempt: Agent removes Bearer token and attempts self-approval via static lab API key
         r_static_bypass = await client.post(
             f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
             headers={"X-API-Key": GATE3_KEY}
@@ -236,18 +347,16 @@ async def run_rehearsal():
         assert r_static_bypass.status_code == 403, f"Expected 403, got {r_static_bypass.status_code}"
         print("✓ ANTI-SELF-APPROVAL HARDENED: Static lab API key cannot approve proposals (HTTP 403)")
 
-    # 3. Manager approves proposal
-    manager_token = create_jwt_token("risk-manager-99", audience="novabank-api", scopes=["api:payments:write"], role="manager")
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 3. Independent Risk Manager approves proposal
+        manager_token = create_jwt_token("risk-manager-99", audience="novabank-api", scopes=["api:payments:write"], role="manager")
         r_mgr = await client.post(
             f"{BASE_URL}/api/v1/approvals/{proposal_id}/approve",
             headers={"Authorization": f"Bearer {manager_token}", "X-API-Key": GATE3_KEY}
         )
         assert r_mgr.status_code == 200
-        print("✓ Authorized Risk Manager successfully approved proposal")
+        print("✓ Authorized Independent Risk Manager successfully approved proposal")
 
-    # 4a. Tampered arguments (above threshold: amount changed from 150000 to 200000)
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 4a. Tampered arguments (above threshold: amount changed from 150000 to 200000)
         tampered_headers = {**payments_agent.get_headers(), "Idempotency-Key": f"tamper-{proposal_id}"}
         r_tamper = await client.post(
             f"{BASE_URL}/api/v1/payments",
@@ -263,8 +372,7 @@ async def run_rehearsal():
         assert r_tamper.status_code == 400
         print("✓ ARGUMENT BINDING VERIFIED: Gate 3 rejected tampered execution arguments (HTTP 400)")
 
-    # 4b. Tampered arguments (below threshold: amount lowered to 1000 with altered beneficiary)
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 4b. Tampered arguments (below threshold: amount lowered to 1000 with altered beneficiary)
         r_tamper_low = await client.post(
             f"{BASE_URL}/api/v1/payments",
             headers={**payments_agent.get_headers(), "Idempotency-Key": f"tamper-low-{proposal_id}"},
@@ -279,8 +387,7 @@ async def run_rehearsal():
         assert r_tamper_low.status_code == 400
         print("✓ BELOW-THRESHOLD TAMPERING PREVENTED: Bound proposal arguments strictly enforced (HTTP 400)")
 
-    # 5. Concurrent Execution (Double-Spend / Atomic Single-Use Check)
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 5. Concurrent Execution (Double-Spend / Atomic Single-Use Check)
         async def call_exec(key):
             return await client.post(
                 f"{BASE_URL}/api/v1/payments",
@@ -307,6 +414,10 @@ async def run_rehearsal():
     evidence["segments"]["segment7"] = {
         "proposal_id": proposal_id,
         "self_approval_denied": True,
+        "direct_delegation_denied": True,
+        "exchanged_delegation_denied": True,
+        "nested_delegation_denied": True,
+        "repeated_exchange_denied": True,
         "tamper_detected": True,
         "single_use_enforced": True,
         "payment_id": exec_result["payment_id"]
@@ -335,9 +446,9 @@ async def run_rehearsal():
     assert my_task["task_id"] == task_id
     print("✓ NegotiatorBot queried own task successfully.")
 
-    # 4a. Another unrelated agent tries to access NegotiatorBot's task
-    unrelated_token = create_jwt_token("unrelated-rogue-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
     async with httpx.AsyncClient(timeout=5.0) as client:
+        # 4a. Another unrelated agent tries to access NegotiatorBot's task
+        unrelated_token = create_jwt_token("unrelated-rogue-agent", audience="novabank-api", scopes=["api:a2a:tasks"], role="agent")
         r_intruder = await client.get(
             f"{BASE_URL}/api/v1/a2a/tasks/{task_id}",
             headers={"Authorization": f"Bearer {unrelated_token}", "X-API-Key": GATE3_KEY}
@@ -345,19 +456,17 @@ async def run_rehearsal():
         assert r_intruder.status_code == 403
         print("✓ OWNER-SCOPED TASK ACCESS VERIFIED: Unrelated agent denied task access with HTTP 403!")
 
-    # 4b. Rogue agent with payments:write tries to complete and overwrite NegotiatorBot's task -> 403
-    rogue_writer_token = create_jwt_token("rogue-writer-agent", audience="novabank-api", scopes=["api:payments:write"], role="agent")
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 4b. Rogue agent with payments:write tries to complete and overwrite NegotiatorBot's task -> 403
+        rogue_writer_token = create_jwt_token("rogue-writer-agent", audience="novabank-api", scopes=["api:payments:write"], role="agent")
         r_rogue_complete = await client.post(
             f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
             headers={"Authorization": f"Bearer {rogue_writer_token}", "X-API-Key": GATE3_KEY},
-            json={"fake_output": "malicious overwrite"}
+            json={"payment_id": exec_result["payment_id"]}
         )
         assert r_rogue_complete.status_code == 403
         print("✓ OWNER-SCOPED TASK COMPLETION VERIFIED: Foreign agent denied task mutation with HTTP 403!")
 
-    # 4c. Viewer token with no write/task scope tries to create a task -> 403
-    async with httpx.AsyncClient(timeout=5.0) as client:
+        # 4c. Viewer token with no write/task scope tries to create a task -> 403
         r_viewer_create = await client.post(
             f"{BASE_URL}/api/v1/a2a/tasks",
             headers={"Authorization": f"Bearer {read_only_token}", "X-API-Key": GATE3_KEY},
@@ -366,17 +475,89 @@ async def run_rehearsal():
         assert r_viewer_create.status_code == 403
         print("✓ SCOPE ENFORCEMENT VERIFIED: Viewer token denied task creation with HTTP 403!")
 
-        # 4d. Authorized task completion binding payment execution
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            r_complete_ok = await client.post(
-                f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
-                headers={"Authorization": f"Bearer {negotiator.token}", "X-API-Key": GATE3_KEY},
-                json={"payment_id": exec_result["payment_id"], "status": "SETTLED"}
+        # 4d. Negative Settlement Binding: Nonexistent payment ID -> 400
+        r_nonexistent = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
+            headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY},
+            json={"payment_id": "nonexistent-pay-999"}
+        )
+        assert r_nonexistent.status_code == 400, f"Expected 400 for nonexistent payment, got {r_nonexistent.status_code}"
+        print("✓ SETTLEMENT BINDING VERIFIED: Nonexistent payment ID rejected with HTTP 400")
+
+        # 4e. Negative Settlement Binding: Mismatched payment (150,000 INR payment attached to 50,000 INR task) -> 400
+        r_mismatch = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
+            headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY},
+            json={"payment_id": exec_result["payment_id"]}
+        )
+        assert r_mismatch.status_code == 400, f"Expected 400 for mismatched payment amount, got {r_mismatch.status_code}"
+        print("✓ SETTLEMENT BINDING VERIFIED: Mismatched payment amount (150k vs 50k) rejected with HTTP 400")
+
+        # 4f. Task Owner without executor authorization cannot complete task directly -> 403
+        r_owner_complete = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
+            headers={"Authorization": f"Bearer {negotiator.token}", "X-API-Key": GATE3_KEY},
+            json={"payment_id": exec_result["payment_id"]}
+        )
+        assert r_owner_complete.status_code == 403, f"Expected 403 for unauthorized non-executor owner, got {r_owner_complete.status_code}"
+        print("✓ EXECUTOR AUTHORIZATION VERIFIED: Non-executor task owner denied task completion with HTTP 403")
+
+    # 5. Legitimate execution and completion via PaymentsAgent dispatch path
+    print("Executing payment task via PaymentsAgent dispatch path...")
+    dispatch_res = await payments_agent.dispatch_payment_task(task_id)
+    assert dispatch_res["status"] == "completed", f"Dispatch failed: {dispatch_res}"
+    settled_payment_id = dispatch_res["output"]["payment_id"]
+    print(f"✓ PAYMENTS AGENT DISPATCH VERIFIED: Payment '{settled_payment_id}' settled and bound to task '{task_id}'")
+
+    # 6. Terminal State Transition Enforcement: Re-completion of completed task -> 400
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        r_recomplete = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks/{task_id}/complete",
+            headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY},
+            json={"payment_id": settled_payment_id}
+        )
+        assert r_recomplete.status_code == 400, f"Expected 400 on terminal task re-completion, got {r_recomplete.status_code}"
+        print("✓ STATE MACHINE VALIDATION: Re-completion of completed task rejected with HTTP 400")
+
+        # 7. Concurrent Settlement Binding Race Invariant:
+        # Two tasks concurrently attempting to bind the same payment
+        # Exactly one must succeed (200), and the other must be rejected (409)
+        t1_res = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks",
+            headers={"Authorization": f"Bearer {negotiator.token}", "X-API-Key": GATE3_KEY},
+            json={"task_type": "propose_payment", "input": {"amount": 25000, "currency": "INR", "destination_account": "acc-101"}}
+        )
+        task_race_1 = t1_res.json()["task_id"]
+
+        t2_res = await client.post(
+            f"{BASE_URL}/api/v1/a2a/tasks",
+            headers={"Authorization": f"Bearer {negotiator.token}", "X-API-Key": GATE3_KEY},
+            json={"task_type": "propose_payment", "input": {"amount": 25000, "currency": "INR", "destination_account": "acc-101"}}
+        )
+        task_race_2 = t2_res.json()["task_id"]
+
+        p_race = await client.post(
+            f"{BASE_URL}/api/v1/payments",
+            headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY, "Idempotency-Key": f"idemp-race-{task_race_1}"},
+            json={"account_id": "acc-102", "beneficiary": "acc-101", "amount": 25000, "currency": "INR"}
+        )
+        race_pay_id = p_race.json()["payment_id"]
+
+        res_a, res_b = await asyncio.gather(
+            client.post(
+                f"{BASE_URL}/api/v1/a2a/tasks/{task_race_1}/complete",
+                headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY},
+                json={"payment_id": race_pay_id, "status": "SETTLED"}
+            ),
+            client.post(
+                f"{BASE_URL}/api/v1/a2a/tasks/{task_race_2}/complete",
+                headers={"Authorization": f"Bearer {payments_agent.token}", "X-API-Key": GATE3_KEY},
+                json={"payment_id": race_pay_id, "status": "SETTLED"}
             )
-            assert r_complete_ok.status_code == 200
-            completed_task = r_complete_ok.json()
-            assert completed_task["status"] == "completed"
-            print(f"✓ AUTHORIZED TASK COMPLETION: Owner successfully bound completed payment '{exec_result['payment_id']}' to task '{task_id}'")
+        )
+        race_statuses = sorted([res_a.status_code, res_b.status_code])
+        assert race_statuses == [200, 409], f"Expected exactly [200, 409] in concurrent settlement race, got {race_statuses}"
+        print("✓ CONCURRENT SETTLEMENT BINDING VERIFIED: Statuses [200, 409] with atomic database uniqueness")
 
     evidence["segments"]["segment8"] = {
         "agent_card": card["name"],
@@ -384,30 +565,75 @@ async def run_rehearsal():
         "unrelated_agent_denied": True,
         "foreign_mutation_denied": True,
         "viewer_creation_denied": True,
-        "task_completion_verified": True
+        "nonexistent_payment_denied": True,
+        "mismatched_payment_denied": True,
+        "non_executor_completion_denied": True,
+        "task_dispatch_settled": True,
+        "settled_payment_id": settled_payment_id,
+        "recompletion_denied": True,
+        "concurrent_settlement_race_verified": True
     }
-
 
     # Segment 9: Incident Reconstruction & Distributed Tracing
     print("\n[Segment 9: 120–130 min] Incident Reconstruction & Trace Correlation")
-    async with httpx.AsyncClient(timeout=5.0) as client:
-        try:
-            r_jaeger = await client.get("http://127.0.0.1:16686/api/services")
-            services = (r_jaeger.json().get("data") if r_jaeger.status_code == 200 else None) or ["novabank-api", "jaeger-all-in-one"]
-        except Exception:
-            services = ["novabank-api", "jaeger-all-in-one"]
-        print(f"✓ Jaeger Telemetry active. Correlated services: {services}")
+    print("Waiting 3s for Jaeger background span ingestion...")
+    await asyncio.sleep(3.0)
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        r_jaeger = await client.get("http://127.0.0.1:16686/api/services")
+        assert r_jaeger.status_code == 200, f"Jaeger API unreachable: {r_jaeger.status_code}"
+        services = r_jaeger.json().get("data", [])
+        print(f"✓ Jaeger Telemetry active. Discovered services: {services}")
+        assert "novabank-api" in services, f"Expected 'novabank-api' in Jaeger services: {services}"
+        assert "novabank-adapter" in services, f"Expected 'novabank-adapter' in Jaeger services: {services}"
 
-        # Query actual spans from Jaeger
-        r_traces = await client.get("http://127.0.0.1:16686/api/traces?service=novabank-api&limit=5")
-        trace_data = r_traces.json().get("data", []) if r_traces.status_code == 200 else []
-        span_count = sum(len(t.get("spans", [])) for t in trace_data)
-        print(f"✓ Jaeger Distributed Traces verified: {len(trace_data)} traces recorded with {span_count} spans for novabank-api")
+        # Query traces for novabank-adapter to find correlated cross-boundary trace (retry up to 10s for ingestion)
+        correlated_trace = None
+        traces = []
+        for attempt in range(10):
+            r_traces = await client.get("http://127.0.0.1:16686/api/traces?service=novabank-adapter&limit=20")
+            assert r_traces.status_code == 200, f"Jaeger trace query failed: {r_traces.status_code}"
+            traces = r_traces.json().get("data", [])
+            for trace in traces:
+                processes = trace.get("processes", {})
+                proc_services = {p.get("serviceName") for p in processes.values()}
+                if "novabank-adapter" in proc_services and "novabank-api" in proc_services:
+                    correlated_trace = trace
+                    break
+            if correlated_trace:
+                break
+            await asyncio.sleep(1.0)
+
+        assert correlated_trace is not None, f"FAIL-CLOSED: No correlated trace found spanning BOTH novabank-adapter and novabank-api in {len(traces)} traces!"
+
+        trace_id = correlated_trace["traceID"]
+        spans = correlated_trace.get("spans", [])
+        processes = correlated_trace.get("processes", {})
+        adapter_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "novabank-adapter"]
+        api_spans = [s for s in spans if processes.get(s.get("processID"), {}).get("serviceName") == "novabank-api"]
+        assert len(adapter_spans) > 0 and len(api_spans) > 0, "Missing spans in correlated trace"
+
+        # Verify parent-child relationship: api_span must reference adapter_span
+        adapter_span_ids = {s["spanID"] for s in adapter_spans}
+        has_parent_link = False
+        for s in api_spans:
+            for ref in s.get("references", []):
+                if ref.get("refType") == "CHILD_OF" and ref.get("spanID") in adapter_span_ids:
+                    has_parent_link = True
+                    break
+            if has_parent_link:
+                break
+
+        assert has_parent_link, "FAIL-CLOSED: Parent-child relationship between adapter and api spans not found!"
+        print(f"✓ CORRELATED DISTRIBUTED TRACE CONFIRMED: traceID={trace_id}")
+        print(f"  novabank-adapter spans: {len(adapter_spans)}, novabank-api spans: {len(api_spans)}")
+        print(f"✓ Parent-child span hierarchy validated: novabank-api child span linked to novabank-adapter parent span.")
 
     evidence["segments"]["segment9"] = {
         "traced_services": services,
-        "traces_count": len(trace_data),
-        "spans_count": span_count
+        "correlated_trace_id": trace_id,
+        "adapter_spans_count": len(adapter_spans),
+        "api_spans_count": len(api_spans),
+        "parent_child_verified": True
     }
 
     # Segment 10: Final Evidence Capture & Wrap-up

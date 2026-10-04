@@ -1,0 +1,21 @@
+{
+  "catalog_count": 22,
+  "curated_paths": [
+    "/api/v1/accounts/{id}",
+    "/api/v1/cases/{id}"
+  ],
+  "uncurated_read_tool": "list_payments_api_v1_payments_get",
+  "status": 200,
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 502,
+    "result": {
+      "content": [
+        {
+          "text": "{\n  \"headers\": {\n    \"content-type\": \"application/json\",\n    \"content-length\": \"2\",\n    \"connection\": \"keep-alive\",\n    \"server\": \"APISIX/3.19.0\",\n    \"date\": \"Sat, 03 Oct 2026 16:52:44 GMT\"\n  },\n  \"data\": [],\n  \"status\": 200,\n  \"statusText\": \"OK\"\n}",
+          "type": "text"
+        }
+      ]
+    }
+  }
+}

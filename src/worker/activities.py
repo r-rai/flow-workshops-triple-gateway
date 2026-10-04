@@ -23,43 +23,13 @@ async def read_dispute_ticket(case_id: str) -> dict:
         return resp.json()
 
 
+from src.worker.dispute_agent import run_dispute_investigation
+
 @activity.defn
 async def diagnose_and_propose_resolution(case_data: dict) -> dict:
-    """Simulates LangGraph multi-step reasoning activity."""
-    case_id = case_data.get("id")
-    customer_id = case_data.get("customer_id")
-    issue_type = case_data.get("issue_type", "")
-    desc = case_data.get("description", "")
-    
-    # If case-501 (double charge on acc-101), refund INR 2500 (250000 minor units)
-    if "double charge" in desc.lower() or "501" in case_id:
-        amount = 75000 # INR 750.00 (> INR 500 requires human approval)
-        destination_account = "acc-101"
-        rationale = "Customer reported duplicate debit. Verified statement anomaly. Compensating INR 750.00."
-    elif "prompt_injection" in issue_type or "502" in case_id:
-        amount = 90000000 # INR 900,000.00 (> INR 500 requires human approval)
-        destination_account = "fraud-account-66"
-        rationale = "Suspicious prompt injection attack detected; flagged for mandatory security review."
-    elif "fee dispute" in desc.lower() or "overcharge" in desc.lower():
-        amount = 25000 # INR 250.00
-        destination_account = "acc-101"
-        rationale = "Legitimate recurring fee waiver granted per customer tier."
-    else:
-        amount = 40000 # INR 400.00
-        destination_account = "acc-101"
-        rationale = "General goodwill dispute credit."
+    """Executes compiled LangGraph multi-step reasoning agent."""
+    return await run_dispute_investigation(case_data)
 
-    # Tiered approval threshold: > INR 500 (50,000 minor units) requires human sign-off
-    requires_approval = amount > 50000
-    
-    return {
-        "case_id": case_id,
-        "customer_id": customer_id,
-        "amount": amount,
-        "destination_account": destination_account,
-        "rationale": rationale,
-        "requires_approval": requires_approval
-    }
 
 @activity.defn
 async def execute_settlement_and_notify(settlement_data: dict) -> dict:
@@ -80,7 +50,7 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
     }
 
     async with httpx.AsyncClient(timeout=10.0) as client:
-        if approved:
+        if approved and amount > 0:
             # 1. Execute financial settlement with stable idempotency key
             idempotency_key = f"settle-dispute-{case_id}"
             payment_body = {

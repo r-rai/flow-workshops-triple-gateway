@@ -1,0 +1,70 @@
+{
+  "fabricated_completion": {
+    "status": 200,
+    "task": {
+      "task_id": "task-6f96285c",
+      "owner_id": "audit-task-owner",
+      "owner_role": "agent",
+      "type": "propose_payment",
+      "status": "completed",
+      "input": {
+        "amount": 77777,
+        "destination_account": "acc-101",
+        "case_id": "case-501"
+      },
+      "output": {
+        "payment_id": "nonexistent-audit-payment",
+        "status": "SETTLED"
+      },
+      "created_at": 1791046468.4710622
+    }
+  },
+  "payments": [
+    {
+      "payment_id": "pay-d86082e8",
+      "account_id": "acc-102",
+      "amount": 150000,
+      "currency": "INR",
+      "beneficiary": "acc-101",
+      "proposal_id": "prop-4d9402f2",
+      "status": "completed",
+      "idempotency_key": "concurrent-1-prop-4d9402f2"
+    }
+  ],
+  "consumed_proposal": {
+    "proposal_id": "prop-4d9402f2",
+    "requester_id": "payments-agent-executor",
+    "account_id": "acc-102",
+    "amount": 150000,
+    "currency": "INR",
+    "beneficiary": "acc-101",
+    "status": "consumed",
+    "expires_at": 1791047066.6597686
+  },
+  "account_102": {
+    "id": "acc-102",
+    "name": "Acme Escrow Reserve",
+    "balance": 8350000,
+    "currency": "INR",
+    "status": "active"
+  },
+  "trace_call": {
+    "status": 200,
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 503,
+      "result": {
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: NO_MATCHING_RULE"
+          }
+        ]
+      }
+    },
+    "trace_id": "ea08ed8e97755deec28d05adf145e364"
+  },
+  "trace_services": [],
+  "trace_spans": []
+}

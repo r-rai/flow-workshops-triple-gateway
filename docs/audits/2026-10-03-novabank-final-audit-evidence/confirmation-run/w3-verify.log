@@ -1,0 +1,7 @@
+[0;34m[INFO][0m Executing verification test suite for profile 'w3'...
+=== Running Profile w3 Verification Smoke Test ===
+✓ Incident retrieval verified: payments-gateway-worker
+✓ Temporal server connectivity verified (7233)
+✓ Kafka broker connectivity verified (9092)
+=== Profile w3 Verification Complete: ALL CHECKS PASSED ===
+[0;32m[OK][0m Verification for profile 'w3' PASSED!

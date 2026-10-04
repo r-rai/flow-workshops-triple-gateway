@@ -1,0 +1,14 @@
+[
+  {
+    "mode": "missing_image_inspection",
+    "exit_code": 0,
+    "stdout": "=====================================================================\n NovaBank Workshop Platform: System Preflight Check\n=====================================================================\nChecking docker... \u001b[0;32mDocker version 29.8.2, build 7fc2dff\u001b[0m\nChecking docker compose... \u001b[0;32mDocker Compose version v5.6.0\u001b[0m\nChecking python3... \u001b[0;32mPython 3.12.3\u001b[0m\nChecking host memory... \u001b[0;32m5668 MiB available (budget >= 2000 MiB satisfied)\u001b[0m\nChecking root disk space... \u001b[0;32m55G free\u001b[0m\nChecking APISIX port 9080... \u001b[1;33mPort 9080 currently occupied by active profile 'w4'\u001b[0m\nChecking release manifest and image digests... \u001b[0;32mPinned digests verified against config/manifest.json\u001b[0m\nChecking existing Caddy & monitoring services... \u001b[0;32mProtected services detected: caddy, portainer, uptime-kuma, dozzle\u001b[0m\n=====================================================================\n\u001b[0;32m[OK]\u001b[0m Preflight PASSED! Host is ready for workshop execution.\n",
+    "stderr": ""
+  },
+  {
+    "mode": "malformed_manifest",
+    "exit_code": 0,
+    "stdout": "=====================================================================\n NovaBank Workshop Platform: System Preflight Check\n=====================================================================\nChecking docker... \u001b[0;32mDocker version 29.8.2, build 7fc2dff\u001b[0m\nChecking docker compose... \u001b[0;32mDocker Compose version v5.6.0\u001b[0m\nChecking python3... \u001b[0;32mPython 3.12.3\u001b[0m\nChecking host memory... \u001b[0;32m5656 MiB available (budget >= 2000 MiB satisfied)\u001b[0m\nChecking root disk space... \u001b[0;32m55G free\u001b[0m\nChecking APISIX port 9080... \u001b[1;33mPort 9080 currently occupied by active profile 'w4'\u001b[0m\nChecking release manifest and image digests... \u001b[0;32mPinned digests verified against config/manifest.json\u001b[0m\nChecking existing Caddy & monitoring services... \u001b[0;32mProtected services detected: caddy, portainer, uptime-kuma, dozzle\u001b[0m\n=====================================================================\n\u001b[0;32m[OK]\u001b[0m Preflight PASSED! Host is ready for workshop execution.\n",
+    "stderr": ""
+  }
+]

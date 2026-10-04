@@ -39,8 +39,10 @@ async def run_rehearsal():
     # Segment 1: Reset and inspect dispute case
     print("\n[Segment 1: 0–6 min] Autonomous System Resolver - Inspecting Incident")
     subprocess.run(["./scripts/workshop", "reset"], env={**os.environ, "FORCE": "true"}, check=True, stdout=subprocess.DEVNULL)
-    subprocess.run(["docker", "exec", "novabank-workshops-temporal-1", "rm", "-f", "/data/temporal.sqlite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["docker", "compose", "--profile", "w3", "restart", "temporal", "worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Stop writers before resetting storage to ensure clean state without open-handle corruption
+    subprocess.run(["docker", "compose", "--profile", "w3", "stop", "temporal", "worker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["docker", "run", "--rm", "-v", "novabank-workshops_novabank_temporal_data:/data", "alpine", "rm", "-f", "/data/temporal.sqlite"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["docker", "compose", "--profile", "w3", "start", "temporal", "worker"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     await asyncio.sleep(4)
     
     headers = {"X-API-Key": GATE3_API_KEY}
@@ -65,7 +67,7 @@ async def run_rehearsal():
     
     # Poll for WAITING_FOR_APPROVAL
     status = None
-    for attempt in range(20):
+    for attempt in range(60):
         try:
             status = await handle.query("get_status")
             if status.get("current_phase") == "WAITING_FOR_APPROVAL":
@@ -82,10 +84,10 @@ async def run_rehearsal():
     evidence["segments"]["segment3"] = {"status_before_crash": status}
 
     # Segment 4: Guided Recovery Exercise - Worker crash & duplicate event redelivery
-    print("\n[Segment 4: 23–35 min] Guided Recovery Exercise - Worker Crash & Redelivery")
-    print("Simulating worker crash: killing 'novabank-workshops-worker-1'...")
-    subprocess.run(["docker", "stop", "novabank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
-    print("✓ Worker container stopped.")
+    print("\n[Segment 4: 23–35 min] Guided Recovery Exercise - Worker Hard Crash (SIGKILL) & Redelivery")
+    print("Simulating ungraceful worker crash: terminating 'novabank-workshops-worker-1' with SIGKILL...")
+    subprocess.run(["docker", "kill", "--signal=SIGKILL", "novabank-workshops-worker-1"], check=True, stdout=subprocess.DEVNULL)
+    print("✓ Worker container terminated with real SIGKILL.")
 
     print("Redelivering duplicate event to Kafka while worker is down...")
     await emit_dispute(KAFKA_SERVER, "case-501", "cust-101")
@@ -146,7 +148,7 @@ async def run_rehearsal():
     await emit_dispute(KAFKA_SERVER, "case-502", "cust-8802")
     handle_502 = temporal_client.get_workflow_handle("dispute-case-case-502")
     status_502 = None
-    for attempt in range(20):
+    for attempt in range(60):
         try:
             status_502 = await handle_502.query("get_status")
             if status_502.get("current_phase") == "WAITING_FOR_APPROVAL":

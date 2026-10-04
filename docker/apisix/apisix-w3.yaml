@@ -1,4 +1,13 @@
 routes:
+  # Gate 1: AI / Replay endpoint
+  - id: w3_ai_route
+    uri: /ai/*
+    upstream:
+      type: roundrobin
+      nodes:
+        "adapter:8080": 1
+
+  # Gate 2: Curated MCP Adapter endpoint
   - id: w3_mcp_route
     uri: /mcp
     upstream:
@@ -6,11 +15,20 @@ routes:
       nodes:
         "adapter:8080": 1
 
+  # Gate 3: API route with downstream key-auth
   - id: w3_gate3_api
     uri: /api/v1/*
     plugins:
       key-auth:
         header: X-API-Key
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
+  # OAuth RFC 8693 Token Exchange route
+  - id: w3_oauth_token
+    uri: /oauth/*
     upstream:
       type: roundrobin
       nodes:

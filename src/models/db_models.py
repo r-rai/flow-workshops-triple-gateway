@@ -94,5 +94,13 @@ class A2ATask(Base):
     status = Column(String(32), nullable=False, default="pending_approval")
     input_json = Column(Text, nullable=False)
     output_json = Column(Text, nullable=True)
+    bound_payment_id = Column(String(64), unique=True, nullable=True, index=True)
     created_at = Column(Float, default=time.time)
     updated_at = Column(Float, default=time.time, onupdate=time.time)
+
+class PaymentTaskBinding(Base):
+    __tablename__ = "a2a_payment_bindings"
+
+    payment_id = Column(String(64), primary_key=True)
+    task_id = Column(String(64), nullable=False, unique=True, index=True)
+    created_at = Column(Float, default=time.time)

@@ -78,8 +78,12 @@
     {
       "requirement": "Windows 11 / WSL2 5 GB RAM benchmark",
       "status": "unverified",
-      "reason": "Host execution environment is Linux VPS (vmi3355051 / Ubuntu x86_64). Linux VPS peak active memory profile usage measured at ~951 MB (907 MiB) across 9 containers (comfortably within the 6 GB VPS operating budget), but actual participant Windows 11 WSL2 virtualization overhead remains unverified until tested on native Windows participant hardware."
+      "reason": "Host execution environment is Linux VPS (vmi3355051 / Ubuntu x86_64). Linux VPS peak active memory profile usage measured at ~775–995 MB (740–949 MiB) across 9 containers (comfortably within the 6 GB VPS operating budget), but actual participant Windows 11 WSL2 virtualization overhead remains unverified until tested on native Windows participant hardware."
     }
-  ]
+  ],
+  "architectural_notes": {
+    "w3_langgraph_agent": "Compiled LangGraph state machine (src/worker/dispute_agent.py) supporting dual modes: live MiniMax reasoning via APISIX Gate 1 or deterministic offline replay fixtures, invoking allowlisted Gate 2/3 MCP tools and enforcing server-side governance.",
+    "built_image_tags": "Built images (api, adapter, worker, temporal) use semantic tags 1.0.0 with pinned base image python:3.12-slim digest and requirements.txt."
+  }
 }
 

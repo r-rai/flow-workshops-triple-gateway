@@ -1,6 +1,8 @@
 import os
+import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from sqlalchemy import text
 from src.core.config import settings
 from src.core.database import engine, Base, SessionLocal
 from src.services.seed import reset_and_seed_db
@@ -9,6 +11,8 @@ from src.api.routes import health, accounts, cases, payments, approvals, inciden
 
 
 # Optional OpenTelemetry instrumentation
+provider = None
+FastAPIInstrumentor = None
 if settings.ENABLE_TELEMETRY:
     try:
         from opentelemetry import trace
@@ -21,7 +25,7 @@ if settings.ENABLE_TELEMETRY:
         res = Resource.create({"service.name": "novabank-api"})
         provider = TracerProvider(resource=res)
         exporter = OTLPSpanExporter(endpoint=settings.OTEL_EXPORTER_OTLP_ENDPOINT)
-        provider.add_span_processor(BatchSpanProcessor(exporter))
+        provider.add_span_processor(BatchSpanProcessor(exporter, schedule_delay_millis=500))
         trace.set_tracer_provider(provider)
     except Exception as e:
         print(f"OTel setup skipped or failed: {e}")
@@ -30,6 +34,15 @@ if settings.ENABLE_TELEMETRY:
 async def lifespan(app: FastAPI):
     # Ensure tables exist
     Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
+        try:
+            conn.execute(text("ALTER TABLE a2a_tasks ADD COLUMN bound_payment_id VARCHAR(64)"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS idx_a2a_tasks_bound_payment ON a2a_tasks(bound_payment_id)"))
+        except Exception:
+            pass
     # Check if DB needs initial seed
     db = SessionLocal()
     try:
@@ -41,7 +54,14 @@ async def lifespan(app: FastAPI):
         print(f"Initial seed check warning: {e}")
     finally:
         db.close()
-    yield
+    try:
+        yield
+    finally:
+        if provider:
+            try:
+                provider.force_flush()
+            except Exception:
+                pass
 
 app = FastAPI(
     title="NovaBank Core API",
@@ -50,7 +70,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-if settings.ENABLE_TELEMETRY:
+if settings.ENABLE_TELEMETRY and FastAPIInstrumentor:
     try:
         FastAPIInstrumentor.instrument_app(app)
     except Exception as e:
@@ -71,6 +91,14 @@ app.include_router(oauth.router)
 @app.get("/.well-known/agent.json")
 def well_known_agent():
     return a2a.AGENT_CARD
+
+@app.get("/openapi-curated.json")
+def openapi_curated():
+    file_path = os.path.join(os.path.dirname(__file__), "openapi-curated.json")
+    if not os.path.exists(file_path):
+        file_path = os.path.abspath("workshops/w1/checkpoints/completed/openapi-curated.json")
+    with open(file_path, "r") as f:
+        return json.load(f)
 
 if __name__ == "__main__":
     import uvicorn

@@ -111,35 +111,66 @@ cmd_preflight() {
 
     # 5. Manifest & Images
     echo -n "Checking release manifest and image digests... "
-    if [[ -f "${REPO_ROOT}/config/manifest.json" ]]; then
-        local digest_check
-        digest_check=$(python3 -c '
-import json, subprocess, sys
-with open("config/manifest.json") as f:
-    manifest = json.load(f)
-pinned = manifest.get("pinned_images", {})
-mismatches = []
+    local digest_out
+    if digest_out=$(python3 -c '
+import json, os, subprocess, sys
+
+manifest_path = os.environ.get("WORKSHOP_MANIFEST_PATH", "config/manifest.json")
+try:
+    with open(manifest_path, "r") as f:
+        manifest = json.load(f)
+except Exception as e:
+    print(f"Failed to read or parse {manifest_path}: {e}")
+    sys.exit(1)
+
+pinned = manifest.get("pinned_images")
+if not pinned or not isinstance(pinned, dict):
+    print("Manifest contains no pinned_images mapping")
+    sys.exit(1)
+
+errors = []
+verified_count = 0
 for svc, details in pinned.items():
+    if not isinstance(details, dict):
+        errors.append(f"{svc}: invalid details in manifest")
+        continue
     expected_digest = details.get("digest")
     img_name = details.get("image")
-    res = subprocess.run(["docker", "image", "inspect", img_name, "--format", "{{index .RepoDigests 0}}"], capture_output=True, text=True)
-    if res.returncode == 0 and res.stdout.strip():
-        actual_digest = res.stdout.strip().split("@")[-1]
-        if expected_digest and expected_digest != actual_digest:
-            mismatches.append(f"{svc}: expected {expected_digest[:16]}, got {actual_digest[:16]}")
-if mismatches:
-    print("Digest mismatch: " + ", ".join(mismatches))
+    if not img_name or not expected_digest:
+        errors.append(f"{svc}: missing image name or expected digest in manifest")
+        continue
+
+    res = subprocess.run(
+        ["docker", "image", "inspect", img_name, "--format", "{{json .RepoDigests}}"],
+        capture_output=True,
+        text=True
+    )
+    if res.returncode != 0:
+        err_msg = res.stderr.strip() or f"exit code {res.returncode}"
+        errors.append(f"{svc}: inspection failed for {img_name} ({err_msg})")
+        continue
+
+    raw_digests = res.stdout.strip()
+    try:
+        repo_digests = json.loads(raw_digests) if raw_digests else []
+    except Exception:
+        repo_digests = [raw_digests]
+
+    if not repo_digests or not any(expected_digest in rd for rd in repo_digests):
+        errors.append(f"{svc}: digest mismatch for {img_name} (expected {expected_digest}, found {repo_digests})")
+        continue
+
+    verified_count += 1
+
+if errors:
+    print("Digest verification failed:\n  - " + "\n  - ".join(errors))
     sys.exit(1)
-print("All verified")
-' 2>/dev/null || true)
-        if [[ "${digest_check}" == *"Digest mismatch"* ]]; then
-            echo -e "${RED}${digest_check}${NC}"
-            failed=1
-        else
-            echo -e "${GREEN}Pinned digests verified against config/manifest.json${NC}"
-        fi
+
+print(f"All {verified_count} pinned digests verified against {manifest_path}")
+' 2>&1); then
+        echo -e "${GREEN}${digest_out}${NC}"
     else
-        echo -e "${RED}Missing config/manifest.json${NC}"
+        echo -e "${RED}${digest_out}${NC}"
         failed=1
     fi
 
@@ -200,32 +231,78 @@ cmd_start() {
 
     docker compose --profile "${profile}" up -d
 
-    log_info "Waiting for services to become healthy..."
-    local ready=0
+    log_info "Waiting for backend API and spec readiness..."
+    local backend_ready=0
     for i in {1..35}; do
-        local api_ok=0
-        local mcp_ok=0
-
-        if curl -s -f "http://127.0.0.1:9080/api/v1/accounts/acc-101" -H "X-API-Key: gate3-secret-token" >/dev/null 2>&1; then
-            api_ok=1
-        fi
-
-        if curl -s -f "http://127.0.0.1:9080/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
-           -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "wait", "version": "1.0"}}}' >/dev/null 2>&1; then
-            mcp_ok=1
-        fi
-
-        if [[ "${api_ok}" -eq 1 && "${mcp_ok}" -eq 1 ]]; then
-            ready=1
-            break
+        if curl -s -f "http://127.0.0.1:9080/api/v1/accounts/acc-101" -H "X-API-Key: gate3-secret-token" >/dev/null 2>&1 && \
+           docker compose exec -T api python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json')" >/dev/null 2>&1; then
+            if [[ "${profile}" == "w1" ]]; then
+                if docker compose exec -T api python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi-curated.json')" >/dev/null 2>&1; then
+                    backend_ready=1
+                    break
+                fi
+            else
+                backend_ready=1
+                break
+            fi
         fi
         sleep 1
     done
 
-    if [[ "${ready}" -eq 1 ]]; then
+    if [[ "${backend_ready}" -ne 1 ]]; then
+        log_err "Backend API/spec readiness timed out. Inspect status via '$0 status'."
+        exit 1
+    fi
+
+    # Brief delay to ensure APISIX upstream cache readiness
+    sleep 1
+
+    log_info "Warming up MCP gateway and downstream tools..."
+    local tool_name="get_account"
+    local tool_args='{"id": "acc-101"}'
+    if [[ "${profile}" == "w1" ]]; then
+        tool_name="read_account_api_v1_accounts__id__get"
+        tool_args='{"pathParameters": {"id": "acc-101"}}'
+    fi
+
+    local mcp_ready=0
+    for i in {1..15}; do
+        local init_res
+        init_res=$(curl -s -f "http://127.0.0.1:9080/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+           -d '{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "startup-warm", "version": "1.0"}}}' 2>/dev/null || true)
+
+        local list_res
+        list_res=$(curl -s -f "http://127.0.0.1:9080/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+           -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}' 2>/dev/null || true)
+
+        local call_res
+        call_res=$(curl -s -f "http://127.0.0.1:9080/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "X-API-Key: gate3-secret-token" \
+           -d "{\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"tools/call\", \"params\": {\"name\": \"${tool_name}\", \"arguments\": ${tool_args}}}" 2>/dev/null || true)
+
+        if [[ -n "${init_res}" && "${list_res}" =~ "tools" && ("${call_res}" =~ "balance" || "${call_res}" =~ "INR") ]]; then
+            if [[ "${profile}" == "w1" ]]; then
+                local cur_init
+                cur_init=$(curl -s -f "http://127.0.0.1:9080/mcp/curated" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+                   -d '{"jsonrpc": "2.0", "id": 11, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "curated-warm", "version": "1.0"}}}' 2>/dev/null || true)
+                local cur_call
+                cur_call=$(curl -s -f "http://127.0.0.1:9080/mcp/curated" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "X-API-Key: gate3-secret-token" \
+                   -d '{"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": {"name": "get_account", "arguments": {"pathParameters": {"id": "acc-101"}}}}' 2>/dev/null || true)
+                if [[ -n "${cur_init}" && ("${cur_call}" =~ "balance" || "${cur_call}" =~ "INR") ]]; then
+                    mcp_ready=1
+                    break
+                fi
+            else
+                mcp_ready=1
+                break
+            fi
+        fi
+        sleep 1
+    done
+
+    if [[ "${mcp_ready}" -eq 1 ]]; then
         log_ok "Workshop profile '${profile}' is ACTIVE and healthy on http://127.0.0.1:9080"
     else
-        log_err "Services started, but readiness check timed out. Inspect status via '$0 status'."
+        log_err "MCP warming failed or timed out. Inspect status via '$0 status'."
         exit 1
     fi
 }

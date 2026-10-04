@@ -1,0 +1,175 @@
+/home/sysadmin/projects/flow-workshops-triple-gateway/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+2026-10-03 22:30:05,011 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 22:30:05,011 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 22:30:05,011 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 22:30:05,011 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 22:30:05,012 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-10
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Committed Kafka offset 11 for topic novabank.disputes.
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Received dispute event for case-11 (offset 11). Initiating workflow 'dispute-case-case-11'...
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-11
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Committed Kafka offset 12 for topic novabank.disputes.
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 22:30:05,012 [INFO] [KafkaConsumer] Kafka consumer stopped.
+2026-10-03 22:30:05,013 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 22:30:05,013 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 22:30:05,013 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 22:30:05,013 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 2/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 3/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 4/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 5/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 6/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 7/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 8/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 9/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 10/10): Injected Temporal start failure
+2026-10-03 22:30:05,014 [ERROR] [KafkaConsumer] Unrecoverable or interrupted workflow start for offset 10. Seeking back partition TopicPartition(topic='novabank.disputes', partition=0) to offset 10 to prevent event loss.
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-10
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Committed Kafka offset 11 for topic novabank.disputes.
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Received dispute event for case-11 (offset 11). Initiating workflow 'dispute-case-case-11'...
+2026-10-03 22:30:05,014 [INFO] [KafkaConsumer] Started new workflow run: isolated-audit for dispute-case-case-11
+2026-10-03 22:30:05,015 [INFO] [KafkaConsumer] Committed Kafka offset 12 for topic novabank.disputes.
+2026-10-03 22:30:05,015 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 22:30:05,015 [INFO] [KafkaConsumer] Kafka consumer stopped.
+2026-10-03 22:30:05,016 [INFO] [KafkaConsumer] Connecting to Temporal at localhost:7233...
+2026-10-03 22:30:05,016 [INFO] [KafkaConsumer] Connected to Temporal.
+2026-10-03 22:30:05,016 [INFO] [KafkaConsumer] Connecting to Kafka at localhost:9092, topic: novabank.disputes...
+2026-10-03 22:30:05,016 [INFO] [KafkaConsumer] Kafka consumer started successfully on topic 'novabank.disputes'.
+2026-10-03 22:30:05,016 [INFO] [KafkaConsumer] Received dispute event for case-10 (offset 10). Initiating workflow 'dispute-case-case-10'...
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 1/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 2/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 3/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 4/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 5/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 6/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 7/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 8/10): Injected Temporal start failure
+2026-10-03 22:30:05,016 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 9/10): Injected Temporal start failure
+2026-10-03 22:30:05,017 [ERROR] [KafkaConsumer] Failed to start workflow for dispute-case-case-10 (attempt 10/10): Injected Temporal start failure
+2026-10-03 22:30:05,017 [ERROR] [KafkaConsumer] Unrecoverable or interrupted workflow start for offset 10. Seeking back partition TopicPartition(topic='novabank.disputes', partition=0) to offset 10 to prevent event loss.
+2026-10-03 22:30:05,017 [INFO] [KafkaConsumer] Stopping Kafka consumer...
+2026-10-03 22:30:05,017 [INFO] [KafkaConsumer] Kafka consumer stopped.
+{
+  "forced_proposal_race": {
+    "calls": [
+      {
+        "status": 409,
+        "detail": "Proposal was already consumed concurrently"
+      },
+      {
+        "status": 200,
+        "response": {
+          "payment_id": "pay-db5552f1",
+          "status": "COMPLETED",
+          "account_id": "acc-102",
+          "amount": 150000,
+          "currency": "INR",
+          "beneficiary": "acc-101",
+          "remaining_balance": 8350000,
+          "idempotent_replay": false
+        }
+      }
+    ],
+    "statuses": [
+      200,
+      409
+    ],
+    "payment_count": 1,
+    "balance_before": 8500000,
+    "balance_after": 8350000,
+    "proposal_status": "consumed"
+  },
+  "independent_debit_race": {
+    "statuses": [
+      200,
+      200
+    ],
+    "balance_before": 8500000,
+    "balance_after": 8400000,
+    "payment_count": 2
+  },
+  "kafka_offsets": [
+    {
+      "mode": "transient",
+      "read_offsets": [
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": []
+    },
+    {
+      "mode": "exhaust_then_recover",
+      "read_offsets": [
+        10,
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": [
+        10
+      ]
+    },
+    {
+      "mode": "shutdown",
+      "read_offsets": [
+        10
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10"
+      ],
+      "commits": [],
+      "seeks": [
+        10
+      ]
+    }
+  ]
+}

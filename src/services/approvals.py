@@ -94,8 +94,13 @@ def approve_proposal_service(
         db.commit()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Proposal has expired")
 
-    # Anti-Self-Approval Invariant (requester or delegated actor)
-    if principal.id == prop.requester_id or getattr(principal, "delegated_by", None) == prop.requester_id:
+    # Anti-Self-Approval Invariant (requester or any actor in delegation chain)
+    requester_in_chain = (
+        principal.id == prop.requester_id
+        or getattr(principal, "delegated_by", None) == prop.requester_id
+        or prop.requester_id in getattr(principal, "delegation_chain", [])
+    )
+    if requester_in_chain:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Self-approval prohibited: Requester cannot approve their own proposal",

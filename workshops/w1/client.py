@@ -5,6 +5,9 @@ import httpx
 
 GATEWAY_URL = "http://127.0.0.1:9080"
 MCP_ENDPOINT = f"{GATEWAY_URL}/mcp"
+if "--curated" in sys.argv:
+    MCP_ENDPOINT = f"{GATEWAY_URL}/mcp/curated"
+    sys.argv.remove("--curated")
 
 def parse_sse(text):
     for line in text.splitlines():
@@ -38,7 +41,7 @@ def send_mcp(method: str, params: dict = None, headers: dict = None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python client.py <init|list|call-account [id]|call-unauthorized|call-payment>")
+        print("Usage: python client.py [--curated] <init|list|call-account [id]|call-unauthorized|call-payment>")
         sys.exit(1)
 
     cmd = sys.argv[1]

@@ -1,0 +1,58 @@
+{
+  "commits": 10,
+  "scanned_file_versions": 271,
+  "credential_pattern_hits": [],
+  "third_party": [
+    {
+      "service": "apisix",
+      "manifest_digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "installed_repository_digests": [
+        "apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+      ],
+      "compose_reference": "apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "digest_matches": true,
+      "deployment_pinned": true
+    },
+    {
+      "service": "opa",
+      "manifest_digest": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "installed_repository_digests": [
+        "openpolicyagent/opa@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc"
+      ],
+      "compose_reference": "openpolicyagent/opa:0.68.0-static@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "digest_matches": true,
+      "deployment_pinned": true
+    },
+    {
+      "service": "postgres",
+      "manifest_digest": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "installed_repository_digests": [
+        "postgres@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea"
+      ],
+      "compose_reference": "postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "digest_matches": true,
+      "deployment_pinned": true
+    },
+    {
+      "service": "kafka",
+      "manifest_digest": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "installed_repository_digests": [
+        "apache/kafka@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7"
+      ],
+      "compose_reference": "apache/kafka:3.7.0@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "digest_matches": true,
+      "deployment_pinned": true
+    },
+    {
+      "service": "jaeger",
+      "manifest_digest": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "installed_repository_digests": [
+        "jaegertracing/all-in-one@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9"
+      ],
+      "compose_reference": "jaegertracing/all-in-one:1.57@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "digest_matches": true,
+      "deployment_pinned": true
+    }
+  ],
+  "source_matches": true
+}

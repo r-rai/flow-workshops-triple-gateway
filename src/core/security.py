@@ -5,12 +5,71 @@ from jose import jwt, JWTError
 from src.core.config import settings
 
 class Principal:
-    def __init__(self, id: str, role: str, scopes: List[str], delegated_by: Optional[str] = None, auth_method: str = "bearer"):
+    def __init__(
+        self,
+        id: str,
+        role: str,
+        scopes: List[str],
+        delegated_by: Optional[str] = None,
+        delegation_chain: Optional[List[str]] = None,
+        auth_method: str = "bearer"
+    ):
         self.id = id
         self.role = role
         self.scopes = scopes
-        self.delegated_by = delegated_by
+        self.delegation_chain = delegation_chain or []
+        if delegated_by:
+            self.delegated_by = delegated_by
+        elif self.delegation_chain:
+            self.delegated_by = self.delegation_chain[-1]
+        else:
+            self.delegated_by = None
         self.auth_method = auth_method
+
+    def has_in_delegation_chain(self, principal_id: str) -> bool:
+        return principal_id in self.delegation_chain
+
+MAX_DELEGATION_DEPTH = 20
+
+def extract_delegation_chain(claims: Dict[str, Any]) -> List[str]:
+    """
+    Normalizes and extracts the complete delegation chain from JWT claims.
+    Handles direct `delegated_by`, nested RFC 8693 `act` claims, and repeated exchanges.
+    Rejects over-depth chains (> MAX_DELEGATION_DEPTH) instead of silently truncating them.
+    """
+    chain: List[str] = []
+
+    # 1. Direct delegated_by claim (string or list)
+    del_by = claims.get("delegated_by")
+    if del_by:
+        if isinstance(del_by, list):
+            chain.extend(str(x) for x in del_by if x)
+        elif isinstance(del_by, str) and del_by.strip():
+            chain.append(del_by.strip())
+
+    # 2. RFC 8693 §4.1 nested actor (act) claim
+    curr = claims.get("act")
+    depth = 0
+    while isinstance(curr, dict):
+        depth += 1
+        if depth > MAX_DELEGATION_DEPTH:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Delegation chain exceeds maximum permitted depth of {MAX_DELEGATION_DEPTH}",
+            )
+        sub = curr.get("sub")
+        if sub and isinstance(sub, str):
+            chain.append(sub)
+        curr = curr.get("act")
+
+    # Preserve order of appearance, deduplicate
+    seen = set()
+    result = []
+    for item in chain:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
 
 def get_current_principal(
     authorization: Optional[str] = Header(None, alias="Authorization"),
@@ -34,8 +93,16 @@ def get_current_principal(
             scopes = claims.get("scope", "").split()
             role = claims.get("role", "viewer")
             sub = claims.get("sub", "anonymous")
-            delegated_by = claims.get("act", {}).get("sub")
-            return Principal(id=sub, role=role, scopes=scopes, delegated_by=delegated_by, auth_method="bearer")
+            delegation_chain = extract_delegation_chain(claims)
+            return Principal(
+                id=sub,
+                role=role,
+                scopes=scopes,
+                delegation_chain=delegation_chain,
+                auth_method="bearer"
+            )
+        except HTTPException:
+            raise
         except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,7 +147,8 @@ def create_jwt_token(
     scopes: List[str],
     role: str = "service",
     expires_in_seconds: int = 3600,
-    delegated_by: Optional[str] = None
+    delegated_by: Optional[str] = None,
+    act: Optional[Dict[str, Any]] = None,
 ) -> str:
     now = int(time.time())
     claims = {
@@ -92,7 +160,11 @@ def create_jwt_token(
         "iat": now,
         "exp": now + expires_in_seconds
     }
-    if delegated_by:
+    if act:
+        claims["act"] = act
+    elif delegated_by:
         claims["act"] = {"sub": delegated_by}
+    if delegated_by:
+        claims["delegated_by"] = delegated_by
     return jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 

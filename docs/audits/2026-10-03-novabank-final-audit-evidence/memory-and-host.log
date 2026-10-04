@@ -1,0 +1,142 @@
+{
+  "fresh_peak": {
+    "time": "2026-10-03T16:45:28.859480+00:00",
+    "containers": 9,
+    "bytes": 995047244,
+    "MB": 995.05,
+    "MiB": 948.95,
+    "host_available_bytes": 5828694016,
+    "source": "/home/sysadmin/projects/flow-workshops-triple-gateway/docs/audits/2026-10-03-novabank-final-audit-evidence/memory-samples.jsonl",
+    "stats": [
+      {
+        "BlockIO": "0B / 0B",
+        "CPUPerc": "0.24%",
+        "Container": "788d65515c8140dd142662e17954daea564ca1a21615e117fc201b40e2caf306",
+        "ID": "788d65515c81",
+        "MemPerc": "17.93%",
+        "MemUsage": "45.9MiB / 256MiB",
+        "Name": "novabank-workshops-adapter-1",
+        "NetIO": "10.6kB / 9.28kB",
+        "PIDs": "6"
+      },
+      {
+        "BlockIO": "0B / 1.81MB",
+        "CPUPerc": "0.26%",
+        "Container": "156af196512a123a22b1562e10381f4eab0542ebf131d1adf4d8350fff278d96",
+        "ID": "156af196512a",
+        "MemPerc": "28.49%",
+        "MemUsage": "72.95MiB / 256MiB",
+        "Name": "novabank-workshops-api-1",
+        "NetIO": "48.8kB / 24.5kB",
+        "PIDs": "6"
+      },
+      {
+        "BlockIO": "0B / 28.7kB",
+        "CPUPerc": "1.77%",
+        "Container": "0b853a7082317b6347f1ff53fb5a352ce49063826b68d2a030759b6ebd1de454",
+        "ID": "0b853a708231",
+        "MemPerc": "28.45%",
+        "MemUsage": "109.3MiB / 384MiB",
+        "Name": "novabank-workshops-apisix-1",
+        "NetIO": "87.7kB / 86.2kB",
+        "PIDs": "12"
+      },
+      {
+        "BlockIO": "0B / 0B",
+        "CPUPerc": "0.04%",
+        "Container": "65b1eee77981fc9a38262353c63a7a32612412e4babb57b1abeb12511f98a1ab",
+        "ID": "65b1eee77981",
+        "MemPerc": "3.27%",
+        "MemUsage": "8.367MiB / 256MiB",
+        "Name": "novabank-workshops-jaeger-1",
+        "NetIO": "5.84kB / 1.4kB",
+        "PIDs": "9"
+      },
+      {
+        "BlockIO": "3.69MB / 45.8MB",
+        "CPUPerc": "2.78%",
+        "Container": "8d063444759b255dd2f25287182a20c51d0cb27538cde6e8550ffa15f2a6bf88",
+        "ID": "8d063444759b",
+        "MemPerc": "97.46%",
+        "MemUsage": "499MiB / 512MiB",
+        "Name": "novabank-workshops-kafka-1",
+        "NetIO": "887kB / 966kB",
+        "PIDs": "95"
+      },
+      {
+        "BlockIO": "205kB / 0B",
+        "CPUPerc": "0.00%",
+        "Container": "e0252068e4607d4008a08311db95d65ff2d411da66000791fdeb81de0fb0fc12",
+        "ID": "e0252068e460",
+        "MemPerc": "5.35%",
+        "MemUsage": "6.844MiB / 128MiB",
+        "Name": "novabank-workshops-opa-1",
+        "NetIO": "4.22kB / 1.28kB",
+        "PIDs": "9"
+      },
+      {
+        "BlockIO": "0B / 32.8kB",
+        "CPUPerc": "0.00%",
+        "Container": "ecbe980c41ad7a6a56c62178127ba8cb9b77924a99fd37e3668a7dff0163a4e0",
+        "ID": "ecbe980c41ad",
+        "MemPerc": "4.46%",
+        "MemUsage": "17.13MiB / 384MiB",
+        "Name": "novabank-workshops-postgres-1",
+        "NetIO": "1.15kB / 126B",
+        "PIDs": "6"
+      },
+      {
+        "BlockIO": "0B / 163MB",
+        "CPUPerc": "2.45%",
+        "Container": "a1b311c96cfaa5741b5ab2e69ef7dd12f8d01bb5046f01929cb01571a6c0c860",
+        "ID": "a1b311c96cfa",
+        "MemPerc": "30.85%",
+        "MemUsage": "118.4MiB / 384MiB",
+        "Name": "novabank-workshops-temporal-1",
+        "NetIO": "45.9MB / 384kB",
+        "PIDs": "15"
+      },
+      {
+        "BlockIO": "0B / 0B",
+        "CPUPerc": "0.52%",
+        "Container": "d340ce15577784819f6db727c961db6a36039a883a97352b4b6e3362c7a4e3d5",
+        "ID": "d340ce155777",
+        "MemPerc": "13.88%",
+        "MemUsage": "71.06MiB / 512MiB",
+        "Name": "novabank-workshops-worker-1",
+        "NetIO": "1.15MB / 1.13MB",
+        "PIDs": "8"
+      }
+    ]
+  },
+  "historical": {
+    "samples": 80,
+    "peak_bytes": 951021733,
+    "MB": 951.02,
+    "MiB": 906.97
+  },
+  "protected_identical": true,
+  "protected_http": [
+    {
+      "name": "caddy",
+      "url": "http://172.21.0.3:80/",
+      "status": 308
+    },
+    {
+      "name": "portainer",
+      "url": "http://172.19.0.4:9000/api/status",
+      "status": 200
+    },
+    {
+      "name": "uptime-kuma",
+      "url": "http://172.19.0.3:3001/",
+      "status": 302
+    },
+    {
+      "name": "dozzle",
+      "url": "http://172.19.0.2:8080/",
+      "status": 200
+    }
+  ],
+  "memory_caps": 3221225472
+}

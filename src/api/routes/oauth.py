@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Request
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from src.core.config import settings
+from src.core.security import extract_delegation_chain
 
 router = APIRouter(prefix="", tags=["OAuth2 & RFC 8693 Token Exchange"])
 
@@ -134,6 +135,9 @@ async def token_exchange_endpoint(request: Request):
             detail=f"Invalid subject token: {str(e)}",
         )
 
+    # Validate incoming delegation provenance and depth (fail-closed if depth > 20)
+    extract_delegation_chain(claims)
+
     subject = claims.get("sub")
     if not subject:
         raise HTTPException(
@@ -195,9 +199,17 @@ async def token_exchange_endpoint(request: Request):
     existing_act = claims.get("act")
     delegated_by = claims.get("delegated_by")
 
-    act_claim: Dict[str, Any] = {"sub": subject}
-    if existing_act:
-        act_claim["act"] = existing_act
+    # Preserve delegation provenance across single and repeated exchanges
+    if existing_act and isinstance(existing_act, dict):
+        if existing_act.get("sub") == subject:
+            act_claim = existing_act
+        else:
+            act_claim = {"sub": subject, "act": existing_act}
+    else:
+        act_claim = {"sub": subject}
+
+    # Validate that resulting delegation chain does not exceed maximum depth
+    extract_delegation_chain({"act": act_claim, "delegated_by": delegated_by})
 
     exchanged_claims: Dict[str, Any] = {
         "iss": settings.JWT_ISSUER,

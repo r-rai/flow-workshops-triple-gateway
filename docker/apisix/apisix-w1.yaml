@@ -1,11 +1,21 @@
 routes:
-  # Gate 2: Native OpenAPI-to-MCP generation
+  # Gate 2: Native OpenAPI-to-MCP generation (Broad Catalog)
   - id: w1_mcp_route
     uri: /mcp
     plugins:
       openapi-to-mcp:
         transport: streamable_http
         openapi_url: "http://api:8000/openapi.json"
+        base_url: "http://127.0.0.1:9080"
+        headers:
+          X-API-Key: "$http_x_api_key"
+  # Gate 2: Curated OpenAPI-to-MCP generation (Completed Checkpoint Contract)
+  - id: w1_mcp_curated_route
+    uri: /mcp/curated
+    plugins:
+      openapi-to-mcp:
+        transport: streamable_http
+        openapi_url: "http://api:8000/openapi-curated.json"
         base_url: "http://127.0.0.1:9080"
         headers:
           X-API-Key: "$http_x_api_key"

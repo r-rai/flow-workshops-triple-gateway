@@ -222,43 +222,130 @@ In response to the second independent audit report ([`docs/audits/2026-10-03-nov
 
 ---
 
+## 🚀 Final Audit Remediation (2026-10-03 Final Audit Review)
+
+In response to the final audit ([`docs/audits/2026-10-03-novabank-final-audit.md`](../audits/2026-10-03-novabank-final-audit.md)), all seven priority areas have been systematically remediated, hardened, and verified with fresh automated rehearsal evidence:
+
+### 1. Delegated Anti-Self-Approval Provenance & Chain Traversal (HIGH)
+- **Defect**: Token exchange wrapped the original actor inside a nested `act` claim, but `get_current_principal` inspected only the outer `act.sub`. Delegated manager tokens could bypass anti-self-approval and approve proposals created by their delegator.
+- **Remediation**:
+  - In [`src/core/security.py`](../../src/core/security.py), implemented recursive delegation chain extractor `extract_delegation_chain(claims)` traversing RFC 8693 nested `act` claims up to depth 20 as well as `delegated_by`. Populated `Principal.delegation_chain`.
+  - In [`src/api/routes/oauth.py`](../../src/api/routes/oauth.py), updated RFC 8693 token exchange to preserve provenance across single and repeated exchanges without redundant self-wrapping when subject matches outer actor.
+  - In [`src/services/approvals.py`](../../src/services/approvals.py), `approve_proposal_service` verifies:
+    ```python
+    requester_in_chain = (
+        principal.id == prop.requester_id
+        or principal.delegated_by == prop.requester_id
+        or prop.requester_id in principal.delegation_chain
+    )
+    if requester_in_chain:
+        raise HTTPException(status_code=403, detail="Anti-Self-Approval violation: Requester cannot approve proposal directly or via delegation")
+    ```
+  - Enforced `MAX_DELEGATION_DEPTH = 20` fail-closed limit in `src/core/security.py` and `src/api/routes/oauth.py`: over-depth chains (> 20) are rejected with HTTP 400 Bad Request, preventing bypasses where token exchange pushes delegators beyond truncation boundaries.
+- **Verification**: Added automated regression coverage in [`tests/test_api_foundation.py`](../../tests/test_api_foundation.py) and [`workshops/w4/rehearsal_w4.py`](../../workshops/w4/rehearsal_w4.py) Segment 7 covering direct delegation (403), exchanged delegation (403), nested delegation (403), repeated exchanges (403), over-depth chain direct presentation (400), token exchange depth overflow (400), while allowing independent risk managers (200).
+
+### 2. Executable W1 Curated Contract
+- **Defect**: Workshop 1 loaded the 2-endpoint contract for display only, still served the full 23-tool broad catalog, and only checked rejection of an unknown dummy tool name.
+- **Remediation**:
+  - Created [`src/api/openapi-curated.json`](../../src/api/openapi-curated.json) exposing exactly 2 curated operations (`get_account`, `get_case`).
+  - Added `GET /openapi-curated.json` route to Core API [`src/api/main.py`](../../src/api/main.py).
+  - Added `/mcp/curated` route in [`docker/apisix/apisix-w1.yaml`](../../docker/apisix/apisix-w1.yaml) targeting `http://api:8000/openapi-curated.json`.
+  - Added `--curated` flag to [`workshops/w1/client.py`](../../workshops/w1/client.py).
+  - Updated [`workshops/w1/rehearsal_w1.py`](../../workshops/w1/rehearsal_w1.py) Segment 3 to connect to `/mcp/curated`, assert exact 2-tool catalog (`['get_account', 'get_case']`), execute account and case reads, and verify rejection of broad-catalog operations (e.g. `list_payments_api_v1_payments_get`) and unknown tools (`delete_customer_account`).
+- **Verification**: Rehearsal W1 verified and recorded in [`workshops/w1/evidence/rehearsal-evidence.json`](../../workshops/w1/evidence/rehearsal-evidence.json).
+
+### 3. Telemetry Packaging & Distributed Trace Correlation
+- **Defect**: Python 3.12-slim dropped `setuptools`, causing `opentelemetry-instrumentation-fastapi` to fail importing `pkg_resources`. Adapter lacked instrumentation, and W4 rehearsal fabricated fallback service names without parent-child span verification.
+- **Remediation**:
+  - Added `setuptools==70.3.0` to both `docker/api/requirements.txt` and `docker/adapter/requirements.txt`. Added `opentelemetry-instrumentation-fastapi==0.46b0` to adapter.
+  - In [`src/adapter/server.py`](../../src/adapter/server.py), wired TracerProvider, BatchSpanProcessor, OTLPSpanExporter, and FastAPIInstrumentor. Propagated `traceparent` (and active trace context) to all downstream Gate 3 API calls.
+  - In [`workshops/w4/rehearsal_w4.py`](../../workshops/w4/rehearsal_w4.py) Segment 4, executed an authorized MCP call forwarding through adapter to Gate 3 API to produce real cross-service traces.
+  - In Segment 9, queried Jaeger API (`:16686`): asserted `novabank-api` and `novabank-adapter` exist, queried traces for `novabank-adapter`, identified correlated trace spanning both services, validated parent-child span hierarchy (child span in `novabank-api` references parent span in `novabank-adapter`), and configured fail-closed assertions if absent.
+- **Verification**: Rehearsal W4 verified real distributed trace `c5900339c480664f0a686368048a6fb6` with 4 adapter spans and 3 API spans.
+
+### 4. W1 Startup Readiness & Zero Flap
+- **Defect**: Switching to W1 exited 0 while backend API was still initializing; immediate `verify w1` hit APISIX `/mcp` which attempted OpenAPI fetch, failed, and cached the failure for 5s, returning HTTP 500.
+- **Remediation**:
+  - In [`scripts/workshop`](../../scripts/workshop) `cmd_start`, decoupled backend spec readiness from MCP initialization:
+    1. Polls `http://127.0.0.1:9080/api/v1/accounts/acc-101` and `http://127.0.0.1:8000/openapi.json` (and `openapi-curated.json` for W1) until 200 OK.
+    2. Pauses 1s for APISIX upstream cache readiness.
+    3. Warms MCP `initialize`, `tools/list`, and executes downstream `tools/call` checking for account balance / INR.
+    4. If profile is W1, additionally warms `/mcp/curated` `initialize`, `tools/list`, and `tools/call`.
+- **Verification**: Verified repeated cold profile switches `./scripts/workshop switch w1 && ./scripts/workshop verify w1` exit 0 on first attempt with zero 500 errors.
+
+### 5. Fail-Closed Preflight Validation
+- **Defect**: Preflight suppressed digest inspection errors with `2>/dev/null || true` and did not fail closed on malformed manifest JSON or inspection errors. Preflight unit tests exercised copied logic rather than the CLI script.
+- **Remediation**:
+  - In [`scripts/workshop`](../../scripts/workshop) `cmd_preflight`, strictly parses `config/manifest.json`, validates each pinned image's `RepoDigests`, records errors, and propagates exit code 1 to bash on any failure. Supports `WORKSHOP_MANIFEST_PATH` for subprocess test isolation.
+  - Rewrote [`tests/test_preflight_validation.py`](../../tests/test_preflight_validation.py) to execute the real `./scripts/workshop preflight` executable via `subprocess.run` across 5 negative and positive scenarios. Added direct CLI execution runner (`if __name__ == "__main__": sys.exit(pytest.main(["-v", __file__]))`).
+- **Verification**: `./scripts/workshop preflight` passes on host; all 5 CLI subprocess tests pass.
+
+### 6. A2A Settlement Binding & Executor Authorization
+- **Defect**:
+  1. Any agent with `api:a2a:tasks` could complete tasks with arbitrary payment IDs, including nonexistent payments or payments from unrelated transactions.
+  2. Permissive destination check allowed source account match (`payment.account_id == expected_dest`) even when beneficiary did not match.
+  3. No currency validation was performed.
+  4. Multiple tasks could bind the exact same payment ID: checking existing bindings and committing completion were separate application-level operations, creating a race condition where concurrent requests both returned HTTP 200 and bound the same payment to two tasks.
+- **Remediation**:
+  - In [`src/models/db_models.py`](../../src/models/db_models.py):
+    - Added `PaymentTaskBinding` model mapping to `a2a_payment_bindings` with `payment_id` as primary key and `task_id` unique index, enforcing database-level uniqueness.
+    - Added `bound_payment_id = Column(String(64), unique=True, nullable=True, index=True)` to `A2ATask`.
+  - In [`src/api/routes/a2a.py`](../../src/api/routes/a2a.py):
+    - Enforced state transitions: completing a task in a terminal state (`completed`, `failed`, `cancelled`) raises `HTTP 400 Bad Request`.
+    - Enforced executor authorization: completing a `propose_payment` task requires `payments-agent-executor` (or admin with write scope); non-executors (including the task owner) receive `HTTP 403 Forbidden`.
+    - Strict destination matching: requires `payment.beneficiary == expected_dest` (no `account_id` fallback).
+    - Currency matching: requires `payment.currency == expected_currency` (HTTP 400 on mismatch).
+    - Database uniqueness & atomic claim: inserts `PaymentTaskBinding` record and sets `task.bound_payment_id` within the completion transaction. Commits atomically with `IntegrityError` handler rolling back and raising HTTP 409 Conflict (`"Payment '...' is already bound to task"`). Pre-checks also raise HTTP 409 Conflict.
+    - Validated settlement record: queries database for `payment_id`, verifies payment status is `completed` or `settled`, verifies amount and beneficiary match task input, and verifies associated proposal is `consumed`.
+  - In [`src/agents/payments_agent.py`](../../src/agents/payments_agent.py), implemented `dispatch_payment_task(task_id)` which queries task specifications, executes payment through Core Banking API, and completes task binding the verified settlement record.
+- **Verification**: Tested in [`tests/test_api_foundation.py`](../../tests/test_api_foundation.py) and [`workshops/w4/rehearsal_w4.py`](../../workshops/w4/rehearsal_w4.py) Segment 8: nonexistent payment (400), mismatched payment (400), wrong destination (400), wrong currency (400), duplicate payment reuse (409), concurrent settlement race [200, 409], non-executor owner completion (403), payments agent dispatch (200), and terminal state re-completion (400).
+
+### 7. Remaining Delivery Gaps & Reporting Transparency
+- **`USE_REPLAY_FIXTURES=false`**:
+  - In [`src/adapter/server.py`](../../src/adapter/server.py), when `USE_REPLAY_FIXTURES=false`, checks for live credentials (`OPENAI_API_KEY`/`LLM_API_KEY`). If absent, returns explicit `HTTP 503 Service Unavailable` configuration error instead of fabricating replay content. If configured, executes live upstream chat completion.
+- **W3 LangGraph Simulation Architecture**:
+  - Documented in [`config/manifest.json`](../../config/manifest.json) that W3 diagnosis activity uses a deterministic simulation of LangGraph multi-step reasoning for reliable offline lab execution without external LLM provider costs or rate limits.
+  - **Planned follow-up (2026-10-04, not implemented):** the user has requested actual LangGraph execution with live MiniMax inference plus offline replay using the same graph. See the [updated W3 delivery plan](../workshops/delivery-plan.md#w3-real-agent-implementation-plan--minimax) and [copyable implementation prompt](w3-minimax-agent-prompt.md). The deterministic diagnosis above remains the current implementation until live/replay acceptance evidence is recorded.
+- **W3 Writers-Stopped Reset & Real SIGKILL Recovery**:
+  - In [`workshops/w3/rehearsal_w3.py`](../../workshops/w3/rehearsal_w3.py), Segment 1 stops `temporal` and `worker` writers before resetting SQLite database to prevent open-handle corruption. Segment 4 upgraded worker crash to real `docker kill --signal=SIGKILL novabank-workshops-worker-1`.
+- **Built Image Tagging**:
+  - Documented that 4 built images (`api`, `adapter`, `worker`, `temporal`) use semantic tag `1.0.0` with base image `python:3.12-slim` pinned to exact SHA256 digest (`sha256:dddfd7e07f9d15ae4421b4a69eb6ef57b8054044a69a9143ae84ad2c664b9683`) and exact pip package pins.
+
+---
+
 ## ⚠️ Transparent Accounting of Unverified Requirements
 
 As required by the repository brief, unverified checks must be reported transparently and not claimed as equivalent:
 
 - **Windows 11 / WSL2 5 GB Memory Benchmark**:
   - **Status**: **Unverified on Host Platform**.
-  - **Reason**: The host system is a Linux VPS (`vmi3355051` / Ubuntu x86_64). While native Linux container active memory peaks at ~951 MB (907 MiB) across 9 containers (comfortably within the 6 GB VPS operating budget), Windows 11 WSL2 virtualization allocates memory through the Windows Hyper-V `vmmem` subsystem with different page reclamation dynamics. This benchmark is documented in [`config/manifest.json`](../../config/manifest.json) to be verified on native Windows 11 participant laptops prior to workshop delivery.
+  - **Reason**: The host system is a Linux VPS (`vmi3355051` / Ubuntu x86_64). While native Linux container active memory peaks at ~775–995 MB (740–949 MiB) across 9 containers (comfortably within the 6 GB VPS operating budget), Windows 11 WSL2 virtualization allocates memory through the Windows Hyper-V `vmmem` subsystem with different page reclamation dynamics. This benchmark is documented in [`config/manifest.json`](../../config/manifest.json) to be verified on native Windows 11 participant laptops prior to workshop delivery.
 
 ---
 
 ## 📋 Copyable Prompt for Reviewing Agent
 
 ```text
-Please review and audit the NovaBank workshop platform implementation on branch feat/implement-novabank-platform.
+Please review and audit the NovaBank workshop platform implementation on branch feat/implement-novabank-platform following remediation of the 2026-10-03 Final Audit.
 
 Review Context:
 - Full implementation handoff: docs/implementation/agent-handoff.md
+- Final remediation report: docs/audits/2026-10-04-novabank-remediation-report.md
 - Initial audit report: docs/audits/2026-10-03-novabank-audit.md
 - Re-audit report: docs/audits/2026-10-03-novabank-reaudit.md
-- Delivery plan: docs/workshops/delivery-plan.md
-- Facilitator guide: docs/workshops/facilitator-guide.md
+- Final audit report: docs/audits/2026-10-03-novabank-final-audit.md
 - Pinned release manifest: config/manifest.json
 
 Audit Requirements:
-1. Verify git commit history on feat/implement-novabank-platform across all packages and the audit remediation commits.
-2. Validate that ./scripts/workshop preflight passes and verifies pinned third-party image digests.
-3. Validate that ./scripts/workshop verify passes on all 4 profiles (w1, w2, w3, w4).
-4. Validate that the automated rehearsal test runners (workshops/w<N>/rehearsal_w<N>.py) execute cleanly and save fresh evidence:
-   - W1: Curated contract inspection (2 endpoints) and tool exclusion verification.
-   - W2: Downstream OPA policy enforcement and fail-closed timeout denial.
-   - W3: Durable Temporal workflow execution, worker crash recovery, approval settlement, and rejection settlement (Segment 6) with 0 payments and status 'closed'.
-   - W4: Triple-Gate defense-in-depth, RFC 8693 form exchange, entitlement scope enforcement (HTTP 403 on escalation), anti-self-approval (HTTP 403), below-threshold tampering prevention (HTTP 400), concurrent single-use CAS ([200, 409]), A2A owner-scoped isolation, and Jaeger telemetry.
-5. Verify that proposal persistence failures in the adapter return explicit errors and never fabricate fake proposal IDs.
-6. Verify VPS memory containment (~951 MB / 907 MiB Linux peak) and confirm that existing VPS services (caddy, portainer, uptime-kuma, dozzle) remain unharmed.
-7. Confirm the unverified Windows 11 / WSL2 5 GB RAM benchmark is accurately recorded without false claims.
-
-Report your findings, verification outputs, and any recommendations.
+1. Verify git commit history and working tree status on feat/implement-novabank-platform.
+2. Validate that ./scripts/workshop preflight passes and negative preflight unit tests pass (tests/test_preflight_validation.py).
+3. Validate that ./scripts/workshop switch w1 followed immediately by ./scripts/workshop verify w1 passes with zero HTTP 500 errors.
+4. Validate that all 4 workshop rehearsals pass and fresh evidence is captured:
+   - W1: workshops/w1/rehearsal_w1.py (executable /mcp/curated contract with 2 tools, account/case reads, broad operation rejection).
+   - W2: workshops/w2/rehearsal_w2.py (durable proposal lookup and POLICY_TIMEOUT_FAIL_CLOSED denial).
+   - W3: workshops/w3/rehearsal_w3.py (writers-stopped reset, real SIGKILL recovery, approved settlement, and rejection with case-502 closed and 0 payments).
+   - W4: workshops/w4/rehearsal_w4.py (RFC 8693 form exchange, delegated anti-self-approval 403 regression suite, argument tampering 400, CAS single-use [200, 409], A2A settlement binding, and correlated distributed traces with parent-child span hierarchy).
+5. Verify VPS memory containment (~775–995 MB Linux peak) and confirm protected services (caddy, portainer, uptime-kuma, dozzle) remain running.
+6. Verify transparent reporting of the unverified Windows 11 / WSL2 5 GB benchmark and architectural simplifications.
 ```
-
 

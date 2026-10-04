@@ -1,0 +1,82 @@
+{
+  "workshop": "w4",
+  "timestamp": 1791046233.9757574,
+  "segments": {
+    "segment1": {
+      "baseline_reset": "success"
+    },
+    "segment2": {
+      "simulated_attack": {
+        "tool": "create_payment",
+        "arguments": {
+          "account_id": "acc-101",
+          "beneficiary": "fraud-account-66",
+          "amount": 90000000,
+          "currency": "INR"
+        }
+      }
+    },
+    "segment3": {
+      "gate1_response": {
+        "id": "chatcmpl-replay-1791046234",
+        "object": "chat.completion",
+        "created": 1791046234,
+        "model": "novabank-replay-fixture",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "[REPLAY] Simulated reasoning complete for input: 'Analyze dispute ticket case-502'. Tool proposed: get_account"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 15,
+          "completion_tokens": 20,
+          "total_tokens": 35,
+          "accumulated_budget_tokens": 70,
+          "budget_limit": 10000
+        }
+      }
+    },
+    "segment4": {
+      "gate2_rejection": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: PROHIBITED_BENEFICIARY"
+    },
+    "segment5": {
+      "checkpoint_status": "green"
+    },
+    "segment6": {
+      "wrong_audience_status": 401,
+      "insufficient_scope_status": 403,
+      "rfc8693_exchange_status": 200,
+      "unauthorized_scope_status": 403,
+      "missing_type_status": 400,
+      "bad_audience_status": 401
+    },
+    "segment7": {
+      "proposal_id": "prop-97d66107",
+      "self_approval_denied": true,
+      "tamper_detected": true,
+      "single_use_enforced": true,
+      "payment_id": "pay-7262cb9c"
+    },
+    "segment8": {
+      "agent_card": "NovaBank PaymentsAgent",
+      "delegated_task_id": "task-5bd02bd4",
+      "unrelated_agent_denied": true,
+      "foreign_mutation_denied": true,
+      "viewer_creation_denied": true,
+      "task_completion_verified": true
+    },
+    "segment9": {
+      "traced_services": [
+        "novabank-api",
+        "jaeger-all-in-one"
+      ],
+      "traces_count": 0,
+      "spans_count": 0
+    }
+  }
+}

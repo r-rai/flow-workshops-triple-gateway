@@ -1,0 +1,12 @@
+[
+  {
+    "service": "api",
+    "integrity": "ok",
+    "hash_matches": true
+  },
+  {
+    "service": "temporal",
+    "integrity": "ok",
+    "hash_matches": true
+  }
+]

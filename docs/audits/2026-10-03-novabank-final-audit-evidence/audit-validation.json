@@ -1,0 +1,7 @@
+{
+  "report_links_valid": true,
+  "eight_rehearsal_outputs_fresh": true,
+  "both_restore_sets_integrity_and_hashes_valid": true,
+  "only_new_audit_artifacts_changed": true,
+  "active_profile": "w4"
+}

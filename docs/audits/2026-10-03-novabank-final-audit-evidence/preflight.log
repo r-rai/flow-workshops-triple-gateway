@@ -1,0 +1,13 @@
+=====================================================================
+ NovaBank Workshop Platform: System Preflight Check
+=====================================================================
+Checking docker... [0;32mDocker version 29.8.2, build 7fc2dff[0m
+Checking docker compose... [0;32mDocker Compose version v5.6.0[0m
+Checking python3... [0;32mPython 3.12.3[0m
+Checking host memory... [0;32m5601 MiB available (budget >= 2000 MiB satisfied)[0m
+Checking root disk space... [0;32m55G free[0m
+Checking APISIX port 9080... [1;33mPort 9080 currently occupied by active profile 'w4'[0m
+Checking release manifest and image digests... [0;32mPinned digests verified against config/manifest.json[0m
+Checking existing Caddy & monitoring services... [0;32mProtected services detected: caddy, portainer, uptime-kuma, dozzle[0m
+=====================================================================
+[0;32m[OK][0m Preflight PASSED! Host is ready for workshop execution.

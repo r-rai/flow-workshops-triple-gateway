@@ -1,0 +1,16 @@
+[0;34m[INFO][0m Starting workshop profile 'w4' within 6 GB operating budget...
+ Container novabank-workshops-jaeger-1 Running 
+ Container novabank-workshops-kafka-1 Running 
+ Container novabank-workshops-opa-1 Running 
+ Container novabank-workshops-postgres-1 Running 
+ Container novabank-workshops-apisix-1 Running 
+ Container novabank-workshops-worker-1 Starting 
+ Container novabank-workshops-adapter-1 Starting 
+ Container novabank-workshops-api-1 Starting 
+ Container novabank-workshops-temporal-1 Starting 
+ Container novabank-workshops-worker-1 Started 
+ Container novabank-workshops-adapter-1 Started 
+ Container novabank-workshops-api-1 Started 
+ Container novabank-workshops-temporal-1 Started 
+[0;34m[INFO][0m Waiting for services to become healthy...
+[0;32m[OK][0m Workshop profile 'w4' is ACTIVE and healthy on http://127.0.0.1:9080

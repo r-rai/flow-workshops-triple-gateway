@@ -1,0 +1,50 @@
+{
+  "trace_id": "f03e0ead74078a2f5ddc1797839c1abc",
+  "authorized_call": {
+    "status": 200,
+    "response": {
+      "jsonrpc": "2.0",
+      "id": 510,
+      "result": {
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"id\": \"acc-101\",\n  \"name\": \"Acme Retail Checking\",\n  \"balance\": 1500000,\n  \"currency\": \"INR\",\n  \"status\": \"active\"\n}"
+          }
+        ]
+      }
+    }
+  },
+  "trace_query": {
+    "status": 404,
+    "response": {
+      "data": null,
+      "total": 0,
+      "limit": 0,
+      "offset": 0,
+      "errors": [
+        {
+          "code": 404,
+          "msg": "trace not found"
+        }
+      ]
+    }
+  },
+  "services": {
+    "data": [
+      "jaeger-all-in-one"
+    ],
+    "total": 1,
+    "limit": 0,
+    "offset": 0,
+    "errors": null
+  },
+  "recent_api_traces": {
+    "data": [],
+    "total": 0,
+    "limit": 0,
+    "offset": 0,
+    "errors": null
+  }
+}

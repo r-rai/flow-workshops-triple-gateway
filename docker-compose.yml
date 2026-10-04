@@ -87,6 +87,12 @@ services:
       - MCP_AUDIENCE=${MCP_AUDIENCE:-novabank-mcp}
       - API_AUDIENCE=${API_AUDIENCE:-novabank-api}
       - USE_REPLAY_FIXTURES=${USE_REPLAY_FIXTURES:-true}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_PROVIDER_URL=${LLM_PROVIDER_URL:-https://api.minimax.io/v1/chat/completions}
+      - LLM_MODEL=${LLM_MODEL:-MiniMax-M2.7}
+      - INFERENCE_BUDGET_TOKENS=${INFERENCE_BUDGET_TOKENS:-16000}
       - ENABLE_TELEMETRY=${ENABLE_TELEMETRY:-true}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4318/v1/traces}
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://jaeger:4318/v1/traces}
@@ -218,6 +224,10 @@ services:
       - API_URL=http://apisix:9080/api/v1
       - GATE3_URL=http://apisix:9080/api/v1
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
+      - MCP_URL=http://apisix:9080/mcp
+      - AI_GATEWAY_URL=http://apisix:9080/ai/chat/completions
+      - USE_REPLAY_FIXTURES=${USE_REPLAY_FIXTURES:-true}
+      - LLM_MODEL=${LLM_MODEL:-MiniMax-M2.7}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-novabank-super-secret-signing-key-for-lab}
       - API_AUDIENCE=${API_AUDIENCE:-novabank-api}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces

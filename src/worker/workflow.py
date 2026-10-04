@@ -55,7 +55,7 @@ class DisputeResolutionWorkflow:
         self.proposal = await workflow.execute_activity(
             diagnose_and_propose_resolution,
             case_data,
-            start_to_close_timeout=timedelta(seconds=30)
+            start_to_close_timeout=timedelta(seconds=120)
         )
 
         # Check if human approval is required

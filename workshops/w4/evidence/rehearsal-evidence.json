@@ -1,6 +1,6 @@
 {
   "workshop": "w4",
-  "timestamp": 1791043697.3393807,
+  "timestamp": 1791095480.7549167,
   "segments": {
     "segment1": {
       "baseline_reset": "success"
@@ -18,9 +18,9 @@
     },
     "segment3": {
       "gate1_response": {
-        "id": "chatcmpl-replay-1791043697",
+        "id": "chatcmpl-replay-1791095481",
         "object": "chat.completion",
-        "created": 1791043697,
+        "created": 1791095481,
         "model": "novabank-replay-fixture",
         "choices": [
           {
@@ -36,13 +36,22 @@
           "prompt_tokens": 15,
           "completion_tokens": 20,
           "total_tokens": 35,
-          "accumulated_budget_tokens": 105,
+          "accumulated_budget_tokens": 140,
           "budget_limit": 10000
         }
       }
     },
     "segment4": {
-      "gate2_rejection": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: PROHIBITED_BENEFICIARY"
+      "gate2_rejection": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: PROHIBITED_BENEFICIARY",
+      "gate2_authorized_read": {
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"id\": \"case-501\",\n  \"customer_id\": \"cust-8801\",\n  \"issue_type\": \"disputed_transaction\",\n  \"description\": \"Customer claims unapproved charge of 45000 INR on checking account.\",\n  \"priority\": \"medium\",\n  \"status\": \"open\"\n}"
+          }
+        ]
+      }
     },
     "segment5": {
       "checkpoint_status": "green"
@@ -56,27 +65,40 @@
       "bad_audience_status": 401
     },
     "segment7": {
-      "proposal_id": "prop-5a0329b8",
+      "proposal_id": "prop-9ae89b06",
       "self_approval_denied": true,
+      "direct_delegation_denied": true,
+      "exchanged_delegation_denied": true,
+      "nested_delegation_denied": true,
+      "repeated_exchange_denied": true,
       "tamper_detected": true,
       "single_use_enforced": true,
-      "payment_id": "pay-2e0d40fe"
+      "payment_id": "pay-2c4de6a4"
     },
     "segment8": {
       "agent_card": "NovaBank PaymentsAgent",
-      "delegated_task_id": "task-96879ccc",
+      "delegated_task_id": "task-d443cdb7",
       "unrelated_agent_denied": true,
       "foreign_mutation_denied": true,
       "viewer_creation_denied": true,
-      "task_completion_verified": true
+      "nonexistent_payment_denied": true,
+      "mismatched_payment_denied": true,
+      "non_executor_completion_denied": true,
+      "task_dispatch_settled": true,
+      "settled_payment_id": "pay-1500a0ad",
+      "recompletion_denied": true,
+      "concurrent_settlement_race_verified": true
     },
     "segment9": {
       "traced_services": [
-        "novabank-api",
-        "jaeger-all-in-one"
+        "novabank-adapter",
+        "jaeger-all-in-one",
+        "novabank-api"
       ],
-      "traces_count": 0,
-      "spans_count": 0
+      "correlated_trace_id": "6a15078479506935384690ed836200c5",
+      "adapter_spans_count": 4,
+      "api_spans_count": 3,
+      "parent_child_verified": true
     }
   }
 }

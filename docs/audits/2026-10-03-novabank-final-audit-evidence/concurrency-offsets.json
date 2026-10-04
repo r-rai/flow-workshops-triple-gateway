@@ -1,0 +1,118 @@
+{
+  "forced_proposal_race": {
+    "calls": [
+      {
+        "status": 409,
+        "detail": "Proposal was already consumed concurrently"
+      },
+      {
+        "status": 200,
+        "response": {
+          "payment_id": "pay-db5552f1",
+          "status": "COMPLETED",
+          "account_id": "acc-102",
+          "amount": 150000,
+          "currency": "INR",
+          "beneficiary": "acc-101",
+          "remaining_balance": 8350000,
+          "idempotent_replay": false
+        }
+      }
+    ],
+    "statuses": [
+      200,
+      409
+    ],
+    "payment_count": 1,
+    "balance_before": 8500000,
+    "balance_after": 8350000,
+    "proposal_status": "consumed"
+  },
+  "independent_debit_race": {
+    "statuses": [
+      200,
+      200
+    ],
+    "balance_before": 8500000,
+    "balance_after": 8400000,
+    "payment_count": 2
+  },
+  "kafka_offsets": [
+    {
+      "mode": "transient",
+      "read_offsets": [
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": []
+    },
+    {
+      "mode": "exhaust_then_recover",
+      "read_offsets": [
+        10,
+        10,
+        11
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-11"
+      ],
+      "commits": [
+        {
+          "novabank.disputes:0": 11
+        },
+        {
+          "novabank.disputes:0": 12
+        }
+      ],
+      "seeks": [
+        10
+      ]
+    },
+    {
+      "mode": "shutdown",
+      "read_offsets": [
+        10
+      ],
+      "start_attempts": [
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10",
+        "dispute-case-case-10"
+      ],
+      "commits": [],
+      "seeks": [
+        10
+      ]
+    }
+  ]
+}

@@ -1,19 +1,19 @@
 {
   "mcp_initialize": {
-    "id": 1,
-    "jsonrpc": "2.0",
     "result": {
       "protocolVersion": "2024-11-05",
-      "serverInfo": {
-        "name": "openapi2mcp",
-        "version": "0.0.1"
-      },
       "capabilities": {
         "tools": {}
+      },
+      "serverInfo": {
+        "version": "0.0.1",
+        "name": "openapi2mcp"
       }
-    }
+    },
+    "jsonrpc": "2.0",
+    "id": 1
   },
-  "broad_tools_count": 22,
+  "broad_tools_count": 23,
   "broad_tool_names": [
     "healthz_healthz_get",
     "readyz_readyz_get",
@@ -36,33 +36,95 @@
     "complete_a2a_task_api_v1_a2a_tasks__task_id__complete_post",
     "token_exchange_endpoint_api_v1_oauth_token_post",
     "token_exchange_endpoint_oauth_token_post",
-    "well_known_agent__well_known_agent_json_get"
+    "well_known_agent__well_known_agent_json_get",
+    "openapi_curated_openapi_curated_json_get"
   ],
   "authorized_call_status": 200,
   "authorized_call_result": {
-    "id": 3,
-    "jsonrpc": "2.0",
     "result": {
       "content": [
         {
           "type": "text",
-          "text": "{\n  \"status\": 200,\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"content-length\": \"99\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"application/json\",\n    \"date\": \"Sat, 03 Oct 2026 15:55:23 GMT\",\n    \"server\": \"APISIX/3.19.0\"\n  },\n  \"data\": {\n    \"status\": \"active\",\n    \"name\": \"Acme Retail Checking\",\n    \"id\": \"acc-101\",\n    \"balance\": 1500000,\n    \"currency\": \"INR\"\n  }\n}"
+          "text": "{\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"date\": \"Sun, 04 Oct 2026 06:08:47 GMT\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"application/json\",\n    \"server\": \"APISIX/3.19.0\",\n    \"content-length\": \"99\"\n  },\n  \"data\": {\n    \"name\": \"Acme Retail Checking\",\n    \"status\": \"active\",\n    \"id\": \"acc-101\",\n    \"balance\": 1500000,\n    \"currency\": \"INR\"\n  },\n  \"status\": 200\n}"
         }
       ]
+    },
+    "jsonrpc": "2.0",
+    "id": 3
+  },
+  "curated_checkpoint": {
+    "paths": [
+      "/api/v1/accounts/{id}",
+      "/api/v1/cases/{id}"
+    ],
+    "tool_names": [
+      "get_account",
+      "get_case"
+    ],
+    "account_read": {
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"date\": \"Sun, 04 Oct 2026 06:08:47 GMT\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"application/json\",\n    \"server\": \"APISIX/3.19.0\",\n    \"content-length\": \"99\"\n  },\n  \"data\": {\n    \"name\": \"Acme Retail Checking\",\n    \"status\": \"active\",\n    \"id\": \"acc-101\",\n    \"balance\": 1500000,\n    \"currency\": \"INR\"\n  },\n  \"status\": 200\n}"
+          }
+        ]
+      },
+      "jsonrpc": "2.0",
+      "id": 22
+    },
+    "case_read": {
+      "result": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\n  \"statusText\": \"OK\",\n  \"headers\": {\n    \"date\": \"Sun, 04 Oct 2026 06:08:47 GMT\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"application/json\",\n    \"server\": \"APISIX/3.19.0\",\n    \"content-length\": \"199\"\n  },\n  \"data\": {\n    \"issue_type\": \"disputed_transaction\",\n    \"status\": \"open\",\n    \"customer_id\": \"cust-8801\",\n    \"id\": \"case-501\",\n    \"priority\": \"medium\",\n    \"description\": \"Customer claims unapproved charge of 45000 INR on checking account.\"\n  },\n  \"status\": 200\n}"
+          }
+        ]
+      },
+      "jsonrpc": "2.0",
+      "id": 23
+    },
+    "rejected_broad_payment_tool": "list_payments_api_v1_payments_get",
+    "rejected_payment_response": {
+      "result": {
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "MCP error -32602: Tool list_payments_api_v1_payments_get not found"
+          }
+        ]
+      },
+      "jsonrpc": "2.0",
+      "id": 24
+    },
+    "rejected_delete_response": {
+      "result": {
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "MCP error -32602: Tool delete_customer_account not found"
+          }
+        ]
+      },
+      "jsonrpc": "2.0",
+      "id": 25
     }
   },
   "denied_call_status": 200,
   "denied_call_result": {
-    "id": 4,
-    "jsonrpc": "2.0",
     "result": {
       "content": [
         {
           "type": "text",
-          "text": "{\n  \"status\": 401,\n  \"statusText\": \"Unauthorized\",\n  \"headers\": {\n    \"www-authenticate\": \"apikey realm=\\\"key\\\"\",\n    \"transfer-encoding\": \"chunked\",\n    \"connection\": \"keep-alive\",\n    \"content-type\": \"text/plain; charset=utf-8\",\n    \"date\": \"Sat, 03 Oct 2026 15:55:24 GMT\",\n    \"server\": \"APISIX/3.19.0\"\n  },\n  \"data\": {\n    \"message\": \"Invalid API key in request\"\n  }\n}"
+          "text": "{\n  \"statusText\": \"Unauthorized\",\n  \"headers\": {\n    \"date\": \"Sun, 04 Oct 2026 06:08:47 GMT\",\n    \"connection\": \"keep-alive\",\n    \"server\": \"APISIX/3.19.0\",\n    \"content-type\": \"text/plain; charset=utf-8\",\n    \"transfer-encoding\": \"chunked\",\n    \"www-authenticate\": \"apikey realm=\\\"key\\\"\"\n  },\n  \"data\": {\n    \"message\": \"Invalid API key in request\"\n  },\n  \"status\": 401\n}"
         }
       ]
-    }
+    },
+    "jsonrpc": "2.0",
+    "id": 4
   },
-  "rehearsal_duration_seconds": 0.41
+  "rehearsal_duration_seconds": 2.49
 }

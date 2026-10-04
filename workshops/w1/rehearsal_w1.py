@@ -78,9 +78,9 @@ def main():
         # Verify account read tool exists
         read_tool = next(t for t in tool_names if "account" in t.lower())
 
-        # Step 3: Invoke Account Read through MCP (22–32 min)
-        print("\n[Segment 3: 22–32 min] Authorized Tool Invocation & Curated Contract Comparison")
-        # Load and verify completed curated checkpoint contract
+        # Step 3: Invoke Account Read through Broad MCP & Verify Curated Contract Execution (22–32 min)
+        print("\n[Segment 3: 22–32 min] Authorized Tool Invocation & Executable Curated Contract Verification")
+        # Load and verify completed curated checkpoint contract spec
         curated_path = "workshops/w1/checkpoints/completed/openapi-curated.json"
         with open(curated_path) as f:
             curated_spec = json.load(f)
@@ -107,16 +107,108 @@ def main():
         evidence["authorized_call_result"] = call_ok_data
         call_ok_str = json.dumps(call_ok_data)
         assert "1500000" in call_ok_str and "INR" in call_ok_str, f"Unexpected response: {call_ok_str}"
-        print("✓ Successfully retrieved account acc-101 balance through MCP:")
+        print("✓ Successfully retrieved account acc-101 balance through broad MCP:")
         print(" ", call_ok_data.get("result", {}).get("content", [{}])[0].get("text")[:100], "...")
 
-        # Test excluded/uncrated tool invocation returns error
-        r_call_excluded = client.post(
-            f"{base_url}/mcp",
+        # --- EXECUTABLE CURATED CHECKPOINT VERIFICATION (/mcp/curated) ---
+        print("\n--- Testing Executable Curated Endpoint (/mcp/curated) ---")
+        # 1. Initialize Curated MCP
+        r_cur_init = client.post(
+            f"{base_url}/mcp/curated",
+            headers=headers_mcp,
+            json={
+                "jsonrpc": "2.0",
+                "id": 20,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {"name": "curated-client", "version": "1.0"}
+                }
+            }
+        )
+        assert r_cur_init.status_code == 200, f"Curated MCP init failed: {r_cur_init.status_code}"
+        parsed_cur_init = parse_sse(r_cur_init.text)
+        print("✓ Curated MCP Initialized. Server:", parsed_cur_init.get("result", {}).get("serverInfo"))
+
+        # 2. Discover Curated Tools List (Must be EXACTLY 2 tools: get_account and get_case)
+        r_cur_list = client.post(
+            f"{base_url}/mcp/curated",
+            headers=headers_mcp,
+            json={"jsonrpc": "2.0", "id": 21, "method": "tools/list", "params": {}}
+        )
+        assert r_cur_list.status_code == 200
+        cur_tools = parse_sse(r_cur_list.text).get("result", {}).get("tools", [])
+        cur_tool_names = [t["name"] for t in cur_tools]
+        print(f"✓ Discovered {len(cur_tools)} curated tools: {cur_tool_names}")
+        assert set(cur_tool_names) == {"get_account", "get_case"}, f"Expected exactly {{'get_account', 'get_case'}}, got: {cur_tool_names}"
+
+        # 3. Successful Account Read on /mcp/curated
+        r_cur_acc = client.post(
+            f"{base_url}/mcp/curated",
             headers=auth_headers,
             json={
                 "jsonrpc": "2.0",
-                "id": 31,
+                "id": 22,
+                "method": "tools/call",
+                "params": {
+                    "name": "get_account",
+                    "arguments": {"pathParameters": {"id": "acc-101"}}
+                }
+            }
+        )
+        cur_acc_data = parse_sse(r_cur_acc.text)
+        cur_acc_str = json.dumps(cur_acc_data)
+        assert "1500000" in cur_acc_str and "INR" in cur_acc_str, f"Curated account read failed: {cur_acc_str}"
+        print("✓ Curated get_account succeeded: verified balance 1500000 INR")
+
+        # 4. Successful Case Read on /mcp/curated
+        r_cur_case = client.post(
+            f"{base_url}/mcp/curated",
+            headers=auth_headers,
+            json={
+                "jsonrpc": "2.0",
+                "id": 23,
+                "method": "tools/call",
+                "params": {
+                    "name": "get_case",
+                    "arguments": {"pathParameters": {"id": "case-501"}}
+                }
+            }
+        )
+        cur_case_data = parse_sse(r_cur_case.text)
+        cur_case_str = json.dumps(cur_case_data)
+        assert "case-501" in cur_case_str, f"Curated case read failed: {cur_case_str}"
+        print("✓ Curated get_case succeeded: verified support case details for case-501")
+
+        # 5. Rejection of actual excluded broad-catalog payment-list tool on /mcp/curated
+        broad_payment_tool = next((t for t in tool_names if "payment" in t.lower() and "get" in t.lower()), "list_payments_api_v1_payments_get")
+        print(f"Testing rejection of actual excluded broad operation '{broad_payment_tool}' on curated endpoint...")
+        r_cur_ex_pay = client.post(
+            f"{base_url}/mcp/curated",
+            headers=auth_headers,
+            json={
+                "jsonrpc": "2.0",
+                "id": 24,
+                "method": "tools/call",
+                "params": {
+                    "name": broad_payment_tool,
+                    "arguments": {}
+                }
+            }
+        )
+        cur_ex_pay_data = parse_sse(r_cur_ex_pay.text)
+        cur_ex_pay_str = json.dumps(cur_ex_pay_data)
+        assert cur_ex_pay_data.get("result", {}).get("isError") is True or "not found" in cur_ex_pay_str.lower() or "error" in cur_ex_pay_data, f"Excluded payment tool was not rejected: {cur_ex_pay_str}"
+        print(f"✓ CURATED CONTRACT ENFORCED: Broad payment tool '{broad_payment_tool}' successfully rejected on /mcp/curated.")
+
+        # 6. Rejection of unknown / delete tool on /mcp/curated
+        r_cur_ex_del = client.post(
+            f"{base_url}/mcp/curated",
+            headers=auth_headers,
+            json={
+                "jsonrpc": "2.0",
+                "id": 25,
                 "method": "tools/call",
                 "params": {
                     "name": "delete_customer_account",
@@ -124,10 +216,21 @@ def main():
                 }
             }
         )
-        excluded_data = parse_sse(r_call_excluded.text)
-        excluded_str = json.dumps(excluded_data)
-        assert excluded_data.get("result", {}).get("isError") is True or "not found" in excluded_str.lower() or "error" in excluded_data, f"Excluded tool call did not fail: {excluded_str}"
-        print("✓ CURATED CONTRACT INVARIANT CONFIRMED: Excluded tool 'delete_customer_account' rejected by MCP.")
+        cur_ex_del_data = parse_sse(r_cur_ex_del.text)
+        cur_ex_del_str = json.dumps(cur_ex_del_data)
+        assert cur_ex_del_data.get("result", {}).get("isError") is True or "not found" in cur_ex_del_str.lower() or "error" in cur_ex_del_data, f"Excluded delete tool was not rejected: {cur_ex_del_str}"
+        print("✓ CURATED CONTRACT ENFORCED: Excluded tool 'delete_customer_account' rejected by /mcp/curated.")
+
+        # Save curated evidence
+        evidence["curated_checkpoint"] = {
+            "paths": curated_paths,
+            "tool_names": cur_tool_names,
+            "account_read": cur_acc_data,
+            "case_read": cur_case_data,
+            "rejected_broad_payment_tool": broad_payment_tool,
+            "rejected_payment_response": cur_ex_pay_data,
+            "rejected_delete_response": cur_ex_del_data,
+        }
 
         # Step 4: Gate 3 Denial Invariant (32–40 min)
         print("\n[Segment 4: 32–40 min] Gate 3 Downstream Authorization Enforcement")

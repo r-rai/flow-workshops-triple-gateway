@@ -1,0 +1,89 @@
+{
+  "runtime_images": [
+    {
+      "name": "/novabank-workshops-adapter-1",
+      "configured_image": "novabank/adapter:1.0.0",
+      "running_image_id": "sha256:1ce6375e3727dae6364fc367b64e0ecdcab59be4ee73b4801f551207a092d1e4",
+      "reference_image_id": "sha256:1ce6375e3727dae6364fc367b64e0ecdcab59be4ee73b4801f551207a092d1e4",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-api-1",
+      "configured_image": "novabank/api:1.0.0",
+      "running_image_id": "sha256:566ee62e8cbf35fd2d66d09a716c83c28b769fac3f2b199a14fec2b568ad6d57",
+      "reference_image_id": "sha256:566ee62e8cbf35fd2d66d09a716c83c28b769fac3f2b199a14fec2b568ad6d57",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-apisix-1",
+      "configured_image": "apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "running_image_id": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "reference_image_id": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-jaeger-1",
+      "configured_image": "jaegertracing/all-in-one:1.57@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "running_image_id": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "reference_image_id": "sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-kafka-1",
+      "configured_image": "apache/kafka:3.7.0@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "running_image_id": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "reference_image_id": "sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-opa-1",
+      "configured_image": "openpolicyagent/opa:0.68.0-static@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "running_image_id": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "reference_image_id": "sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-postgres-1",
+      "configured_image": "postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "running_image_id": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "reference_image_id": "sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-temporal-1",
+      "configured_image": "novabank/temporal:1.0.0",
+      "running_image_id": "sha256:8afd2e4287585725162b67f84adeecf73e64aceae24b77f4473115579e5d1d9c",
+      "reference_image_id": "sha256:8afd2e4287585725162b67f84adeecf73e64aceae24b77f4473115579e5d1d9c",
+      "matches": true
+    },
+    {
+      "name": "/novabank-workshops-worker-1",
+      "configured_image": "novabank/worker:1.0.0",
+      "running_image_id": "sha256:1ced6857432d53964a04b0e8bc548615ec1a6dd3dcaac6fb35b871972c955bf3",
+      "reference_image_id": "sha256:1ced6857432d53964a04b0e8bc548615ec1a6dd3dcaac6fb35b871972c955bf3",
+      "matches": true
+    }
+  ],
+  "network_probes": [
+    {
+      "service": "adapter",
+      "exit_code": 0,
+      "result": {
+        "direct_api_access": "gaierror",
+        "gate3_status": 200
+      }
+    },
+    {
+      "service": "worker",
+      "exit_code": 0,
+      "result": {
+        "direct_api_access": "gaierror",
+        "gate3_status": 200
+      }
+    }
+  ],
+  "api_telemetry_configuration": {
+    "ENABLE_TELEMETRY": "true",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://jaeger:4318/v1/traces"
+  }
+}

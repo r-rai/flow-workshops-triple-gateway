@@ -1,0 +1,277 @@
+/home/sysadmin/projects/flow-workshops-triple-gateway/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+Database empty. Seeding initial workshop data...
+{
+  "proposal_persistence_failures": [
+    {
+      "mode": "503",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"error\": \"PROPOSAL_PERSISTENCE_FAILED\",\n  \"status\": \"ERROR\",\n  \"reason\": \"audit\",\n  \"detail\": \"Backend banking service returned HTTP 503: {\\\"detail\\\":\\\"Injected backend failure\\\"}\",\n  \"message\": \"Payment requires supervisory approval, but the proposal could not be durably recorded in the banking ledger. No financial mutation occurred.\"\n}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "mode": "timeout",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"error\": \"PROPOSAL_PERSISTENCE_FAILED\",\n  \"status\": \"ERROR\",\n  \"reason\": \"audit\",\n  \"detail\": \"Backend banking service communication failure: Injected proposal write timeout\",\n  \"message\": \"Payment requires supervisory approval, but the proposal could not be durably recorded in the banking ledger. No financial mutation occurred.\"\n}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "mode": "missing_id",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"error\": \"PROPOSAL_PERSISTENCE_FAILED\",\n  \"status\": \"ERROR\",\n  \"reason\": \"audit\",\n  \"detail\": \"Proposal could not be recorded in backend banking service.\",\n  \"message\": \"Payment requires supervisory approval, but the proposal could not be durably recorded in the banking ledger. No financial mutation occurred.\"\n}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "mode": "invalid_json",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"error\": \"PROPOSAL_PERSISTENCE_FAILED\",\n  \"status\": \"ERROR\",\n  \"reason\": \"audit\",\n  \"detail\": \"Backend banking service communication failure: Expecting value: line 1 column 1 (char 0)\",\n  \"message\": \"Payment requires supervisory approval, but the proposal could not be durably recorded in the banking ledger. No financial mutation occurred.\"\n}"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "opa_allowlist": [
+    {
+      "decision": "allow",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": false,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"id\": \"acc-101\"\n}"
+            }
+          ]
+        }
+      },
+      "downstream_calls": [
+        "http://apisix:9080/api/v1/accounts/acc-101"
+      ]
+    },
+    {
+      "decision": "deny",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "unexpected",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'unexpected'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": null,
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'None'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "ALLOW",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: 'ALLOW'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": "",
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: ''. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": {},
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '{}'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    },
+    {
+      "decision": [],
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "isError": true,
+          "content": [
+            {
+              "type": "text",
+              "text": "POLICY_DENIED: Execution rejected by Gate 2 policy. Decision: '[]'. Reason: audit"
+            }
+          ]
+        }
+      },
+      "downstream_calls": []
+    }
+  ],
+  "exchange_failure_no_fallback": {
+    "status": 503,
+    "response": {
+      "detail": "RFC 8693 token exchange failed (HTTP 503): {\"detail\":\"Injected exchange failure\"}"
+    }
+  },
+  "replay_false": {
+    "id": "chatcmpl-replay-1791046212",
+    "object": "chat.completion",
+    "created": 1791046212,
+    "model": "gpt-4o-mini",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "[REPLAY] Simulated reasoning complete for input: 'audit'. Tool proposed: get_account"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 15,
+      "completion_tokens": 20,
+      "total_tokens": 35,
+      "accumulated_budget_tokens": 35,
+      "budget_limit": 10000
+    }
+  },
+  "budget_exhaustion": {
+    "status": 429,
+    "response": {
+      "error": {
+        "message": "Inference budget exceeded (10000/10000 tokens)",
+        "type": "budget_exceeded_error",
+        "code": 429
+      }
+    }
+  },
+  "delegation_approval_after_exchange": {
+    "before_exchange": {
+      "status": 403,
+      "response": {
+        "detail": "Self-approval prohibited: Requester cannot approve their own proposal"
+      }
+    },
+    "exchanged_act": {
+      "sub": "audit-delegated-manager",
+      "act": {
+        "sub": "audit-requester"
+      }
+    },
+    "after_exchange": {
+      "status": 200,
+      "response": {
+        "proposal_id": "prop-aaed3a3c",
+        "status": "approved",
+        "approver_id": "audit-delegated-manager",
+        "message": "Proposal successfully approved"
+      }
+    }
+  },
+  "missing_exp_token": {
+    "status": 200,
+    "issued_scope": "api:payments:write"
+  }
+}

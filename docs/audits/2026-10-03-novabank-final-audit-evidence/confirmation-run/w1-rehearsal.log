@@ -1,0 +1,46 @@
+=====================================================================
+ WORKSHOP 1 REHEARSAL: Modernizing APIs for AI Agents (OpenAPI -> MCP)
+ 45-Minute Session Automated Verification & Evidence Capture
+=====================================================================
+
+[Segment 1: 0–12 min] Introduction & Gateway Initialization
+✓ APISIX MCP Initialized. Server: {'name': 'openapi2mcp', 'version': '0.0.1'}
+
+[Segment 2: 12–22 min] Native Generation & Tool Discovery
+✓ Discovered 22 generated tools from OpenAPI:
+  - healthz_healthz_get
+  - readyz_readyz_get
+  - read_account_api_v1_accounts__id__get
+  - get_all_cases_api_v1_cases_get
+  - read_case_api_v1_cases__id__get
+  - ... (17 more)
+
+[Segment 3: 22–32 min] Authorized Tool Invocation & Curated Contract Comparison
+✓ Loaded curated contract from workshops/w1/checkpoints/completed/openapi-curated.json: 2 curated endpoints (downscoped from 22 broad operations)
+✓ Successfully retrieved account acc-101 balance through MCP:
+  {
+  "statusText": "OK",
+  "data": {
+    "balance": 1500000,
+    "name": "Acme Retail Checking",
+     ...
+✓ CURATED CONTRACT INVARIANT CONFIRMED: Excluded tool 'delete_customer_account' rejected by MCP.
+
+[Segment 4: 32–40 min] Gate 3 Downstream Authorization Enforcement
+✓ Gate 3 Denial CONFIRMED: Unauthorized MCP call returned 401 Unauthorized:
+  {
+  "statusText": "Unauthorized",
+  "data": {
+    "message": "Invalid API key in request"
+  },
+  "he ...
+
+[Segment 5: 40–45 min] Architecture Review & Routing Evidence
+✓ Direct call to /api/v1/accounts/acc-101 without key: 401 Unauthorized
+✓ Direct call to /api/v1/accounts/acc-101 with key: 200 OK
+
+✓ Saved rehearsal evidence to workshops/w1/evidence/rehearsal-evidence.json
+
+=====================================================================
+🎉 WORKSHOP 1 REHEARSAL COMPLETE in 1.49s: ALL CONTRACTS VERIFIED!
+=====================================================================

@@ -1,0 +1,103 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "NovaBank Support Agent Curated API",
+    "description": "Curated OpenAPI contract for Tier-1 Customer Support Agent. Exposes verified read-only account balance and case inspection capabilities. Mutations and high-privilege endpoints are excluded.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/accounts/{id}": {
+      "get": {
+        "tags": ["Accounts"],
+        "summary": "Read Account Balance",
+        "description": "Retrieve verified customer account balance (minor units) and currency status.",
+        "operationId": "get_account",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Account ID",
+              "description": "The unique account number (e.g. acc-101)"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{id}": {
+      "get": {
+        "tags": ["SupportCases"],
+        "summary": "Read Support Case",
+        "description": "Retrieve customer dispute details, transaction descriptions, and ticket priority.",
+        "operationId": "get_case",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case ID",
+              "description": "The support case identifier (e.g. case-501)"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportCaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountResponse": {
+        "title": "AccountResponse",
+        "required": ["id", "name", "balance", "currency", "status"],
+        "type": "object",
+        "properties": {
+          "id": {"title": "Id", "type": "string"},
+          "name": {"title": "Name", "type": "string"},
+          "balance": {"title": "Balance", "type": "integer", "description": "Integer minor units"},
+          "currency": {"title": "Currency", "type": "string"},
+          "status": {"title": "Status", "type": "string"}
+        }
+      },
+      "SupportCaseResponse": {
+        "title": "SupportCaseResponse",
+        "required": ["id", "customer_id", "issue_type", "description", "priority", "status"],
+        "type": "object",
+        "properties": {
+          "id": {"title": "Id", "type": "string"},
+          "customer_id": {"title": "Customer Id", "type": "string"},
+          "issue_type": {"title": "Issue Type", "type": "string"},
+          "description": {"title": "Description", "type": "string"},
+          "priority": {"title": "Priority", "type": "string"},
+          "status": {"title": "Status", "type": "string"}
+        }
+      }
+    }
+  }
+}

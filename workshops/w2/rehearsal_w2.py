@@ -142,16 +142,13 @@ def main():
         assert "APPROVAL_REQUIRED" in med_text or "AMOUNT_EXCEEDS_UNSUPERVISED_LIMIT" in med_text
         
         # Verify durable proposal lookup on Gate 3 API
-        try:
-            med_json = json.loads(med_text)
-            prop_id = med_json.get("proposal_id")
-            if prop_id:
-                r_prop = client.get(f"{base_url}/api/v1/approvals/{prop_id}", headers={"X-API-Key": "gate3-secret-token"})
-                assert r_prop.status_code == 200, f"Expected 200 on proposal lookup, got {r_prop.status_code}"
-                assert r_prop.json()["status"] == "pending"
-                print(f"✓ Durable proposal verified in backend database: {prop_id}")
-        except json.JSONDecodeError:
-            pass
+        med_json = json.loads(med_text)
+        prop_id = med_json.get("proposal_id")
+        assert prop_id is not None, f"Expected proposal_id in approval_required response: {med_text}"
+        r_prop = client.get(f"{base_url}/api/v1/approvals/{prop_id}", headers={"X-API-Key": "gate3-secret-token"})
+        assert r_prop.status_code == 200, f"Expected 200 on proposal lookup, got {r_prop.status_code}"
+        assert r_prop.json()["status"] == "pending"
+        print(f"✓ Durable proposal verified in backend database: {prop_id}")
 
         print("✓ Medium payment triggered 'APPROVAL_REQUIRED' without executing backend debit")
 
@@ -196,8 +193,8 @@ def main():
             outage_text = outage_res.get("result", {}).get("content", [{}])[0].get("text", "")
             evidence["opa_outage_response"] = outage_text
             print("✓ Result during OPA Outage:", outage_text)
-            assert "FAIL_CLOSED" in outage_text or "POLICY_UNAVAILABLE" in outage_text or outage_res.get("result", {}).get("isError") is True
-            print("✓ FAIL-CLOSED INVARIANT VERIFIED: Gateway denied tool invocation when policy engine was unreachable!")
+            assert "POLICY_TIMEOUT_FAIL_CLOSED" in outage_text or "FAIL_CLOSED" in outage_text, f"Expected POLICY_TIMEOUT_FAIL_CLOSED in outage response: {outage_text}"
+            print("✓ FAIL-CLOSED INVARIANT VERIFIED: Gateway denied tool invocation with POLICY_TIMEOUT_FAIL_CLOSED when policy engine timed out!")
         finally:
             print("Unpausing OPA container...")
             run_cmd(f"docker unpause {opa_container}")
