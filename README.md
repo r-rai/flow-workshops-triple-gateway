@@ -1,4 +1,4 @@
-# NovaBank Agentic AI Workshop Platform
+# Flo Bank Agentic AI Workshop Platform
 
 Open-source-first, self-hosted reference platform for four workshops
 covering OpenAPI-to-MCP modernization, AI/MCP governance, durable
@@ -49,13 +49,92 @@ Background and architecture:
 -   [Participant Requirements](docs/setup/participant-requirements.md)
 -   [Technical POC](docs/poc/README.md)
 
+## Customer dashboard and chatbot demo
+
+Open a Flo Bank sample account, simulate sign-in, and chat with Flo. The responsive
+dashboard includes checking and savings balances, recent transactions, a virtual
+card, and a scripted banking assistant. Try a balance query, spending summary,
+card freeze/unfreeze, transaction dispute, or dispute-status check.
+
+**With Docker Compose (recommended for laptops):**
+
+The main `docker-compose.yml` includes a `demo` profile. From the repository
+root, start the Flo Bank dashboard and chatbot with one command:
+
+```bash
+docker compose --profile demo up -d --build
+```
+
+Open **http://localhost:8000** and use the prefilled sample login:
+`maya@flobank.demo` / `flo-demo`.
+
+Docker Desktop or Docker Engine with Compose is all you need. No local Python,
+`.env` setup, LLM key, or additional scripts are required for this profile.
+The first build downloads the base image and dependencies.
+
+Stop the demo with:
+
+```bash
+docker compose stop demo
+```
+
+Demo sessions reset when the container stops. If port 8000 is busy, set
+`DEMO_HTTP_PORT=8001` in `.env` and open **http://localhost:8001** instead.
+The workshop infrastructure remains in the same Compose file under the
+existing `w1`–`w4` profiles.
+
+**Standalone (no Docker or LLM key required):**
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r docker/api/requirements.txt
+.venv/bin/uvicorn src.demo.app:app --host 127.0.0.1 --port 8000
+```
+
+Open **http://localhost:8000** and use the prefilled sample login:
+`maya@flobank.demo` / `flo-demo`.
+
+**With the workshop infrastructure:** the UI is also available at
+**http://localhost:9080** (or your configured APISIX port) in every workshop
+profile. To build and start Workshop 1 from the same Compose file:
+
+```bash
+docker compose --profile w1 up -d --build
+```
+
+The gateway uses `ACTIVE_PROFILE` (default `w1`) to select its configuration.
+If `.env` exists, ensure this value matches your chosen workshop profile.
+Use `demo` for the standalone simulation or a workshop profile for its
+infrastructure; each command uses the main Compose file.
+
+The demo uses fictional fixtures and deterministic responses. It does not call
+the live LLM, MCP tools, or enterprise ledger. Demo card controls and disputes
+are isolated per session; signing out or restarting the process resets them.
+Sessions expire after 30 minutes. Run one API process for this in-memory demo.
+This is simulated authentication, not a production customer identity system.
+
+Flo Bank is the public brand throughout the UI, APIs, and workshop material.
+Existing `novabank` infrastructure identifiers (JWT audiences/issuer, OPA
+namespace, image tags, volumes, and database names) remain for compatibility
+with existing installations. Historical audit and rehearsal evidence retains
+its original branding.
+
+The customer demo tests are `tests/test_demo_bank.py`. An optional Chromium
+smoke test covers login, chat, card controls, disputes, responsive widths,
+and delayed-response regressions:
+
+```bash
+npm install --prefix /tmp/flo-bank-browser playwright
+/tmp/flo-bank-browser/node_modules/.bin/playwright install chromium
+# With the standalone server running on port 8000:
+NODE_PATH=/tmp/flo-bank-browser/node_modules node tests/demo_bank_browser.cjs
+```
+
 ## Status
 
-**Documentation baseline; runtime not implemented.** The delivery plan and agent
-handoff define the agreed implementation scope. Commands in the setup guide
-are future interfaces until built and verified. Native MCP generation,
-Gate 3 routing, adapter policy, audience-separated identity, trace propagation,
-and resource use require recorded compatibility evidence.
+The repository includes the workshop runtime and a customer simulation. See
+`config/manifest.json` and the workshop evidence for verification of individual
+profiles and remaining participant-hardware requirements.
 
 Target: one active profile within a **6 GB total VPS operating budget**,
 with local participant labs and limited replay-based VPS fallback.

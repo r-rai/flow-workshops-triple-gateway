@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#123d34" />
+    <title>Flo Bank — A little more flow.</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23123d34'/%3E%3Cpath d='M12 29V12h17v5H17v4h9v5h-9v3' fill='%23d2ef8a'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/demo-assets/styles.css" />
+    <script src="/demo-assets/app.js" defer></script>
+  </head>
+  <body>
+    <div id="login-view" class="login-layout">
+      <section class="login-story">
+        <a class="brand brand-light" href="/" aria-label="Flo Bank home"
+          ><span class="brand-symbol">f</span>flo<span class="brand-bank"
+            >bank</span
+          ></a
+        >
+        <div class="story-copy">
+          <span class="eyebrow light">YOUR MONEY. YOUR MOMENTUM.</span>
+          <h1>A little less banking.<br />A little more <em>flow.</em></h1>
+          <p>
+            A clear view of your money. A helpful conversation.<br />Meet
+            banking that moves with you.
+          </p>
+        </div>
+        <div class="flow-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit orbit-three"></div>
+          <span class="art-dot"></span>
+          <div class="art-card">
+            <span>flo bank</span><span class="art-chip">▥</span
+            ><strong>Room to grow.</strong
+            ><small>EVERYDAY BANKING, REIMAGINED</small>
+          </div>
+        </div>
+        <p class="story-footer">
+          A fictional bank. A real feel for what’s possible.
+        </p>
+      </section>
+      <main class="login-main">
+        <span class="demo-pill"
+          ><span class="status-dot"></span> INTERACTIVE DEMO</span
+        >
+        <div class="login-form-wrap">
+          <span class="eyebrow">WELCOME TO FLO BANK</span>
+          <h2>Your day, in good flow.</h2>
+          <p class="muted">Sign in to explore your sample account.</p>
+          <form id="login-form">
+            <label for="email">Email address</label
+            ><input
+              id="email"
+              name="email"
+              type="email"
+              value="maya@flobank.demo"
+              autocomplete="username"
+              required
+              maxlength="120"
+            />
+            <label for="password">Password</label>
+            <div class="password-wrap">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value="flo-demo"
+                autocomplete="current-password"
+                required
+                maxlength="120"
+              /><button
+                type="button"
+                id="password-toggle"
+                aria-label="Show password"
+              >
+                Show
+              </button>
+            </div>
+            <p id="login-error" class="error" role="alert" hidden></p>
+            <button class="button primary login-submit" type="submit">
+              Sign in to demo <span aria-hidden="true">↗</span>
+            </button>
+          </form>
+          <div class="demo-note">
+            <span class="note-icon" aria-hidden="true">✧</span>
+            <div>
+              <strong>Your demo is ready.</strong>
+              <p>
+                Sample login is filled in. Explore balances, chat with Flo, or
+                try a card freeze and a dispute.
+              </p>
+            </div>
+          </div>
+          <p class="fine-print">
+            Simulation only · Fictional money · No real banking actions
+          </p>
+        </div>
+        <span class="login-bottom"
+          >Thoughtfully simple. Refreshingly human.</span
+        >
+      </main>
+    </div>
+
+    <div id="dashboard-view" class="app-layout" hidden>
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Flo Bank home"
+          ><span class="brand-symbol">f</span>flo<span class="brand-bank"
+            >bank</span
+          ></a
+        >
+        <span class="sidebar-label">YOUR SPACE</span>
+        <nav aria-label="Main navigation">
+          <button class="nav-item active" data-section="overview">
+            <span aria-hidden="true">▦</span>Overview
+          </button>
+          <button class="nav-item" data-section="activity">
+            <span aria-hidden="true">⇄</span>Transactions
+          </button>
+          <button class="nav-item" data-section="card">
+            <span aria-hidden="true">▤</span>My card
+          </button>
+          <button class="nav-item" data-section="chat">
+            <span aria-hidden="true">◌</span>Chat with Flo
+            <span class="nav-dot"></span>
+          </button>
+        </nav>
+        <div class="sidebar-tip">
+          <span aria-hidden="true">✳</span>
+          <h3>A little help goes<br />a long way.</h3>
+          <p>Flo is here to make sense of your money.</p>
+          <button data-prompt="What can you help me with?">
+            Let’s chat <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <div class="sidebar-bottom">
+          <span class="demo-pill"
+            ><span class="status-dot"></span> DEMO MODE</span
+          ><button id="logout" class="logout">
+            Sign out <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </aside>
+      <div class="workspace">
+        <header class="topbar">
+          <div class="breadcrumb">
+            Your space <span>/</span>
+            <strong id="section-title">Overview</strong>
+          </div>
+          <div class="topbar-right">
+            <span class="demo-label">A sample banking experience</span
+            ><span class="avatar" aria-label="Maya Shah">MS</span>
+          </div>
+        </header>
+        <main class="dashboard-main">
+          <div class="welcome">
+            <div>
+              <span class="eyebrow">A GOOD DAY TO MOVE FORWARD</span>
+              <h1>
+                Hey, Maya
+                <span class="greeting-spark" aria-hidden="true">✳</span>
+              </h1>
+              <p class="muted">Here’s where your money is at.</p>
+            </div>
+            <span class="date-label">Sample snapshot · 4 Oct 2026</span>
+          </div>
+          <div class="dashboard-grid">
+            <div class="bank-content">
+              <section
+                id="overview-section"
+                aria-label="Account balances"
+                class="accounts-grid"
+              >
+                <article class="account-card everyday">
+                  <div class="account-heading">
+                    <span>Everyday account</span
+                    ><span class="circle-icon" aria-hidden="true">↗</span>
+                  </div>
+                  <span class="account-caption">AVAILABLE BALANCE</span>
+                  <h2 id="checking-balance">—</h2>
+                  <div class="account-footer">
+                    <span>•••• 2048</span><span class="account-tag">INR</span>
+                  </div>
+                </article>
+                <article class="account-card savings">
+                  <div class="account-heading">
+                    <span>Savings pocket</span
+                    ><span class="circle-icon" aria-hidden="true">✳</span>
+                  </div>
+                  <span class="account-caption">A LITTLE FOR LATER</span>
+                  <h2 id="savings-balance">—</h2>
+                  <div class="account-footer">
+                    <span>•••• 8821</span><span class="account-tag">INR</span>
+                  </div>
+                </article>
+              </section>
+              <div class="quick-actions" aria-label="Quick actions">
+                <button data-prompt="What is my balance?">
+                  <span aria-hidden="true">↗</span>Ask about balance</button
+                ><button data-prompt="How much did I spend?">
+                  <span aria-hidden="true">◔</span>Spending check-in</button
+                ><button data-prompt="Check dispute status">
+                  <span aria-hidden="true">◎</span>Track a dispute
+                </button>
+              </div>
+              <section class="activity panel" id="activity-section">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">THE LITTLE INS AND OUTS</span>
+                    <h2>Recent activity</h2>
+                  </div>
+                  <span class="subtle-tag">5 transactions</span>
+                </div>
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Transaction</th>
+                        <th scope="col">Date</th>
+                        <th scope="col" class="amount-col">Amount</th>
+                        <th scope="col">
+                          <span class="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactions"></tbody>
+                  </table>
+                </div>
+                <div class="activity-footer">
+                  <span class="status-dot"></span>Sample transactions · amounts
+                  in INR
+                </div>
+              </section>
+              <div class="bottom-grid">
+                <section class="card-panel panel" id="card-section">
+                  <div class="panel-heading">
+                    <h2>Your everyday card</h2>
+                    <span id="card-status" class="subtle-tag">Active</span>
+                  </div>
+                  <div class="bank-card">
+                    <div class="bank-card-top">
+                      <span>flo <small>bank</small></span
+                      ><span aria-hidden="true">◔</span>
+                    </div>
+                    <div class="card-chip" aria-hidden="true">▥</div>
+                    <div class="card-digits">
+                      •••• &nbsp; •••• &nbsp; •••• &nbsp; 2048
+                    </div>
+                    <div class="bank-card-bottom">
+                      <span>MAYA SHAH</span><span>09/29</span>
+                    </div>
+                  </div>
+                  <button
+                    id="card-toggle"
+                    class="card-toggle"
+                    data-prompt="Freeze my card"
+                  >
+                    Freeze demo card <span aria-hidden="true">❄</span>
+                  </button>
+                </section>
+                <section class="spending-panel panel">
+                  <span class="eyebrow">SMALL STEPS, BIG PICTURE</span>
+                  <h2>A mindful money moment.</h2>
+                  <div class="spending-ring" aria-hidden="true">
+                    <span>↗</span>
+                  </div>
+                  <p>
+                    You’ve spent <strong id="spending-total">—</strong> in your
+                    recent sample activity.
+                  </p>
+                  <button
+                    class="text-button"
+                    data-prompt="How much did I spend?"
+                  >
+                    Talk it through with Flo <span aria-hidden="true">↗</span>
+                  </button>
+                </section>
+              </div>
+              <p class="workspace-note">
+                You’re exploring fictional accounts. Card controls and disputes
+                apply to this demo session only.
+              </p>
+            </div>
+            <aside
+              class="chat-panel"
+              id="chat-section"
+              aria-label="Chat with Flo"
+            >
+              <div class="chat-heading">
+                <div class="flo-avatar" aria-hidden="true">✳</div>
+                <div>
+                  <h2>Meet Flo</h2>
+                  <span
+                    ><span class="status-dot"></span>Your banking
+                    companion</span
+                  >
+                </div>
+                <span class="chat-star" aria-hidden="true">✧</span>
+              </div>
+              <div class="chat-mode">
+                SCRIPTED DEMO <span>Always here to help</span>
+              </div>
+              <div
+                id="messages"
+                class="messages"
+                role="log"
+                aria-live="polite"
+                aria-label="Chat messages"
+                aria-relevant="additions"
+              ></div>
+              <div class="suggestions" aria-label="Suggested messages">
+                <button data-prompt="What is my balance?">
+                  Check my balance ↗</button
+                ><button data-prompt="Show recent transactions">
+                  Recent transactions ↗</button
+                ><button data-prompt="Dispute tx-1004">
+                  Dispute the Stream+ charge ↗
+                </button>
+              </div>
+              <form id="chat-form" class="chat-form">
+                <label for="message" class="sr-only">Message Flo</label
+                ><input
+                  id="message"
+                  placeholder="Ask Flo anything…"
+                  autocomplete="off"
+                  maxlength="2000"
+                  required
+                /><button
+                  id="send-message"
+                  type="submit"
+                  aria-label="Send message"
+                >
+                  ↑
+                </button>
+              </form>
+              <p class="chat-footnote">
+                Simulated answers. No real money moves.
+              </p>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>

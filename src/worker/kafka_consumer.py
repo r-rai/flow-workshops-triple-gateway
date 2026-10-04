@@ -86,7 +86,7 @@ async def run_consumer():
                         DisputeInput(case_id=case_id),
                         id=workflow_id,
                         task_queue="dispute-resolution-queue",
-                        id_reuse_policy=WorkflowIDReusePolicy.REJECT_DUPLICATE
+                        id_reuse_policy=WorkflowIDReusePolicy.ALLOW_DUPLICATE_FAILED_ONLY
                     )
                     logger.info(f"Started new workflow run: {handle.run_id} for {workflow_id}")
                     started = True

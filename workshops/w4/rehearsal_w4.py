@@ -429,7 +429,7 @@ async def run_rehearsal():
     
     # 1. NegotiatorBot discovers PaymentsAgent card
     card = await negotiator.discover_payments_agent()
-    assert card["name"] == "NovaBank PaymentsAgent"
+    assert card["name"] == "Flo Bank PaymentsAgent"
     print(f"✓ NegotiatorBot discovered Agent Card: '{card['name']}' (v{card['version']})")
 
     # 2. NegotiatorBot delegates payment task

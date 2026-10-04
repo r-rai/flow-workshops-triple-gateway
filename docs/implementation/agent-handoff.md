@@ -1,4 +1,4 @@
-# NovaBank Workshop Platform – Implementation Review & Verification Handoff
+# Flo Bank Workshop Platform – Implementation Review & Verification Handoff
 
 ## 📌 Executive Summary
 
@@ -303,9 +303,78 @@ In response to the final audit ([`docs/audits/2026-10-03-novabank-final-audit.md
 ### 7. Remaining Delivery Gaps & Reporting Transparency
 - **`USE_REPLAY_FIXTURES=false`**:
   - In [`src/adapter/server.py`](../../src/adapter/server.py), when `USE_REPLAY_FIXTURES=false`, checks for live credentials (`OPENAI_API_KEY`/`LLM_API_KEY`). If absent, returns explicit `HTTP 503 Service Unavailable` configuration error instead of fabricating replay content. If configured, executes live upstream chat completion.
-- **W3 LangGraph Simulation Architecture**:
-  - Documented in [`config/manifest.json`](../../config/manifest.json) that W3 diagnosis activity uses a deterministic simulation of LangGraph multi-step reasoning for reliable offline lab execution without external LLM provider costs or rate limits.
-  - **Planned follow-up (2026-10-04, not implemented):** the user has requested actual LangGraph execution with live MiniMax inference plus offline replay using the same graph. See the [updated W3 delivery plan](../workshops/delivery-plan.md#w3-real-agent-implementation-plan--minimax) and [copyable implementation prompt](w3-minimax-agent-prompt.md). The deterministic diagnosis above remains the current implementation until live/replay acceptance evidence is recorded.
+- **W3 Real LangGraph Multi-Turn Agent & MiniMax Integration**:
+  - **Status**: **Fully Implemented & Remediated**.
+  - **Compiled Graph Architecture**: State machine defined in [`src/worker/dispute_agent.py`](../../src/worker/dispute_agent.py) (`DisputeResolutionWorkflow` -> `diagnose_and_propose_resolution`). The exact same compiled graph executes across both live and replay modes.
+  - **Dual Mode Support**:
+    - **Live Mode (`USE_REPLAY_FIXTURES=false`)**: Egresses via APISIX Gate 1 (`/ai/chat/completions`) to `https://api.minimax.io/v1/chat/completions` using MiniMax-M2.7, executing multi-turn tool calling against allowlisted Gate 2 MCP tools (`get_case`, `get_account`).
+    - **Offline Replay Mode (`USE_REPLAY_FIXTURES=true`)**: Gate 1 emits deterministic, multi-turn reasoning and tool-calling fixtures feeding the same compiled graph for zero-cost offline demonstration.
+  - **Investigation Failure & Anti-Fabrication Hardening**:
+    - Removed heuristic canned proposal fallbacks from live diagnosis. Malformed model outputs, provider errors, and exhausted iterations produce an explicit failure (`status: "FAILED"` / `INVESTIGATION_FAILED`), with zero payable proposal.
+    - Provider failures (e.g. Gate 1 HTTP 503, timeouts) preserve the customer dispute case in its original state without mutation, preventing erroneous auto-rejection and keeping the dispute available for bounded retry or explicit presenter restart.
+    - Strict structured proposal validation enforces: exact case ID match, customer identity match, currency strictly `INR`, integer minor units within limits, payment destinations restricted to verified/authorized customer accounts, and verified tool read evidence required before any payable proposal.
+    - Server-side approval threshold (> INR 400 = 40,000 minor units) and security review flags are strictly computed on the server.
+    - Tool-call limits (`MAX_TOOL_CALLS = 8`) are enforced before each individual call.
+    - Inference budget uses atomic reservation and reconciliation via `asyncio.Lock`, preventing concurrent over-admission past the configured demo budget (`INFERENCE_BUDGET_TOKENS=100000`).
+
+### 8. Presenter Operations & Mode Switching Runbook
+
+#### A. Starting Live MiniMax Mode
+```bash
+# 1. Verify that MINIMAX_API_KEY is configured in host .env
+grep -q "MINIMAX_API_KEY" .env && echo "MiniMax credential configured"
+
+# 2. Set mode to live provider egress
+export USE_REPLAY_FIXTURES=false
+export LLM_MODEL=MiniMax-M2.7
+
+# 3. Switch or restart workshop profile W3
+./scripts/workshop switch w3
+
+# 4. Verify AI Gateway readiness & live mode
+curl -s http://127.0.0.1:9080/ai/status | jq .
+# Expected output: {"status":"ready","mode":"live","use_replay_fixtures":false,"provider_configured":true,...}
+```
+
+#### B. Selecting Offline Replay Mode
+```bash
+# 1. Set mode to offline deterministic replay fixtures
+export USE_REPLAY_FIXTURES=true
+
+# 2. Switch or restart workshop profile W3
+./scripts/workshop switch w3
+
+# 3. Verify AI Gateway readiness & replay mode
+curl -s http://127.0.0.1:9080/ai/status | jq .
+# Expected output: {"status":"ready","mode":"replay","use_replay_fixtures":true,"provider_configured":true,...}
+```
+
+#### C. Checking Mode, Readiness, and Inference Headroom
+```bash
+# Check current AI Gateway mode, budget utilization, and headroom
+curl -s http://127.0.0.1:9080/ai/status | jq .
+
+# Reset process-local demo budget (re-authorizes full headroom)
+curl -s -X POST http://127.0.0.1:9080/ai/budget/reset | jq .
+```
+
+#### D. Recovering / Restarting a Failed Demonstration Without Duplicate Settlement
+```bash
+# 1. Reset lab database state to pristine seed data (preserves caddy, portainer, uptime-kuma, dozzle)
+./scripts/workshop reset w3 -y
+
+# 2. Clean restart of Temporal and worker writers
+docker compose --profile w3 restart temporal worker
+
+# 3. Re-emit dispute event via Kafka CLI
+PYTHONPATH=. .venv/bin/python -c "import asyncio; from workshops.w3.client import emit_dispute; asyncio.run(emit_dispute('localhost:9092', 'case-501', 'cust-101'))"
+
+# Durability & Settlement Invariants:
+# - WorkflowIDReusePolicy.ALLOW_DUPLICATE_FAILED_ONLY allows retrying failed workflow executions.
+# - Settlement activity uses database-backed idempotency key 'settle-dispute-{case_id}',
+#   guaranteeing strictly zero duplicate payments across redeliveries and worker crashes.
+```
+
 - **W3 Writers-Stopped Reset & Real SIGKILL Recovery**:
   - In [`workshops/w3/rehearsal_w3.py`](../../workshops/w3/rehearsal_w3.py), Segment 1 stops `temporal` and `worker` writers before resetting SQLite database to prevent open-handle corruption. Segment 4 upgraded worker crash to real `docker kill --signal=SIGKILL novabank-workshops-worker-1`.
 - **Built Image Tagging**:
@@ -326,7 +395,7 @@ As required by the repository brief, unverified checks must be reported transpar
 ## 📋 Copyable Prompt for Reviewing Agent
 
 ```text
-Please review and audit the NovaBank workshop platform implementation on branch feat/implement-novabank-platform following remediation of the 2026-10-03 Final Audit.
+Please review and audit the Flo Bank workshop platform implementation on branch feat/implement-novabank-platform following remediation of the 2026-10-03 Final Audit.
 
 Review Context:
 - Full implementation handoff: docs/implementation/agent-handoff.md

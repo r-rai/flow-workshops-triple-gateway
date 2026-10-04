@@ -1,4 +1,4 @@
-# NovaBank Workshop Delivery Plan
+# Flo Bank Workshop Delivery Plan
 
 Status: workshop platform implemented and audited; W3 real LangGraph agent, Gate 1 multi-turn tool calling, and offline replay verified on 2026-10-04; live MiniMax execution ready upon configuring MINIMAX_API_KEY.
 Source session descriptions: [original brief](workshot.txt).
@@ -13,7 +13,7 @@ Source session descriptions: [original brief](workshot.txt).
 - Installation and image downloads happen before the session. Timed sessions contain short guided exercises.
 - The VPS provides presenter demonstrations and at most two concurrent fallback runs initially; this is an operating limit pending testing, not a capacity guarantee.
 
-Use fictional NovaBank accounts, beneficiaries, payments, support cases, and incidents throughout.
+Use fictional Flo Bank accounts, beneficiaries, payments, support cases, and incidents throughout.
 Do not claim the development deployment itself is production-ready. Explain which controls and operational components a production deployment would require.
 
 ## Workshop 1 — Modernizing APIs for AI Agents: From OpenAPI to MCP
@@ -23,7 +23,7 @@ Do not claim the development deployment itself is production-ready. Explain whic
 
 | Minutes | Activity | Presenter cue / participant action |
 |---|---|---|
-| 0–5 | Introduce NovaBank support agent | Show the account-support request and expected business outcome |
+| 0–5 | Introduce Flo Bank support agent | Show the account-support request and expected business outcome |
 | 5–12 | OpenAPI versus MCP | Compare HTTP operations with initialization, discovery, schemas, and invocation |
 | 12–22 | Generate tools from OpenAPI | Demonstrate native APISIX generation and an account read |
 | 22–32 | Guided curation exercise | Improve names/descriptions and remove unnecessary operations from the exposed contract |
@@ -65,7 +65,7 @@ Do not claim the development deployment itself is production-ready. Explain whic
 
 | Minutes | Activity | Presenter cue / participant action |
 |---|---|---|
-| 0–6 | NovaBank dispute resolver | Inspect a fictional support case; identify live MiniMax or offline replay mode |
+| 0–6 | Flo Bank dispute resolver | Inspect a fictional support case; identify live MiniMax or offline replay mode |
 | 6–13 | State ownership | Explain Kafka delivery, Temporal progress, and actual LangGraph execution inside an activity |
 | 13–23 | End-to-end demonstration | Case event → model-selected MCP reads → validated proposal → human approval wait |
 | 23–35 | Guided recovery exercise | Restart the worker and redeliver the same case event |

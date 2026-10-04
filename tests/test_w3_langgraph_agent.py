@@ -114,7 +114,7 @@ async def test_server_governance_approval_threshold():
         "iterations": 1,
         "tool_calls_count": 1,
         "total_tokens": 100,
-        "tool_results": [],
+        "tool_results": [{"tool": "get_account", "status": "SUCCESS", "arguments": {"id": "acc-101"}}],
         "error": None
     }
     res_under = await validate_proposal_node(state_under)
@@ -136,7 +136,7 @@ async def test_server_governance_approval_threshold():
         "iterations": 2,
         "tool_calls_count": 2,
         "total_tokens": 200,
-        "tool_results": [],
+        "tool_results": [{"tool": "get_account", "status": "SUCCESS", "arguments": {"id": "acc-101"}}],
         "error": None
     }
     res_over = await validate_proposal_node(state_over)

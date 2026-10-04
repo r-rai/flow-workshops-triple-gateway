@@ -1,4 +1,12 @@
 routes:
+  # Customer simulation: isolated from Gate 3 enterprise APIs.
+  - id: w1_bank_demo
+    uris: ["/", "/demo-assets/*", "/demo-api/*"]
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
   # Gate 2: Native OpenAPI-to-MCP generation (Broad Catalog)
   - id: w1_mcp_route
     uri: /mcp

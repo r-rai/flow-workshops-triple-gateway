@@ -1,4 +1,4 @@
-# NovaBank Workshop Series: Master Facilitator & Delivery Guide
+# Flo Bank Workshop Series: Master Facilitator & Delivery Guide
 
 ## 📌 Executive Overview
 This guide provides complete instructions for instructors, facilitators, and operators delivering the 4-workshop enterprise series:

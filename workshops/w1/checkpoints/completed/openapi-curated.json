@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "NovaBank Support Agent Curated API",
+    "title": "Flo Bank Support Agent Curated API",
     "description": "Curated OpenAPI contract for Tier-1 Customer Support Agent. Exposes verified read-only account balance and case inspection capabilities. Mutations and high-privilege endpoints are excluded.",
     "version": "1.0.0"
   },

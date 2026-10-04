@@ -45,7 +45,7 @@ These are proposed container limits, not measured usage or proven minimums. Enfo
 | Component | Limit |
 |---|---:|
 | APISIX | 384 MiB |
-| NovaBank API | 256 MiB |
+| Flo Bank API | 256 MiB |
 | MCP adapter | 256 MiB |
 | Agent/worker processes combined | 512 MiB |
 | OPA | 128 MiB |
@@ -75,7 +75,7 @@ Presenter SSH tunnel / optional existing Caddy HTTPS
                        APISIX
              /ai         /mcp          /api/v1
               |            |               |
-       Hosted LLM or    MCP adapter      NovaBank API
+       Hosted LLM or    MCP adapter      Flo Bank API
        replay fixture      |               |
                            OPA         PostgreSQL/SQLite
                             

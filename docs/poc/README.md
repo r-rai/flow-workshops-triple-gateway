@@ -1,6 +1,6 @@
 # Technical POC / Spike Plan
 
-Validate the risky assumptions before building the complete NovaBank
+Validate the risky assumptions before building the complete Flo Bank
 platform.
 
 See the [agent handoff](../implementation/agent-handoff.md) for contracts and

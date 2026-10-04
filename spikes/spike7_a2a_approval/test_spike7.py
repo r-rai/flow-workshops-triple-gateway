@@ -15,7 +15,7 @@ PAYMENT_RECORDS: Dict[str, Dict[str, Any]] = {}
 
 # --- A2A Protocol Implementation ---
 AGENT_CARD = {
-    "name": "NovaBank PaymentsAgent",
+    "name": "Flo Bank PaymentsAgent",
     "description": "Agent-to-Agent interface for compliant payment proposal and execution",
     "url": "https://api.novabank.internal/a2a",
     "version": "1.0.0",

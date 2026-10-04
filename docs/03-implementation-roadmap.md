@@ -10,7 +10,7 @@ Validate APISIX standalone mode, OpenAPI-to-MCP, Gate-2-to-Gate-3
 loopback, adapter-based argument policy, audience-separated token exchange, trace propagation
 and Windows/WSL memory.
 
-## Phase 1 --- NovaBank API
+## Phase 1 --- Flo Bank API
 
 Build the minimal account, support-case, payment proposal/execution, incident,
 approval, and simulated-remediation flows with seed data and transactional

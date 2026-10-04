@@ -2,7 +2,7 @@ import os
 from pydantic import BaseModel
 
 class Settings(BaseModel):
-    APP_NAME: str = "NovaBank API"
+    APP_NAME: str = "Flo Bank API"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:////app/data/novabank.sqlite")
     API_KEY_SECRET: str = os.getenv("GATE3_API_KEY", "gate3-secret-token")

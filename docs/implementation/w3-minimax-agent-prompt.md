@@ -5,7 +5,7 @@ Status: prepared 2026-10-04; implementation and live verification pending.
 Copy the prompt below into the implementing agent's session. Supply the API key separately through an ignored local secret file or environment; do not paste it into this prompt.
 
 ```text
-Implement the W3 real-agent upgrade in the NovaBank workshop repository.
+Implement the W3 real-agent upgrade in the Flo Bank workshop repository.
 
 Workspace: /home/sysadmin/projects/flow-workshops-triple-gateway
 Branch: feat/implement-novabank-platform

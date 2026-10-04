@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import asyncio
 import httpx
 from typing import Dict, Any, Tuple
 from fastapi import FastAPI, Request, Response, HTTPException, status
@@ -18,7 +19,7 @@ API_AUDIENCE = os.getenv("API_AUDIENCE", "novabank-api")
 ENABLE_TELEMETRY = os.getenv("ENABLE_TELEMETRY", "true").lower() in ("true", "1", "yes")
 OTEL_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4318/v1/traces")
 
-app = FastAPI(title="NovaBank Curated MCP Adapter", version="1.0.0")
+app = FastAPI(title="Flo Bank Curated MCP Adapter", version="1.0.0")
 
 if ENABLE_TELEMETRY:
     try:
@@ -177,7 +178,7 @@ def get_exchanged_api_token(principal: Dict[str, Any], tool_name: str) -> str:
 CURATED_TOOLS = [
     {
         "name": "get_account",
-        "description": "Retrieve verified NovaBank account balance and metadata by account ID.",
+        "description": "Retrieve verified Flo Bank account balance and metadata by account ID.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -415,19 +416,41 @@ async def handle_mcp(req: Request):
 
 
 _accumulated_tokens = 0
-INFERENCE_BUDGET_TOKENS = int(os.getenv("INFERENCE_BUDGET_TOKENS", "16000"))
+_budget_lock = asyncio.Lock()
+INFERENCE_BUDGET_TOKENS = int(os.getenv("INFERENCE_BUDGET_TOKENS", "100000"))
 
 @app.post("/ai/budget/reset")
-def reset_ai_budget():
+async def reset_ai_budget():
     global _accumulated_tokens
-    _accumulated_tokens = 0
-    return {"status": "ok", "accumulated_tokens": _accumulated_tokens, "budget_limit": INFERENCE_BUDGET_TOKENS}
+    async with _budget_lock:
+        _accumulated_tokens = 0
+        current = _accumulated_tokens
+    return {"status": "ok", "accumulated_tokens": current, "budget_limit": INFERENCE_BUDGET_TOKENS}
+
+@app.get("/ai/status")
+@app.get("/ai/budget")
+async def get_ai_status():
+    use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
+    api_key = os.getenv("MINIMAX_API_KEY") or os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+    provider_ready = bool(api_key and not api_key.startswith("mock-"))
+    async with _budget_lock:
+        current = _accumulated_tokens
+    return {
+        "status": "ready",
+        "mode": "replay" if use_replay else "live",
+        "use_replay_fixtures": use_replay,
+        "model": os.getenv("LLM_MODEL", "MiniMax-M2.7"),
+        "provider_configured": provider_ready if not use_replay else True,
+        "accumulated_tokens": current,
+        "budget_limit": INFERENCE_BUDGET_TOKENS,
+        "headroom_tokens": max(0, INFERENCE_BUDGET_TOKENS - current)
+    }
 
 @app.post("/ai/chat/completions")
 async def ai_chat_completions(req: Request):
     """
     Gate 1 AI Provider Adapter.
-    - Evaluates and tracks inference budget.
+    - Evaluates and tracks inference budget with atomic pre-dispatch reservation and post-call reconciliation.
     - Live Mode (USE_REPLAY_FIXTURES=false): Forwards OpenAI-compatible tool/message payloads
       to upstream LLM provider (e.g. MiniMax) via APISIX Gate 1.
     - Replay Mode (USE_REPLAY_FIXTURES=true): Emits deterministic multi-turn tool-calling
@@ -439,127 +462,234 @@ async def ai_chat_completions(req: Request):
     tools = body.get("tools")
     has_tools = bool(tools)
 
-    # Estimate token budget reservation
+    # Atomic token budget reservation before dispatch
     est_prompt = max(15, len(json.dumps(messages)) // 4)
-    est_req = 150 if has_tools else 35
-    if _accumulated_tokens + min(est_prompt, 200) > INFERENCE_BUDGET_TOKENS:
-        return JSONResponse({
-            "error": {
-                "message": f"Inference budget exceeded ({_accumulated_tokens}/{INFERENCE_BUDGET_TOKENS} tokens)",
-                "type": "budget_exceeded_error",
-                "code": 429
-            }
-        }, status_code=429)
+    est_req = 150 if has_tools else 75
+    reservation = min(est_prompt, 200) + est_req
 
-    use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
-    if not use_replay:
-        # Live provider egress path
-        api_key = os.getenv("MINIMAX_API_KEY") or os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
-        if not api_key or api_key.startswith("mock-"):
+    async with _budget_lock:
+        if _accumulated_tokens + reservation > INFERENCE_BUDGET_TOKENS:
             return JSONResponse({
                 "error": {
-                    "message": "Live LLM provider credentials not configured on host (MINIMAX_API_KEY, LLM_API_KEY, or OPENAI_API_KEY required when USE_REPLAY_FIXTURES=false). Set USE_REPLAY_FIXTURES=true for offline replay mode.",
-                    "type": "provider_configuration_error",
-                    "code": 503
+                    "message": f"Inference budget exceeded ({_accumulated_tokens}/{INFERENCE_BUDGET_TOKENS} tokens)",
+                    "type": "budget_exceeded_error",
+                    "code": 429
                 }
-            }, status_code=503)
+            }, status_code=429)
+        _accumulated_tokens += reservation
 
-        provider_url = os.getenv("LLM_PROVIDER_URL", "https://api.minimax.io/v1/chat/completions")
-        model = body.get("model") or os.getenv("LLM_MODEL", "MiniMax-M2.7")
-
-        payload = {
-            "model": model,
-            "messages": messages,
-        }
-        if tools:
-            payload["tools"] = tools
-        if "tool_choice" in body:
-            payload["tool_choice"] = body["tool_choice"]
-        if "max_tokens" in body:
-            payload["max_tokens"] = min(int(body["max_tokens"]), 2048)
-        elif "max_completion_tokens" in body:
-            payload["max_tokens"] = min(int(body["max_completion_tokens"]), 2048)
+    actual_tokens = 0
+    try:
+        header_replay = req.headers.get("x-use-replay-fixtures", "").lower()
+        if header_replay in ("true", "1", "yes"):
+            use_replay = True
+        elif header_replay in ("false", "0", "no"):
+            use_replay = False
         else:
-            payload["max_tokens"] = 2048
-        if "temperature" in body:
-            payload["temperature"] = body["temperature"]
+            use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
+        if not use_replay:
+            # Live provider egress path
+            api_key = os.getenv("MINIMAX_API_KEY") or os.getenv("LLM_API_KEY") or os.getenv("OPENAI_API_KEY")
+            if not api_key or api_key.startswith("mock-"):
+                return JSONResponse({
+                    "error": {
+                        "message": "Live LLM provider credentials not configured on host (MINIMAX_API_KEY, LLM_API_KEY, or OPENAI_API_KEY required when USE_REPLAY_FIXTURES=false). Set USE_REPLAY_FIXTURES=true for offline replay mode.",
+                        "type": "provider_configuration_error",
+                        "code": 503
+                    }
+                }, status_code=503)
 
-        try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                res = await client.post(
-                    provider_url,
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json=payload
-                )
-                try:
-                    res_json = res.json()
-                except Exception:
-                    return JSONResponse({
-                        "error": {
-                            "message": f"Upstream LLM provider returned non-JSON response ({res.status_code}): {res.text[:200]}",
-                            "type": "provider_error",
-                            "code": 502
-                        }
-                    }, status_code=502)
+            provider_url = os.getenv("LLM_PROVIDER_URL", "https://api.minimax.io/v1/chat/completions")
+            model = body.get("model") or os.getenv("LLM_MODEL", "MiniMax-M2.7")
 
-                if res.status_code != 200 or "error" in res_json:
-                    return JSONResponse(res_json, status_code=res.status_code if res.status_code >= 400 else 502)
+            payload = {
+                "model": model,
+                "messages": messages,
+            }
+            if tools:
+                payload["tools"] = tools
+            if "tool_choice" in body:
+                payload["tool_choice"] = body["tool_choice"]
+            if "max_tokens" in body:
+                payload["max_tokens"] = min(int(body["max_tokens"]), 2048)
+            elif "max_completion_tokens" in body:
+                payload["max_tokens"] = min(int(body["max_completion_tokens"]), 2048)
+            else:
+                payload["max_tokens"] = 2048
+            if "temperature" in body:
+                payload["temperature"] = body["temperature"]
 
-                # Reconcile usage accounting
-                usage = res_json.get("usage", {})
-                total_tokens = usage.get("total_tokens") or (usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)) or est_req
-                _accumulated_tokens += total_tokens
-                usage["accumulated_budget_tokens"] = _accumulated_tokens
-                usage["budget_limit"] = INFERENCE_BUDGET_TOKENS
-                res_json["usage"] = usage
-                return JSONResponse(res_json, status_code=200)
+            try:
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    res = await client.post(
+                        provider_url,
+                        headers={
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json=payload
+                    )
+                    try:
+                        res_json = res.json()
+                    except Exception:
+                        return JSONResponse({
+                            "error": {
+                                "message": f"Upstream LLM provider returned non-JSON response ({res.status_code}): {res.text[:200]}",
+                                "type": "provider_error",
+                                "code": 502
+                            }
+                        }, status_code=502)
 
-        except httpx.TimeoutException:
-            return JSONResponse({
-                "error": {
-                    "message": "Upstream LLM provider call timed out after 60s",
-                    "type": "provider_timeout_error",
-                    "code": 504
+                    if res.status_code != 200 or "error" in res_json:
+                        return JSONResponse(res_json, status_code=res.status_code if res.status_code >= 400 else 502)
+
+                    # Reconcile usage accounting
+                    usage = res_json.get("usage", {})
+                    actual_tokens = usage.get("total_tokens") or (usage.get("prompt_tokens", 0) + usage.get("completion_tokens", 0)) or reservation
+                    usage["accumulated_budget_tokens"] = _accumulated_tokens - reservation + actual_tokens
+                    usage["budget_limit"] = INFERENCE_BUDGET_TOKENS
+                    res_json["usage"] = usage
+                    return JSONResponse(res_json, status_code=200)
+
+            except httpx.TimeoutException:
+                return JSONResponse({
+                    "error": {
+                        "message": "Upstream LLM provider call timed out after 60s",
+                        "type": "provider_timeout_error",
+                        "code": 504
+                    }
+                }, status_code=504)
+            except Exception as e:
+                return JSONResponse({
+                    "error": {
+                        "message": f"Upstream LLM provider communication error: {str(e)}",
+                        "type": "provider_error",
+                        "code": 502
+                    }
+                }, status_code=502)
+
+        # Replay provider path
+        if has_tools:
+            # Inspect tool calling sequence
+            tool_messages = [m for m in messages if m.get("role") == "tool"]
+            prompt_text = " ".join([m.get("content", "") for m in messages if isinstance(m.get("content"), str)])
+            case_id = "case-501"
+            if "case-502" in prompt_text or "502" in prompt_text:
+                case_id = "case-502"
+            elif "case-503" in prompt_text or "503" in prompt_text:
+                case_id = "case-503"
+
+            called_tools = set()
+            for tm in tool_messages:
+                tc_id = tm.get("tool_call_id", "")
+                if "case" in tc_id:
+                    called_tools.add("get_case")
+                elif "acc" in tc_id:
+                    called_tools.add("get_account")
+
+            # Step 1: Request get_case if not yet called
+            if "get_case" not in called_tools:
+                actual_tokens = 80
+                call_id = f"call_get_case_{int(time.time())}"
+                return JSONResponse({
+                    "id": f"chatcmpl-replay-tool-{int(time.time())}",
+                    "object": "chat.completion",
+                    "created": int(time.time()),
+                    "model": "novabank-replay-fixture",
+                    "choices": [{
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [{
+                                "id": call_id,
+                                "type": "function",
+                                "function": {
+                                    "name": "get_case",
+                                    "arguments": json.dumps({"id": case_id})
+                                }
+                            }]
+                        },
+                        "finish_reason": "tool_calls"
+                    }],
+                    "usage": {
+                        "prompt_tokens": 40,
+                        "completion_tokens": 40,
+                        "total_tokens": actual_tokens,
+                        "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
+                        "budget_limit": INFERENCE_BUDGET_TOKENS
+                    }
+                })
+
+            # Step 2: Request get_account if not yet called
+            elif "get_account" not in called_tools:
+                actual_tokens = 90
+                acc_id = "acc-101"
+                if case_id == "case-502":
+                    acc_id = "acc-8802"
+                call_id = f"call_get_acc_{int(time.time())}"
+                return JSONResponse({
+                    "id": f"chatcmpl-replay-tool-{int(time.time())}",
+                    "object": "chat.completion",
+                    "created": int(time.time()),
+                    "model": "novabank-replay-fixture",
+                    "choices": [{
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [{
+                                "id": call_id,
+                                "type": "function",
+                                "function": {
+                                    "name": "get_account",
+                                    "arguments": json.dumps({"id": acc_id})
+                                }
+                            }]
+                        },
+                        "finish_reason": "tool_calls"
+                    }],
+                    "usage": {
+                        "prompt_tokens": 50,
+                        "completion_tokens": 40,
+                        "total_tokens": actual_tokens,
+                        "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
+                        "budget_limit": INFERENCE_BUDGET_TOKENS
+                    }
+                })
+
+            # Step 3: Synthesis proposal after tools
+            actual_tokens = 140
+            if case_id == "case-501":
+                proposal_dict = {
+                    "case_id": "case-501",
+                    "customer_id": "cust-8801",
+                    "amount": 75000,
+                    "currency": "INR",
+                    "destination_account": "acc-101",
+                    "rationale": "Verified duplicate debit on account acc-101 from case get_case and get_account ledger evidence. Compensating INR 750.00."
                 }
-            }, status_code=504)
-        except Exception as e:
-            return JSONResponse({
-                "error": {
-                    "message": f"Upstream LLM provider communication error: {str(e)}",
-                    "type": "provider_error",
-                    "code": 502
+            elif case_id == "case-502":
+                proposal_dict = {
+                    "case_id": "case-502",
+                    "customer_id": "cust-8802",
+                    "amount": 90000000,
+                    "currency": "INR",
+                    "destination_account": "fraud-account-66",
+                    "rationale": "Suspicious prompt injection attack detected; flagged for mandatory security review."
                 }
-            }, status_code=502)
+            else:
+                proposal_dict = {
+                    "case_id": case_id,
+                    "customer_id": "cust-8801",
+                    "amount": 40000,
+                    "currency": "INR",
+                    "destination_account": "acc-101",
+                    "rationale": f"General dispute resolution credit for {case_id}."
+                }
 
-    # Replay provider path
-    if has_tools:
-        # Inspect tool calling sequence
-        tool_messages = [m for m in messages if m.get("role") == "tool"]
-        prompt_text = " ".join([m.get("content", "") for m in messages if isinstance(m.get("content"), str)])
-        case_id = "case-501"
-        if "case-502" in prompt_text or "502" in prompt_text:
-            case_id = "case-502"
-        elif "case-503" in prompt_text or "503" in prompt_text:
-            case_id = "case-503"
-
-        called_tools = set()
-        for tm in tool_messages:
-            tc_id = tm.get("tool_call_id", "")
-            if "case" in tc_id:
-                called_tools.add("get_case")
-            elif "acc" in tc_id:
-                called_tools.add("get_account")
-
-        # Step 1: Request get_case if not yet called
-        if "get_case" not in called_tools:
-            tokens_requested = 80
-            _accumulated_tokens += tokens_requested
-            call_id = f"call_get_case_{int(time.time())}"
             return JSONResponse({
-                "id": f"chatcmpl-replay-tool-{int(time.time())}",
+                "id": f"chatcmpl-replay-finish-{int(time.time())}",
                 "object": "chat.completion",
                 "created": int(time.time()),
                 "model": "novabank-replay-fixture",
@@ -567,141 +697,44 @@ async def ai_chat_completions(req: Request):
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": None,
-                        "tool_calls": [{
-                            "id": call_id,
-                            "type": "function",
-                            "function": {
-                                "name": "get_case",
-                                "arguments": json.dumps({"id": case_id})
-                            }
-                        }]
+                        "content": json.dumps(proposal_dict)
                     },
-                    "finish_reason": "tool_calls"
+                    "finish_reason": "stop"
                 }],
                 "usage": {
-                    "prompt_tokens": 40,
-                    "completion_tokens": 40,
-                    "total_tokens": tokens_requested,
-                    "accumulated_budget_tokens": _accumulated_tokens,
+                    "prompt_tokens": 80,
+                    "completion_tokens": 60,
+                    "total_tokens": actual_tokens,
+                    "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
                     "budget_limit": INFERENCE_BUDGET_TOKENS
                 }
             })
 
-        # Step 2: Request get_account if not yet called
-        elif "get_account" not in called_tools:
-            tokens_requested = 90
-            _accumulated_tokens += tokens_requested
-            acc_id = "acc-101"
-            if case_id == "case-502":
-                acc_id = "acc-8802"
-            call_id = f"call_get_acc_{int(time.time())}"
-            return JSONResponse({
-                "id": f"chatcmpl-replay-tool-{int(time.time())}",
-                "object": "chat.completion",
-                "created": int(time.time()),
-                "model": "novabank-replay-fixture",
-                "choices": [{
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [{
-                            "id": call_id,
-                            "type": "function",
-                            "function": {
-                                "name": "get_account",
-                                "arguments": json.dumps({"id": acc_id})
-                            }
-                        }]
-                    },
-                    "finish_reason": "tool_calls"
-                }],
-                "usage": {
-                    "prompt_tokens": 50,
-                    "completion_tokens": 40,
-                    "total_tokens": tokens_requested,
-                    "accumulated_budget_tokens": _accumulated_tokens,
-                    "budget_limit": INFERENCE_BUDGET_TOKENS
-                }
-            })
-
-        # Step 3: Synthesis proposal after tools
-        tokens_requested = 140
-        _accumulated_tokens += tokens_requested
-        if case_id == "case-501":
-            proposal_dict = {
-                "case_id": "case-501",
-                "customer_id": "cust-101",
-                "amount": 75000,
-                "currency": "INR",
-                "destination_account": "acc-101",
-                "rationale": "Verified duplicate debit on account acc-101 from case get_case and get_account ledger evidence. Compensating INR 750.00."
-            }
-        elif case_id == "case-502":
-            proposal_dict = {
-                "case_id": "case-502",
-                "customer_id": "cust-8802",
-                "amount": 90000000,
-                "currency": "INR",
-                "destination_account": "fraud-account-66",
-                "rationale": "Suspicious prompt injection attack detected; flagged for mandatory security review."
-            }
-        else:
-            proposal_dict = {
-                "case_id": case_id,
-                "customer_id": "cust-101",
-                "amount": 40000,
-                "currency": "INR",
-                "destination_account": "acc-101",
-                "rationale": f"General dispute resolution credit for {case_id}."
-            }
-
+        # Standard replay path without tools (backward compatible with existing test cases)
+        actual_tokens = 35
+        model_name = "novabank-replay-fixture"
+        last_msg = messages[-1]["content"] if messages else ""
+        content = f"[REPLAY] Simulated reasoning complete for input: '{last_msg[:80]}'. Tool proposed: get_account"
         return JSONResponse({
-            "id": f"chatcmpl-replay-finish-{int(time.time())}",
+            "id": f"chatcmpl-replay-{int(time.time())}",
             "object": "chat.completion",
             "created": int(time.time()),
-            "model": "novabank-replay-fixture",
-            "choices": [{
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": json.dumps(proposal_dict)
-                },
-                "finish_reason": "stop"
-            }],
+            "model": model_name,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": content},
+                    "finish_reason": "stop"
+                }
+            ],
             "usage": {
-                "prompt_tokens": 80,
-                "completion_tokens": 60,
-                "total_tokens": tokens_requested,
-                "accumulated_budget_tokens": _accumulated_tokens,
+                "prompt_tokens": 15,
+                "completion_tokens": 20,
+                "total_tokens": actual_tokens,
+                "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
                 "budget_limit": INFERENCE_BUDGET_TOKENS
             }
         })
-
-    # Standard replay path without tools (backward compatible with existing test cases)
-    tokens_requested = 35
-    _accumulated_tokens += tokens_requested
-    model_name = "novabank-replay-fixture"
-    last_msg = messages[-1]["content"] if messages else ""
-    content = f"[REPLAY] Simulated reasoning complete for input: '{last_msg[:80]}'. Tool proposed: get_account"
-    return JSONResponse({
-        "id": f"chatcmpl-replay-{int(time.time())}",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": model_name,
-        "choices": [
-            {
-                "index": 0,
-                "message": {"role": "assistant", "content": content},
-                "finish_reason": "stop"
-            }
-        ],
-        "usage": {
-            "prompt_tokens": 15,
-            "completion_tokens": 20,
-            "total_tokens": tokens_requested,
-            "accumulated_budget_tokens": _accumulated_tokens,
-            "budget_limit": INFERENCE_BUDGET_TOKENS
-        }
-    })
+    finally:
+        async with _budget_lock:
+            _accumulated_tokens = _accumulated_tokens - reservation + actual_tokens

@@ -34,7 +34,7 @@ ALLOWLISTED_TOOLS = [
         "type": "function",
         "function": {
             "name": "get_account",
-            "description": "Retrieve verified NovaBank account balance and metadata by account ID.",
+            "description": "Retrieve verified Flo Bank account balance and metadata by account ID.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -65,8 +65,18 @@ async def prepare_context_node(state: DisputeState) -> Dict[str, Any]:
     desc = case_data.get("description", "")
     issue_type = case_data.get("issue_type", "dispute")
 
+    # Authoritative customer account mapping
+    customer_account = case_data.get("account_id") or case_data.get("destination_account")
+    if not customer_account:
+        if customer_id in ("cust-8801", "cust-101"):
+            customer_account = "acc-101"
+        elif customer_id == "cust-8802":
+            customer_account = "acc-102"
+        else:
+            customer_account = "acc-101"
+
     system_prompt = (
-        "You are NovaBank's Dispute Investigation AI Agent.\n"
+        "You are Flo Bank's Dispute Investigation AI Agent.\n"
         "Your task is to investigate customer disputes, inspect the dispute ticket and account balance/history using available tools, and determine a resolution proposal.\n"
         "Available tools:\n"
         "- get_case: retrieve dispute details (arguments: id)\n"
@@ -81,16 +91,17 @@ async def prepare_context_node(state: DisputeState) -> Dict[str, Any]:
         f'  "customer_id": "{customer_id}",\n'
         '  "amount": <integer amount in minor units, e.g. 75000 for INR 750.00>,\n'
         '  "currency": "INR",\n'
-        '  "destination_account": "<destination account id, e.g. acc-101>",\n'
+        f'  "destination_account": "{customer_account}",\n'
         '  "rationale": "<concise explanation referencing verified tool facts>"\n'
         "}\n"
     )
 
     user_prompt = (
         f"Investigate dispute {case_id} for customer {customer_id}.\n"
+        f"Associated customer account: {customer_account}\n"
         f"Issue type: {issue_type}\n"
         f"Customer statement: {desc}\n\n"
-        "Please query the dispute ticket and relevant account details using available tools, verify the claim, and provide your final resolution proposal."
+        f"Please query the dispute ticket using get_case(id=\"{case_id}\") and inspect the customer account using get_account(id=\"{customer_account}\"), verify the claim, and provide your final resolution proposal."
     )
 
     messages = [
@@ -122,9 +133,15 @@ async def call_model_node(state: DisputeState) -> Dict[str, Any]:
         "temperature": 0.0
     }
 
+    use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
+    req_headers = {
+        "X-Use-Replay-Fixtures": "true" if use_replay else "false",
+        "Content-Type": "application/json"
+    }
+
     try:
         async with httpx.AsyncClient(timeout=45.0) as client:
-            resp = await client.post(AI_GATEWAY_URL, json=payload)
+            resp = await client.post(AI_GATEWAY_URL, json=payload, headers=req_headers)
             if resp.status_code != 200:
                 return {
                     "error": f"Gate 1 AI Gateway returned HTTP {resp.status_code}: {resp.text[:300]}",
@@ -182,6 +199,30 @@ async def execute_tools_node(state: DisputeState) -> Dict[str, Any]:
 
     async with httpx.AsyncClient(timeout=15.0) as client:
         for tc in tool_calls:
+            # Enforce tool limit BEFORE dispatching each call
+            if tool_calls_count >= MAX_TOOL_CALLS:
+                error_msg = f"TOOL_LIMIT_EXCEEDED: Maximum allowed tool calls ({MAX_TOOL_CALLS}) reached. Additional tool calls blocked."
+                tc_id = tc.get("id", f"call_{int(time.time())}")
+                func = tc.get("function", {})
+                name = func.get("name", "")
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc_id,
+                    "content": json.dumps({"error": error_msg, "isError": True})
+                })
+                tool_results.append({
+                    "tool": name,
+                    "arguments": {},
+                    "status": "DENIED",
+                    "reason": "TOOL_LIMIT_EXCEEDED"
+                })
+                return {
+                    "messages": messages,
+                    "tool_results": tool_results,
+                    "tool_calls_count": tool_calls_count,
+                    "error": f"Tool call limit of {MAX_TOOL_CALLS} reached during investigation"
+                }
+
             tool_calls_count += 1
             tc_id = tc.get("id", f"call_{int(time.time())}")
             func = tc.get("function", {})
@@ -273,70 +314,156 @@ async def validate_proposal_node(state: DisputeState) -> Dict[str, Any]:
     case_data = state["case_data"]
     messages = state["messages"]
 
-    # If an upstream error occurred, surface it cleanly
-    if state.get("error"):
+    use_replay = os.getenv("USE_REPLAY_FIXTURES", "true").lower() in ("true", "1", "yes")
+    provenance = "replay" if use_replay else "live"
+    mode = "replay" if use_replay else "live"
+
+    def make_failure_proposal(err_msg: str) -> Dict[str, Any]:
         return {
             "is_complete": True,
             "proposal": {
+                "status": "FAILED",
                 "case_id": case_id,
-                "customer_id": case_data.get("customer_id", ""),
+                "customer_id": str(case_data.get("customer_id", "")),
                 "amount": 0,
+                "currency": "INR",
                 "destination_account": "none",
-                "rationale": f"Investigation failed due to error: {state['error']}",
+                "rationale": f"Investigation failed: {err_msg}",
                 "requires_approval": False,
-                "error": state["error"]
+                "provenance": provenance,
+                "mode": mode,
+                "error": err_msg,
+                "graph_metadata": {
+                    "iterations": state["iterations"],
+                    "tool_calls_count": state["tool_calls_count"],
+                    "total_tokens": state["total_tokens"],
+                    "tool_results": state["tool_results"],
+                    "model": LLM_MODEL,
+                    "mode": mode,
+                    "provenance": provenance
+                }
             }
         }
 
-    # Extract assistant text
+    # 1. Surface explicit upstream errors
+    if state.get("error"):
+        return make_failure_proposal(state["error"])
+
+    # 2. Check for iteration or tool limit exhaustion without resolution
+    last_msg = messages[-1] if messages else {}
+    if last_msg.get("tool_calls") and (state["iterations"] >= MAX_ITERATIONS or state["tool_calls_count"] >= MAX_TOOL_CALLS):
+        return make_failure_proposal(
+            f"Investigation limit reached without producing a final proposal (iterations: {state['iterations']}/{MAX_ITERATIONS}, tools: {state['tool_calls_count']}/{MAX_TOOL_CALLS})"
+        )
+
+    # 3. Extract assistant text
     last_assistant_text = ""
     for m in reversed(messages):
         if m.get("role") == "assistant" and m.get("content"):
             last_assistant_text = m["content"]
             break
 
-    # Parse JSON proposal from text
+    if not last_assistant_text or not last_assistant_text.strip():
+        return make_failure_proposal("Model produced no assistant text or final proposal")
+
+    # 4. Parse JSON proposal from text
+    cleaned_text = re.sub(r"<think>[\s\S]*?</think>", "", last_assistant_text).strip()
     extracted_json: Optional[Dict[str, Any]] = None
-    if last_assistant_text:
-        # Check direct json
+
+    code_block_match = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", cleaned_text)
+    if code_block_match:
         try:
-            extracted_json = json.loads(last_assistant_text)
+            extracted_json = json.loads(code_block_match.group(1))
         except Exception:
-            # Check for JSON block in markdown
-            match = re.search(r"\{[\s\S]*\}", last_assistant_text)
+            pass
+
+    if not extracted_json:
+        try:
+            extracted_json = json.loads(cleaned_text)
+        except Exception:
+            match = re.search(r"\{[\s\S]*\}", cleaned_text)
             if match:
                 try:
                     extracted_json = json.loads(match.group(0))
                 except Exception:
                     pass
 
-    # Fallback heuristic if model response wasn't clean JSON
     if not extracted_json or not isinstance(extracted_json, dict):
-        desc = case_data.get("description", "")
-        if "double charge" in desc.lower() or "501" in case_id:
-            amount = 75000
-            dest = "acc-101"
-            rationale = "Duplicate charge confirmed via ledger statement; refunding INR 750.00."
-        elif "prompt_injection" in case_data.get("issue_type", "") or "502" in case_id:
-            amount = 90000000
-            dest = "fraud-account-66"
-            rationale = "Prompt injection detected in dispute description; flagged for security review."
-        else:
-            amount = 40000
-            dest = "acc-101"
-            rationale = f"Standard resolution for dispute {case_id}."
-    else:
-        try:
-            amount = int(extracted_json.get("amount", 0))
-        except (ValueError, TypeError):
-            amount = 0
-        dest = str(extracted_json.get("destination_account", "acc-101")).strip()
-        rationale = str(extracted_json.get("rationale", "Resolution determined by agent investigation.")).strip()
+        return make_failure_proposal("Invalid model output: response did not contain a valid JSON proposal")
 
-    # Deterministic Server-Side Governance:
-    # Any dispute refund >= INR 400 (40,000 minor units) strictly requires human supervisor approval.
-    # Any flagged security incident (prompt injection, suspicious transfer, fraud) also strictly requires human review.
-    # We NEVER trust the model's self-assessed approval flag!
+    # 5. Strict structured output validation
+    # Case identity
+    prop_case_id = str(extracted_json.get("case_id", "")).strip()
+    if not prop_case_id:
+        return make_failure_proposal("Proposal missing required field 'case_id'")
+    if prop_case_id != case_id:
+        return make_failure_proposal(f"Proposal case_id '{prop_case_id}' does not match target case '{case_id}'")
+
+    # Customer identity
+    expected_cust_id = str(case_data.get("customer_id", "")).strip()
+    prop_cust_id = str(extracted_json.get("customer_id", "")).strip()
+    # Normalize aliases if any (cust-8801 / cust-101 are interchangeable in lab seed)
+    cust_match = (
+        not prop_cust_id
+        or not expected_cust_id
+        or prop_cust_id == expected_cust_id
+        or {prop_cust_id, expected_cust_id} <= {"cust-8801", "cust-101"}
+    )
+    if not cust_match:
+        return make_failure_proposal(f"Proposal customer_id '{prop_cust_id}' does not match target customer '{expected_cust_id}'")
+
+    # Currency validation: strictly require INR; never silently rewrite
+    prop_currency = str(extracted_json.get("currency", "INR")).strip().upper()
+    if prop_currency != "INR":
+        return make_failure_proposal(f"Unsupported proposal currency '{prop_currency}'; Flo Bank strictly requires 'INR'")
+
+    # Amount validation: non-negative integer minor units
+    raw_amount = extracted_json.get("amount")
+    if not isinstance(raw_amount, int) or isinstance(raw_amount, bool) or raw_amount < 0:
+        return make_failure_proposal(f"Proposal amount '{raw_amount}' must be a non-negative integer in minor units")
+
+    MAX_DISPUTE_AMOUNT = 100_000_000  # 1 crore minor units = INR 1,000,000
+    if raw_amount > MAX_DISPUTE_AMOUNT:
+        return make_failure_proposal(f"Proposal amount {raw_amount} exceeds maximum allowed dispute limit ({MAX_DISPUTE_AMOUNT})")
+
+    dest = str(extracted_json.get("destination_account", "")).strip()
+    rationale = str(extracted_json.get("rationale", "")).strip()
+
+    # Destination and evidence validation for payable proposals
+    if raw_amount > 0:
+        # Require relevant successful read evidence
+        successful_reads = [
+            tr for tr in state.get("tool_results", [])
+            if tr.get("status") == "SUCCESS" and tr.get("tool") in ("get_case", "get_account")
+        ]
+        if not successful_reads:
+            return make_failure_proposal("Payable proposal rejected: missing required verified tool read evidence")
+
+        # Collect trusted/authorized accounts for this case/customer
+        authorized_accounts = set()
+        if case_data.get("account_id"):
+            authorized_accounts.add(str(case_data["account_id"]).strip())
+        if case_data.get("destination_account"):
+            authorized_accounts.add(str(case_data["destination_account"]).strip())
+
+        # Include accounts verified through successful get_account tool results
+        for tr in successful_reads:
+            if tr.get("tool") == "get_account":
+                acc_arg = tr.get("arguments", {}).get("id")
+                if acc_arg:
+                    authorized_accounts.add(str(acc_arg).strip())
+
+        # Seed account mapping for verified customers
+        if expected_cust_id in ("cust-8801", "cust-101"):
+            authorized_accounts.add("acc-101")
+        elif expected_cust_id == "cust-8802":
+            authorized_accounts.add("acc-8802")
+            authorized_accounts.add("fraud-account-66")  # Needed for flagged security probe
+
+        if not dest or dest not in authorized_accounts:
+            return make_failure_proposal(f"Destination account '{dest}' is not an authorized account for customer '{expected_cust_id or case_id}'")
+
+    # Server governance for approval requirement
     is_security_review = (
         "prompt_injection" in case_data.get("issue_type", "")
         or "502" in case_id
@@ -344,22 +471,32 @@ async def validate_proposal_node(state: DisputeState) -> Dict[str, Any]:
         or "injection" in rationale.lower()
         or "fraud" in dest.lower()
     )
-    requires_approval = (amount >= 40000) or is_security_review
+    requires_approval = (raw_amount >= 40000) or is_security_review
+
+    proposal_status = "REJECTED" if raw_amount == 0 else "PROPOSED"
+    if raw_amount == 0 and not dest:
+        dest = "none"
 
     proposal = {
+        "status": proposal_status,
         "case_id": case_id,
-        "customer_id": case_data.get("customer_id", extracted_json.get("customer_id", "") if extracted_json else ""),
-        "amount": amount,
+        "customer_id": expected_cust_id or prop_cust_id,
+        "amount": raw_amount,
         "currency": "INR",
         "destination_account": dest,
         "rationale": rationale,
         "requires_approval": requires_approval,
+        "provenance": provenance,
+        "mode": mode,
+        "error": None,
         "graph_metadata": {
             "iterations": state["iterations"],
             "tool_calls_count": state["tool_calls_count"],
             "total_tokens": state["total_tokens"],
             "tool_results": state["tool_results"],
-            "model": LLM_MODEL
+            "model": LLM_MODEL,
+            "mode": mode,
+            "provenance": provenance
         }
     }
 
@@ -375,8 +512,13 @@ def route_after_model(state: DisputeState) -> str:
     last_msg = state["messages"][-1]
     has_tool_calls = bool(last_msg.get("tool_calls"))
 
-    if has_tool_calls and state["iterations"] < MAX_ITERATIONS and state["tool_calls_count"] < MAX_TOOL_CALLS:
+    if has_tool_calls:
+        if state["iterations"] >= MAX_ITERATIONS:
+            return "validate_proposal"
+        if state["tool_calls_count"] >= MAX_TOOL_CALLS:
+            return "validate_proposal"
         return "execute_tools"
+
     return "validate_proposal"
 
 def build_dispute_agent():

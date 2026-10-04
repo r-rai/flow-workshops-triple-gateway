@@ -3,7 +3,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI(
-    title="NovaBank Minimal API",
+    title="Flo Bank Minimal API",
     version="1.0.0",
     description="Minimal API for Spike 1 and 2",
 )

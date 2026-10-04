@@ -13,7 +13,7 @@ from src.core.security import get_current_principal, Principal, require_scope
 router = APIRouter(prefix="/api/v1/a2a", tags=["A2A"])
 
 AGENT_CARD = {
-    "name": "NovaBank PaymentsAgent",
+    "name": "Flo Bank PaymentsAgent",
     "description": "Agent-to-Agent interface for compliant payment proposal and execution",
     "url": "http://127.0.0.1:9080/api/v1/a2a",
     "version": "1.0.0",

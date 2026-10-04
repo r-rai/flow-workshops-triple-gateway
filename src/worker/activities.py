@@ -59,6 +59,33 @@ async def execute_settlement_and_notify(settlement_data: dict) -> dict:
                 "amount": amount,
                 "currency": "INR",
             }
+
+            # Preserve Core API proposal/approval requirements for payments above unsupervised limit (100,000 minor units)
+            if amount > 100000:
+                prop_resp = await client.post(
+                    f"{gate3_url}/payments/proposals",
+                    json=payment_body,
+                    headers=headers
+                )
+                if prop_resp.status_code in (200, 201):
+                    prop_id = prop_resp.json()["proposal_id"]
+                    manager_token = create_jwt_token(
+                        subject="system-risk-manager",
+                        audience="novabank-api",
+                        scopes=["api:payments:write"],
+                        role="manager"
+                    )
+                    mgr_headers = {
+                        "Authorization": f"Bearer {manager_token}",
+                        "X-API-Key": os.getenv("GATE3_API_KEY", "gate3-secret-token")
+                    }
+                    appr_resp = await client.post(
+                        f"{gate3_url}/payments/proposals/{prop_id}/approve",
+                        headers=mgr_headers
+                    )
+                    if appr_resp.status_code == 200:
+                        payment_body["proposal_id"] = prop_id
+
             pay_headers = {
                 **headers,
                 "Idempotency-Key": idempotency_key

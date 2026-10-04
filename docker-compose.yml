@@ -18,6 +18,29 @@ volumes:
   novabank_temporal_data:
 
 services:
+  # Customer simulation only: docker compose --profile demo up -d --build
+  # Workshop profiles also serve the UI through the API at the gateway URL.
+  demo:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    image: flo-bank-demo:local
+    restart: unless-stopped
+    command: ["uvicorn", "src.demo.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:${DEMO_HTTP_PORT:-8000}:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    profiles: ["demo"]
+
   apisix:
     image: apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
     restart: unless-stopped
@@ -92,7 +115,7 @@ services:
       - LLM_API_KEY=${LLM_API_KEY:-}
       - LLM_PROVIDER_URL=${LLM_PROVIDER_URL:-https://api.minimax.io/v1/chat/completions}
       - LLM_MODEL=${LLM_MODEL:-MiniMax-M2.7}
-      - INFERENCE_BUDGET_TOKENS=${INFERENCE_BUDGET_TOKENS:-16000}
+      - INFERENCE_BUDGET_TOKENS=${INFERENCE_BUDGET_TOKENS:-100000}
       - ENABLE_TELEMETRY=${ENABLE_TELEMETRY:-true}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4318/v1/traces}
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://jaeger:4318/v1/traces}

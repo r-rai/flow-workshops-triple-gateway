@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# NovaBank Triple-Gateway Workshop Platform Operator Interface
+# Flo Bank Triple-Gateway Workshop Platform Operator Interface
 # ==============================================================================
 set -euo pipefail
 
@@ -52,7 +52,7 @@ set_active_profile() {
 
 cmd_preflight() {
     echo "====================================================================="
-    echo " NovaBank Workshop Platform: System Preflight Check"
+    echo " Flo Bank Workshop Platform: System Preflight Check"
     echo "====================================================================="
     local failed=0
 

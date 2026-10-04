@@ -18,7 +18,7 @@
 
 | Timeline | Topic | Talking Points & Presenter Actions |
 |---|---|---|
-| **0–5 min** | Intro | Welcome attendees. Introduce fictional NovaBank support scenario: an agent needs to assist customers with account queries, but exposing existing internal APIs raw to LLMs is dangerous. |
+| **0–5 min** | Intro | Welcome attendees. Introduce fictional Flo Bank support scenario: an agent needs to assist customers with account queries, but exposing existing internal APIs raw to LLMs is dangerous. |
 | **5–12 min** | OpenAPI vs MCP | Explain the difference: OpenAPI defines HTTP endpoints, verbs, and schemas. MCP provides runtime tool negotiation (`initialize`), schema discovery (`tools/list`), and execution envelopes (`tools/call`). |
 | **12–22 min** | Native Generation Demo | Show APISIX `openapi-to-mcp` plugin generating tools on the fly from `/openapi.json`. Point out the 13 generated tools, highlighting the danger of exposing `execute_payment` and `reset_database`. |
 | **22–32 min** | Guided Invocation | Guide participants to run `python workshops/w1/client.py call-account acc-101`. Show the retrieved balance (`1500000 INR`). |

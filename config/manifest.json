@@ -1,7 +1,7 @@
 {
   "manifest_version": "1.0.0",
   "generated_at": "2026-10-03T10:52:00Z",
-  "platform": "NovaBank Multi-Workshop Enterprise AI & API Gateway Platform",
+  "platform": "Flo Bank Multi-Workshop Enterprise AI & API Gateway Platform",
   "profiles": ["w1", "w2", "w3", "w4"],
   "pinned_images": {
     "apisix": {

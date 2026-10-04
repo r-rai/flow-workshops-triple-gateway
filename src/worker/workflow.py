@@ -58,31 +58,47 @@ class DisputeResolutionWorkflow:
             start_to_close_timeout=timedelta(seconds=120)
         )
 
-        # Check if human approval is required
-        if self.proposal["requires_approval"]:
+        # Finding 3: Provider/investigation failure must NOT resolve or reject dispute
+        if self.proposal.get("status") == "FAILED" or self.proposal.get("error"):
+            self.current_phase = "INVESTIGATION_FAILED"
+            self.execution_result = {
+                "case_id": dispute_input.case_id,
+                "status": "INVESTIGATION_FAILED",
+                "error": self.proposal.get("error", "Investigation failed"),
+                "notification_sent": False
+            }
+            return {
+                "case_id": dispute_input.case_id,
+                "phase": self.current_phase,
+                "proposal": self.proposal,
+                "approval": None,
+                "result": self.execution_result
+            }
+
+        # Approval gate
+        if self.proposal.get("requires_approval", True):
             self.current_phase = "WAITING_FOR_APPROVAL"
             # Wait for signal up to 24 hours
             await workflow.wait_condition(
                 lambda: self.approval_decision is not None,
                 timeout=timedelta(hours=24)
             )
-
             is_approved = self.approval_decision.get("approved", False)
         else:
-            is_approved = True
+            is_approved = (self.proposal.get("amount", 0) > 0 and self.proposal.get("status") != "REJECTED")
             self.approval_decision = {
-                "approved": True,
+                "approved": is_approved,
                 "reviewer": "system-auto-approval",
-                "comments": "Below human review threshold (<= INR 500)"
+                "comments": "Below human review threshold (< INR 400)" if is_approved else "Auto-rejection below review threshold"
             }
 
         self.current_phase = "EXECUTING_SETTLEMENT"
         settlement_payload = {
             "case_id": dispute_input.case_id,
-            "amount": self.proposal["amount"],
-            "destination_account": self.proposal["destination_account"],
+            "amount": self.proposal.get("amount", 0) if is_approved else 0,
+            "destination_account": self.proposal.get("destination_account", "none") if is_approved else "none",
             "approved": is_approved,
-            "reviewer_comments": self.approval_decision.get("comments", "")
+            "reviewer_comments": self.approval_decision.get("comments", "") or self.proposal.get("rationale", "")
         }
 
         self.execution_result = await workflow.execute_activity(

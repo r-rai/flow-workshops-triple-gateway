@@ -1,4 +1,12 @@
 routes:
+  # Customer simulation: isolated from Gate 3 enterprise APIs.
+  - id: w4_bank_demo
+    uris: ["/", "/demo-assets/*", "/demo-api/*"]
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
   # Gate 1: AI / Replay endpoint
   - id: w4_ai_route
     uri: /ai/*

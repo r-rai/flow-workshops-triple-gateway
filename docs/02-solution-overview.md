@@ -1,8 +1,8 @@
 # Solution Overview
 
-## NovaBank
+## Flo Bank
 
-All workshops use one fictional enterprise, **NovaBank**, with
+All workshops use one fictional enterprise, **Flo Bank**, with
 customers, accounts, transactions, beneficiaries, payments, support
 cases and operational incidents.
 

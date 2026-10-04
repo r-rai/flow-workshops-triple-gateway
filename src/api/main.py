@@ -64,9 +64,9 @@ async def lifespan(app: FastAPI):
                 pass
 
 app = FastAPI(
-    title="NovaBank Core API",
+    title="Flo Bank Core API",
     version="1.0.0",
-    description="NovaBank Multi-Workshop Enterprise Banking API with Gate 3 Enforced Security",
+    description="Flo Bank Multi-Workshop Enterprise Banking API with Gate 3 Enforced Security",
     lifespan=lifespan,
 )
 
@@ -99,6 +99,10 @@ def openapi_curated():
         file_path = os.path.abspath("workshops/w1/checkpoints/completed/openapi-curated.json")
     with open(file_path, "r") as f:
         return json.load(f)
+
+# Customer simulation is a separate app, excluded from enterprise OpenAPI/MCP.
+from src.demo.app import app as customer_demo
+app.mount("/", customer_demo)
 
 if __name__ == "__main__":
     import uvicorn

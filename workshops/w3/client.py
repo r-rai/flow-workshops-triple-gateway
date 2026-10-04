@@ -54,7 +54,7 @@ async def signal_approval(temporal_host: str, case_id: str, approved: bool, revi
     return result
 
 def main():
-    parser = argparse.ArgumentParser(description="NovaBank Workshop 3 CLI Client")
+    parser = argparse.ArgumentParser(description="Flo Bank Workshop 3 CLI Client")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # emit

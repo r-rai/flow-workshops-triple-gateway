@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "NovaBank Core API",
-    "description": "NovaBank Multi-Workshop Enterprise Banking API with Gate 3 Enforced Security",
+    "title": "Flo Bank Core API",
+    "description": "Flo Bank Multi-Workshop Enterprise Banking API with Gate 3 Enforced Security",
     "version": "1.0.0"
   },
   "paths": {

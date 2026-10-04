@@ -17,7 +17,7 @@ Users / MCP Clients
 +-----+----------------+---------------+---------+
       |                |               |
       v                v               v
- LLM Provider         OPA          NovaBank APIs
+ LLM Provider         OPA          Flo Bank APIs
                                       |
                               PostgreSQL / SQLite
 
@@ -30,7 +30,7 @@ Telemetry: OpenTelemetry -> Jaeger
 ## Responsibilities
 
 -   **APISIX:** traffic enforcement.
--   **FastAPI:** NovaBank enterprise APIs and OpenAPI contracts.
+-   **FastAPI:** Flo Bank enterprise APIs and OpenAPI contracts.
 -   **LangGraph:** agent orchestration/state; not authorization.
 -   **OPA:** deterministic policy decisions using adapter-supplied trusted identity and arguments.
 -   **Keycloak:** identity, OAuth/OIDC, scopes and delegated-identity
