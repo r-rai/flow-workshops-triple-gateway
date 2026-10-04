@@ -3,7 +3,7 @@ import json
 import time
 from sqlalchemy.orm import Session
 from src.core.database import Base, engine
-from src.models.db_models import Account, SupportCase, Incident, PaymentProposal, PaymentRecord, RemediationRecord, IdempotencyRecord
+from src.models.db_models import Account, SupportCase, Incident, PaymentProposal, PaymentRecord, RemediationRecord, IdempotencyRecord, CardRecord
 from src.core.config import settings
 
 def reset_and_seed_db(db: Session, seed_file: str = None) -> dict:
@@ -58,6 +58,19 @@ def reset_and_seed_db(db: Session, seed_file: str = None) -> dict:
             updated_at=time.time(),
         ))
 
+    # Insert Cards
+    for c in data.get("cards", []):
+        db.add(CardRecord(
+            id=c["id"],
+            account_id=c["account_id"],
+            customer_id=c.get("customer_id", "cust-maya"),
+            last_four=c["last_four"],
+            holder_name=c["holder_name"],
+            expiry=c["expiry"],
+            locked=c.get("locked", False),
+            updated_at=time.time(),
+        ))
+
     db.commit()
 
     return {
@@ -67,4 +80,6 @@ def reset_and_seed_db(db: Session, seed_file: str = None) -> dict:
         "accounts_seeded": len(data.get("accounts", [])),
         "cases_seeded": len(data.get("cases", [])),
         "incidents_seeded": len(data.get("incidents", [])),
+        "cards_seeded": len(data.get("cards", [])),
     }
+

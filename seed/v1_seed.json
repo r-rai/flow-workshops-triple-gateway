@@ -21,6 +21,20 @@
       "balance": 50000000,
       "currency": "INR",
       "status": "active"
+    },
+    {
+      "id": "demo-checking",
+      "name": "Everyday account",
+      "balance": 12485000,
+      "currency": "INR",
+      "status": "active"
+    },
+    {
+      "id": "demo-savings",
+      "name": "Savings pocket",
+      "balance": 35000000,
+      "currency": "INR",
+      "status": "active"
     }
   ],
   "cases": [
@@ -58,5 +72,17 @@
       "root_cause": "Replication lag exceeds failover threshold.",
       "remediation_action": "restart_cluster"
     }
+  ],
+  "cards": [
+    {
+      "id": "card-2048",
+      "account_id": "demo-checking",
+      "customer_id": "cust-maya",
+      "last_four": "2048",
+      "holder_name": "MAYA SHAH",
+      "expiry": "09/29",
+      "locked": false
+    }
   ]
 }
+

@@ -104,3 +104,15 @@ class PaymentTaskBinding(Base):
     payment_id = Column(String(64), primary_key=True)
     task_id = Column(String(64), nullable=False, unique=True, index=True)
     created_at = Column(Float, default=time.time)
+
+class CardRecord(Base):
+    __tablename__ = "cards"
+
+    id = Column(String(64), primary_key=True, index=True)
+    account_id = Column(String(64), nullable=False, index=True)
+    customer_id = Column(String(64), nullable=False, index=True)
+    last_four = Column(String(4), nullable=False)
+    holder_name = Column(String(128), nullable=False)
+    expiry = Column(String(8), nullable=False)
+    locked = Column(Boolean, nullable=False, default=False)
+    updated_at = Column(Float, default=time.time, onupdate=time.time)

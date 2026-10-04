@@ -670,6 +670,22 @@ def test_a2a_concurrent_settlement_binding_race(client):
     finally:
         db.close()
 
+def test_seed_contains_demo_accounts_and_card():
+    from src.models.db_models import Account, CardRecord
+    db = SessionLocal()
+    try:
+        checking = db.query(Account).filter(Account.id == "demo-checking").first()
+        assert checking is not None
+        assert checking.balance == 12485000
+        assert checking.currency == "INR"
+
+        card = db.query(CardRecord).filter(CardRecord.id == "card-2048").first()
+        assert card is not None
+        assert card.last_four == "2048"
+        assert card.locked is False
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main(["-v", __file__]))
