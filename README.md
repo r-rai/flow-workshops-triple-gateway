@@ -124,6 +124,11 @@ are isolated per session; signing out or restarting the process resets them.
 Sessions expire after 30 minutes. Run one API process for this in-memory demo.
 This is simulated authentication, not a production customer identity system.
 
+**Next planned work:** connect the customer Flo bot to a real hosted LLM through
+Gate 1 while keeping fictional banking data and the same Compose command.
+See the [implementation plan and agy handoff](docs/implementation/demo-real-llm-plan.md).
+This is not implemented yet; the current customer bot remains scripted.
+
 Flo Bank is the public brand throughout the UI, APIs, and workshop material.
 Existing `novabank` infrastructure identifiers (JWT audiences/issuer, OPA
 namespace, image tags, volumes, and database names) remain for compatibility

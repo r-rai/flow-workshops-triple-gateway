@@ -17,6 +17,17 @@
 
 ---
 
+## Next requested work: real LLM in the customer demo
+
+The user decided on 2026-10-04 that the customer-facing Flo bot should use real
+hosted inference. This integration is **pending**; the delivered UI is still
+scripted. W3's live LangGraph mode does not enable live customer chat.
+
+The [implementation plan and resume context](demo-real-llm-plan.md) records the
+approved direction, current baseline, proposed Gate 1/Compose integration,
+tests, and a copyable task for agy or a new chat. Keep the existing one-command
+Compose experience and fictional session-scoped banking data.
+
 ## Customer demo and current setup
 
 The Flo Bank login, account dashboard, scripted chatbot, and `demo` profile are
