@@ -4,6 +4,7 @@
   "platform": "Flo Bank Multi-Workshop Enterprise AI & API Gateway Platform",
   "profiles": [
     "demo",
+    "demo-enterprise",
     "w1",
     "w2",
     "w3",
@@ -95,6 +96,7 @@
   "architectural_notes": {
     "w3_langgraph_agent": "Compiled LangGraph state machine (src/worker/dispute_agent.py) supporting dual modes: live MiniMax reasoning via APISIX Gate 1 or deterministic offline replay fixtures, invoking allowlisted Gate 2/3 MCP tools and enforcing server-side governance.",
     "built_image_tags": "API, adapter, worker, and temporal images use local semantic tags 1.0.0; the customer demo uses flo-bank-demo:local. Dockerfiles use python:3.12-slim with pinned Python requirements. Third-party runtime image digests are listed in pinned_images.",
-    "customer_demo": "The demo profile runs a three-service topology (demo, demo-gateway, demo-inference) using fictional session fixtures and live MiniMax-M2.7 chat via APISIX Gate 1 with allowlisted session tools, or deterministic offline scripted mode. Workshop profiles serve the same UI through the core API. The customer simulation is separate from the LangGraph agent and enterprise ledger."
+    "customer_demo": "The demo profile runs a three-service topology (demo, demo-gateway, demo-inference) using fictional session fixtures and live MiniMax-M2.7 chat via APISIX Gate 1 with allowlisted session tools, or deterministic offline scripted mode. In DEMO_BACKEND_MODE=enterprise (or via the demo-enterprise profile), Flo Bank interacts in real time with APISIX Gate 3 (:9080/api/v1) for live customer account balances, card freeze/unfreeze mutations, and support case disputes with scoped JWT auth and distributed tracing."
   }
 }
+

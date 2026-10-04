@@ -118,19 +118,17 @@ If `.env` exists, ensure this value matches your chosen workshop profile.
 Use `demo` for the standalone simulation or a workshop profile for its
 infrastructure; each command uses the main Compose file.
 
-The demo uses fictional fixtures and deterministic responses. It does not call
-the live LLM, MCP tools, or enterprise ledger. Demo card controls and disputes
-are isolated per session; signing out or restarting the process resets them.
-Sessions expire after 30 minutes. Run one API process for this in-memory demo.
-This is simulated authentication, not a production customer identity system.
+The demo supports two backend modes:
+- **Simulated (`DEMO_BACKEND_MODE=simulated`, default):** Uses in-memory session fixtures and deterministic responses. Card controls and disputes are isolated per session; signing out or restarting resets them. Sessions expire after 30 minutes.
+- **Enterprise (`DEMO_BACKEND_MODE=enterprise`):** Directly queries and mutates Core Banking data via APISIX Gate 3 (`:9080/api/v1`) using cryptographic customer JWT authentication (`aud="novabank-api"`), full distributed trace propagation into Jaeger, and real database updates for card state and support case disputes. Start via `docker compose --profile demo-enterprise up -d --build`.
 
 **Real LLM Integration:** The customer Flo bot connects to a real hosted LLM
-(`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference`) while
-keeping fictional banking data strictly session-scoped and retaining the single Compose
-startup command (`docker compose --profile demo up -d --build`). When `MINIMAX_API_KEY`
-is configured in `.env`, Flo provides natural, tool-grounded AI conversation backed by
-session tools (`get_demo_accounts`, `get_demo_transactions`, `get_demo_spending`,
+(`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`)
+while retaining the single Compose startup command (`docker compose --profile demo up -d --build`).
+When `MINIMAX_API_KEY` is configured in `.env`, Flo provides natural, tool-grounded AI conversation backed by
+allowlisted banking tools (`get_demo_accounts`, `get_demo_transactions`, `get_demo_spending`,
 `get_demo_card`, `set_demo_card_state`, `create_demo_dispute`, `get_demo_disputes`).
+In enterprise mode, Flo's tools query and mutate real Core Banking database entities through APISIX Gate 3 in real time!
 For offline environments or tests without a key, explicit scripted mode
 (`DEMO_CHAT_MODE=scripted`) is supported. See the
 [implementation plan](docs/implementation/demo-real-llm-plan.md).

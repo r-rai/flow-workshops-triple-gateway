@@ -17,17 +17,20 @@
 
 ---
 
-## Delivered: Real LLM in the Customer Demo
+## Delivered: Real LLM & Dual-Mode Real API Gateway in the Customer Demo
 
 Status: **Delivered and fully verified** on branch `feat/flo-bank-real-llm`.
-- Customer Flo bot connects to real hosted inference (`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference`).
-- Banking data remains fictional and strictly session-scoped with integer minor unit precision (paise).
-- Maintained single Docker Compose startup command: `docker compose --profile demo up -d --build`.
+- Customer Flo bot connects to real hosted inference (`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`).
+- Dual-mode backend architecture:
+  - **Simulated Mode (`DEMO_BACKEND_MODE=simulated`, default)**: Standalone single-command Compose execution (`docker compose --profile demo up -d --build`) using in-memory session fixtures with integer minor unit precision (paise).
+  - **Enterprise Mode (`DEMO_BACKEND_MODE=enterprise`)**: Real-time integration with APISIX Gate 3 (`:9080/api/v1`), issuing customer JWTs (`sub="cust-maya"`, `aud="novabank-api"`), full distributed trace propagation into Jaeger, and live mutations against Core Banking SQLite/Postgres tables for cards (`/api/v1/cards/card-2048/state`) and support cases (`/api/v1/cases`). Runnable via `docker compose --profile demo-enterprise up -d --build`.
+- Dedicated demo fixtures (`demo-checking`, `demo-savings`, `card-2048`) in `seed/v1_seed.json` strictly isolated from workshop rehearsal state (`acc-101`, `case-501`).
 - Bounded turn loop (max 4 rounds, 8 tool calls) with staged session mutations committed only on turn completion.
 - Rejection of unknown tools, malformed arguments, and foreign transactions.
 - Zero silent fallback to scripted/mock when live mode errors or budget is exceeded.
-- 62 Python tests passing (including 13 dedicated live LLM tests), Playwright browser smoke test passing, and bounded live verification successfully executed against real MiniMax.
-- See the [implementation plan and resume context](demo-real-llm-plan.md).
+- 66 Python tests passing (including 15 dedicated live LLM tests), Playwright browser smoke test passing, and bounded live verification successfully executed against real MiniMax.
+- See the [real API gateway implementation plan](../superpowers/plans/2026-10-04-demo-real-api-gateway-plan.md) and [real LLM plan](demo-real-llm-plan.md).
+
 
 ## Customer demo and current setup
 

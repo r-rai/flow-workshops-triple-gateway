@@ -1,6 +1,6 @@
 # Flo Bank Workshop Delivery Plan
 
-Status: the workshop runtime, W3 LangGraph remediation, and Flo Bank customer demo are implemented on `main`. Separate live/replay W3 rehearsal evidence was recorded on 2026-10-04. The customer chatbot uses scripted responses independently of the workshop agent.
+Status: the workshop runtime, W3 LangGraph remediation, and Flo Bank customer demo are implemented on `main`. Separate live/replay W3 rehearsal evidence was recorded on 2026-10-04. The customer chatbot connects to real hosted inference (`MiniMax-M2.7`) via APISIX Gate 1 with allowlisted session tools, supports dual-mode backend execution (standalone simulated vs APISIX Gate 3 real Core Banking), and retains deterministic offline scripted mode for zero-key environments.
 Source session descriptions: [original brief](workshot.txt).
 
 ## Delivery model
