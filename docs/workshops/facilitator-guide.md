@@ -9,6 +9,27 @@ This guide provides complete instructions for instructors, facilitators, and ope
 
 ---
 
+## Customer UI demonstration
+
+Use the same Compose file as the workshop infrastructure:
+
+```bash
+docker compose --profile demo up -d --build
+```
+
+Open **http://localhost:8000**; the prefilled login is
+`maya@flobank.demo` / `flo-demo`. Show a balance query, card freeze/unfreeze,
+and a simulated dispute. This scripted Flo bot is separate from the W3
+LangGraph investigation agent. In a running workshop profile, the UI is also
+available through APISIX at **http://localhost:9080**. No additional UI service
+or scripts are needed for that workshop route.
+
+Use `docker compose stop demo` to stop the standalone simulation. Use the
+existing launcher below for workshop readiness, verification, and switching.
+Current service sets and configured limits are in the
+[VPS runbook](../setup/vps-setup-guide.md); the [participant guide](../setup/participant-requirements.md)
+contains laptop setup commands.
+
 ## ⚙️ VPS Architecture & Resource Protection Policy
 
 ### Resource Budget & Coexistence Invariant
@@ -32,7 +53,7 @@ This guide provides complete instructions for instructors, facilitators, and ope
    ```bash
    ./scripts/workshop preflight
    ```
-   *Verifies Docker daemon, Docker Compose v2, Python 3.12+, OpenSSL, curl, and memory headroom.*
+   *Checks Docker/Compose, Python, host memory and disk, gateway port 9080, and pinned image digests.*
 
 2. **Switch to Session Profile**:
    ```bash
@@ -45,8 +66,8 @@ This guide provides complete instructions for instructors, facilitators, and ope
    ./scripts/workshop verify <w1|w2|w3|w4>
    ```
 
-4. **Verify Offline Replay Provider Fallback**:
-   The platform defaults to `USE_REPLAY_FIXTURES=true`, which utilizes deterministic, zero-cost recorded model completions when third-party LLM providers (e.g. Minimax, Anthropic, OpenAI) are unavailable, rate-limited, or unkeyed.
+4. **Verify Offline Replay Provider Fallback (W2–W4)**:
+   The platform defaults to `USE_REPLAY_FIXTURES=true`, which serves deterministic model fixtures without provider calls. W1 has no Gate 1 inference route, so skip this check for W1. The customer Flo bot remains scripted in every profile.
    ```bash
    curl -s -X POST http://127.0.0.1:9080/ai/chat/completions \
      -H "Content-Type: application/json" \
@@ -77,7 +98,7 @@ This guide provides complete instructions for instructors, facilitators, and ope
 2. **Deterministic Argument Evaluation (Gate 2)**: Open Policy Agent (OPA) strictly evaluates extracted runtime arguments (`account_id`, `destination_account`, `amount`) before tools can be invoked, blocking prohibited beneficiaries (`fraud-account-66`) and enforcing tiered risk approvals.
 3. **Fail-Closed Resiliency**: If OPA crashes, times out, or becomes partitioned, the adapter strictly denies execution with `POLICY_TIMEOUT_FAIL_CLOSED`.
 4. **Anti-Self-Approval**: Agents are strictly prohibited from approving their own financial proposals (`403 Forbidden`). Only authorized manager principals can approve proposals.
-5. **Durable Pause & Zero Duplicate Effects**: Temporal workflows maintain durable history across worker crashes. Settle activities use stable backend idempotency keys (`settle-dispute-{case_id}`) ensuring exactly-once execution.
+5. **Durable Pause & Zero Duplicate Effects**: Temporal workflows maintain durable history across worker crashes. Settle activities use stable backend idempotency keys (`settle-dispute-{case_id}`) preventing duplicate settlement payments when activities retry.
 6. **Owner-Scoped A2A Isolation**: Delegated tasks in the A2A registry are strictly scoped to the calling principal's identity; unauthorized agents attempting to query or hijack tasks are denied with `HTTP 403`.
 
 ---

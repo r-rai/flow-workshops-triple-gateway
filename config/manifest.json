@@ -1,8 +1,14 @@
 {
   "manifest_version": "1.0.0",
-  "generated_at": "2026-10-03T10:52:00Z",
+  "generated_at": "2026-10-04T09:58:19Z",
   "platform": "Flo Bank Multi-Workshop Enterprise AI & API Gateway Platform",
-  "profiles": ["w1", "w2", "w3", "w4"],
+  "profiles": [
+    "demo",
+    "w1",
+    "w2",
+    "w3",
+    "w4"
+  ],
   "pinned_images": {
     "apisix": {
       "image": "apache/apisix:3.19.0-debian",
@@ -31,6 +37,11 @@
     }
   },
   "built_images": {
+    "demo": {
+      "tag": "flo-bank-demo:local",
+      "dockerfile": "docker/api/Dockerfile",
+      "memory_limit": "256m"
+    },
     "api": {
       "tag": "novabank/api:1.0.0",
       "dockerfile": "docker/api/Dockerfile",
@@ -83,7 +94,7 @@
   ],
   "architectural_notes": {
     "w3_langgraph_agent": "Compiled LangGraph state machine (src/worker/dispute_agent.py) supporting dual modes: live MiniMax reasoning via APISIX Gate 1 or deterministic offline replay fixtures, invoking allowlisted Gate 2/3 MCP tools and enforcing server-side governance.",
-    "built_image_tags": "Built images (api, adapter, worker, temporal) use semantic tags 1.0.0 with pinned base image python:3.12-slim digest and requirements.txt."
+    "built_image_tags": "API, adapter, worker, and temporal images use local semantic tags 1.0.0; the customer demo uses flo-bank-demo:local. Dockerfiles use python:3.12-slim with pinned Python requirements. Third-party runtime image digests are listed in pinned_images.",
+    "customer_demo": "The demo profile runs src.demo.app:app using fictional session fixtures and scripted chat; workshop profiles serve the same UI through the core API. The customer simulation is separate from the LangGraph agent and enterprise ledger."
   }
 }
-

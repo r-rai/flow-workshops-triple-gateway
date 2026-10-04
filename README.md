@@ -16,14 +16,15 @@ event-driven agents, and defense-in-depth security.
 
 ## Architecture
 
-Apache APISIX is the leading unified-gateway candidate: 1. **Gate 1 ---
-Inference:** agent-to-LLM. 2. **Gate 2 --- Capability:**
-agent-to-MCP/tool. 3. **Gate 3 --- API:** tool-to-enterprise API.
+Apache APISIX provides three logical security boundaries: **Gate 1** for
+agent-to-LLM inference, **Gate 2** for MCP/tool capabilities, and **Gate 3** for
+tool-to-enterprise API calls.
 
-Supporting components: FastAPI, LangGraph, OPA, Keycloak, Kafka,
-Temporal, PostgreSQL/SQLite, OpenTelemetry and Jaeger. Workshops 2–4 add
-a lightweight MCP adapter for argument policy and downstream identity.
-Kafka runs only in Workshop 3; Redis is not required.
+Supporting components: FastAPI, LangGraph, OPA, Kafka, Temporal,
+PostgreSQL/SQLite, OpenTelemetry and Jaeger. Workshops 2–4 add a lightweight
+MCP adapter for argument policy and downstream identity. The current runtime
+uses signed lab JWTs and restricted token exchange; Keycloak is not a Compose
+service. Kafka is included in the W3 and W4 profiles; Redis is not required.
 
 ## Documentation
 
@@ -57,6 +58,16 @@ card, and a scripted banking assistant. Try a balance query, spending summary,
 card freeze/unfreeze, transaction dispute, or dispute-status check.
 
 **With Docker Compose (recommended for laptops):**
+
+For a fresh laptop checkout:
+
+```bash
+git clone --branch main https://github.com/r-rai/flow-workshops-triple-gateway.git
+cd flow-workshops-triple-gateway
+```
+
+For an existing checkout, run `git switch main` and
+`git pull --ff-only origin main` before starting the demo.
 
 The main `docker-compose.yml` includes a `demo` profile. From the repository
 root, start the Flo Bank dashboard and chatbot with one command:

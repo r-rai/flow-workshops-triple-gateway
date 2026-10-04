@@ -1,38 +1,46 @@
 # Lean Workshop Runtime
 
-Status: planned, not benchmarked. The [VPS guide](../setup/vps-setup-guide.md)
-is the source of truth for memory limits, networking, and operator behavior.
+The current runtime is implemented in the main `docker-compose.yml`. See the
+[VPS runbook](../setup/vps-setup-guide.md) for service sets, actual configured
+memory limits, ingress, and operator commands. Recorded Linux rehearsals are
+available; the Windows/WSL2 participant memory benchmark remains unverified.
 
-Target participant: Windows 11, 16 GB RAM, four CPU cores, WSL2 capped near
-5 GB. Target presenter: one active workshop within a 6 GB total host budget.
-Neither envelope is a proven capacity claim until rehearsed.
+The laptop target for full workshop labs is Windows 11, 16 GB RAM, four CPU
+cores, and WSL2 capped near 5 GB. The presenter operating budget is 6 GB total,
+including existing services and the OS.
 
-| Component | W1 | W2 | W3 | W4 |
-|---|---|---|---|---|
-| APISIX standalone | Yes | Yes | Yes | Yes |
-| FastAPI | Yes | Yes | Yes | Yes |
-| Agent/client or worker | Yes | Yes | Yes | Yes |
-| Curated MCP adapter | No | Yes | Yes | Yes |
-| SQLite application data | Yes | No | No | No |
-| OPA | No | Yes | Yes | Yes |
-| Keycloak | No | Yes | No | Yes |
-| PostgreSQL | No | Yes | Yes | Yes |
-| Kafka KRaft | No | No | Yes | No |
-| Temporal development server, persistent SQLite | No | No | Yes | Yes |
-| OTel Collector and Jaeger | Optional presenter add-on | Yes | Yes | Yes |
+| Component | Demo | W1 | W2 | W3 | W4 |
+|---|---|---|---|---|---|
+| Customer UI and scripted bot | Yes | Yes, via API | Yes, via API | Yes, via API | Yes, via API |
+| APISIX standalone | No | Yes | Yes | Yes | Yes |
+| Core banking API | No | Yes | Yes | Yes | Yes |
+| Curated MCP adapter | No | No | Yes | Yes | Yes |
+| OPA | No | No | Yes | Yes | Yes |
+| PostgreSQL service | No | No | Yes | Yes | Yes |
+| Kafka KRaft | No | No | No | Yes | Yes |
+| Temporal dev server with persistent SQLite | No | No | No | Yes | Yes |
+| Jaeger | No | No | Yes | Yes | Yes |
+| Background worker | No | No | No | Yes | Yes |
 
-Redis is not required. Database transactions handle idempotency. Kafka is
-exclusive to W3. No local LLM or full observability stack is required.
-W1 optional tracing is outside its base budget and must be measured if enabled.
+The API defaults to SQLite; selecting PostgreSQL requires an explicit
+`DATABASE_URL`. Keycloak and a separate OTel Collector are not included in the
+current Compose service set. Lab JWTs and restricted token exchange provide the
+workshop identity flow; instrumentation exports directly to Jaeger. Redis and
+a local LLM are not required.
 
-Initial summed container limits: W1 1,152 MiB; W2 3,072 MiB; W3/W4 3,584 MiB.
-Leave remaining host capacity for the OS, Docker, existing services and peaks.
+Summed configured container limits are 256 MiB for `demo`, 640 MiB for W1,
+1,664 MiB for W2, and 3,072 MiB for W3/W4. These are caps, not measured usage or
+host-capacity guarantees. Leave headroom for Docker, the OS, and other services.
 
-Use prebuilt images and bounded logs, traces, model calls and JVM memory.
-SQLite is embedded. W2/W4 use real identity; W3 uses separately scoped signed
-lab credentials with the simplification stated explicitly.
+Start the customer simulation with
+`docker compose --profile demo up -d --build`; it needs no extra shell scripts
+or provider keys. Start a workshop with its matching profile and gateway
+`ACTIVE_PROFILE` setting. The optional `scripts/workshop` launcher handles
+warm-up and profile switching. Compose profile activation alone does not stop
+services from the prior workshop.
 
-The planned entrypoint is `./scripts/workshop start w1`. Switching must stop
-the prior profile; Compose profile activation alone does not do this. The
-presenter VPS is a demonstration and limited fallback environment, with an
-initial cap of two isolated concurrent fallback runs pending load testing.
+The standalone customer bot uses fictional session state and never calls the
+enterprise ledger or model provider. Workshop W3 runs a separate bounded
+LangGraph investigation inside a Temporal activity, with explicit replay/live
+modes and deterministic downstream authorization. The initial presenter
+fallback limit is two isolated concurrent runs, pending load testing.

@@ -3,9 +3,9 @@
 ## 📌 Executive Summary
 
 - **Status**: **Implementation Remediated & Fully Re-Verified** (All findings from the initial audit and the 2026-10-03 re-audit fully resolved, hardened, and verified).
-- **Active Task Branch**: [`feat/implement-novabank-platform`](https://github.com/r-rai/flow-workshops-triple-gateway/tree/feat/implement-novabank-platform)
-- **Base Branch**: `main` (commit `2bcc587`)
-- **Remote Policy**: Pushed cleanly to origin without force-pushing or merging.
+- **Current delivery branch**: [`main`](https://github.com/r-rai/flow-workshops-triple-gateway/tree/main). The implementation and demo were merged and pushed at `8dcae8b`.
+- **Historical implementation branch**: `feat/implement-novabank-platform`, based on `2bcc587`.
+- **Remote policy**: normal commits and pushes; do not force-push shared history.
 - **Primary References**:
   - Initial Audit Report: [`docs/audits/2026-10-03-novabank-audit.md`](../audits/2026-10-03-novabank-audit.md)
   - Re-Audit Report: [`docs/audits/2026-10-03-novabank-reaudit.md`](../audits/2026-10-03-novabank-reaudit.md)
@@ -16,6 +16,23 @@
   - Compatibility Spike Report: [`docs/poc/01-compatibility-spikes-report.md`](../poc/01-compatibility-spikes-report.md)
 
 ---
+
+## Customer demo and current setup
+
+The Flo Bank login, account dashboard, scripted chatbot, and `demo` profile are
+included in the original `docker-compose.yml`:
+
+```bash
+docker compose --profile demo up -d --build
+```
+
+Open **http://localhost:8000** and use `maya@flobank.demo` / `flo-demo`.
+The customer simulation is isolated from the enterprise ledger and model
+provider. Workshop profiles still serve this UI through APISIX at port 9080.
+See [participant setup](../setup/participant-requirements.md) and the
+[VPS runbook](../setup/vps-setup-guide.md) for current commands and limits.
+The audit/remediation summaries below preserve the historical implementation
+record; their counts and timestamps describe the recorded runs.
 
 ## 🗂️ Work Package Delivery & Git Traceability
 
@@ -39,7 +56,7 @@ To review and audit the implementation, follow these steps:
 
 ### 1. Inspect Git Branch & Commit Hygiene
 ```bash
-git checkout feat/implement-novabank-platform
+git switch main
 git log --oneline -n 10
 git status -s
 ```
