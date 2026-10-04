@@ -2,6 +2,7 @@ import os
 import json
 import time
 import asyncio
+import re
 import httpx
 from typing import Dict, Any, Tuple
 from fastapi import FastAPI, Request, Response, HTTPException, status
@@ -570,7 +571,161 @@ async def ai_chat_completions(req: Request):
 
         # Replay provider path
         if has_tools:
-            # Inspect tool calling sequence
+            tool_names = {t.get("function", {}).get("name") for t in tools if isinstance(t, dict)}
+            is_demo = any(str(name).startswith("get_demo_") or str(name).startswith("set_demo_") or str(name).startswith("create_demo_") for name in tool_names)
+
+            if is_demo:
+                tool_messages = [m for m in messages if m.get("role") == "tool"]
+                last_user_msg = ""
+                for m in reversed(messages):
+                    if m.get("role") == "user" and isinstance(m.get("content"), str):
+                        last_user_msg = m.get("content", "").lower()
+                        break
+
+                if not tool_messages:
+                    actual_tokens = 50
+                    call_id = f"call_demo_{int(time.time()*1000)}"
+                    if any(w in last_user_msg for w in ["balance", "account", "paise", "money", "how much"]):
+                        fn_call = {"name": "get_demo_accounts", "arguments": "{}"}
+                    elif any(w in last_user_msg for w in ["freeze", "lock"]):
+                        fn_call = {"name": "set_demo_card_state", "arguments": json.dumps({"locked": True})}
+                    elif any(w in last_user_msg for w in ["unfreeze", "unlock"]):
+                        fn_call = {"name": "set_demo_card_state", "arguments": json.dumps({"locked": False})}
+                    elif "card" in last_user_msg:
+                        fn_call = {"name": "get_demo_card", "arguments": "{}"}
+                    elif any(w in last_user_msg for w in ["dispute", "unrecognized", "fraud", "tx-"]):
+                        tx_match = re.search(r'tx-\d+', last_user_msg)
+                        target_tx = tx_match.group(0) if tx_match else "tx-1004"
+                        fn_call = {"name": "create_demo_dispute", "arguments": json.dumps({"transaction_id": target_tx})}
+                    elif any(w in last_user_msg for w in ["spending", "spent", "largest"]):
+                        fn_call = {"name": "get_demo_spending", "arguments": "{}"}
+                    elif any(w in last_user_msg for w in ["transaction", "recent", "activity", "history", "statement"]):
+                        fn_call = {"name": "get_demo_transactions", "arguments": "{}"}
+                    else:
+                        actual_tokens = 45
+                        content = (
+                            "Hello Maya! I'm Flo, your banking companion. "
+                            "I can help you check your balances, review recent transactions and spending, "
+                            "manage debit card controls, or file a dispute on an unrecognized charge. "
+                            "What would you like to explore today?"
+                        )
+                        return JSONResponse({
+                            "id": f"chatcmpl-demo-reply-{int(time.time())}",
+                            "object": "chat.completion",
+                            "created": int(time.time()),
+                            "model": "novabank-replay-fixture",
+                            "choices": [{
+                                "index": 0,
+                                "message": {"role": "assistant", "content": content},
+                                "finish_reason": "stop"
+                            }],
+                            "usage": {
+                                "prompt_tokens": 40,
+                                "completion_tokens": 40,
+                                "total_tokens": actual_tokens,
+                                "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
+                                "budget_limit": INFERENCE_BUDGET_TOKENS
+                            }
+                        })
+
+                    return JSONResponse({
+                        "id": f"chatcmpl-demo-tool-{int(time.time())}",
+                        "object": "chat.completion",
+                        "created": int(time.time()),
+                        "model": "novabank-replay-fixture",
+                        "choices": [{
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [{
+                                    "id": call_id,
+                                    "type": "function",
+                                    "function": fn_call
+                                }]
+                            },
+                            "finish_reason": "tool_calls"
+                        }],
+                        "usage": {
+                            "prompt_tokens": 40,
+                            "completion_tokens": 40,
+                            "total_tokens": actual_tokens,
+                            "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
+                            "budget_limit": INFERENCE_BUDGET_TOKENS
+                        }
+                    })
+
+                # Round 2: Synthesize assistant response from tool result
+                actual_tokens = 70
+                last_tool = tool_messages[-1]
+                tool_name = last_tool.get("name", "")
+                try:
+                    tool_data = json.loads(last_tool.get("content", "{}"))
+                except Exception:
+                    tool_data = {}
+
+                if tool_name == "get_demo_accounts":
+                    accs = tool_data.get("accounts", [])
+                    if accs:
+                        lines = [f"- **{a.get('name', 'Account')}** ({a.get('number', '')}): {a.get('formatted_balance', '₹' + str(a.get('balance_paise', 0)/100))}" for a in accs]
+                        total = sum(a.get("balance_paise", 0) for a in accs)
+                        content = f"Here are your current balances, Maya:\n\n" + "\n".join(lines) + f"\n\n**Total across accounts:** ₹{total/100:,.2f}"
+                    else:
+                        content = "Here are your current balances, Maya:\n\n- **Everyday account** (•••• 2048): ₹1,24,850.00\n- **Savings pocket** (•••• 8821): ₹3,50,000.00\n\n**Total across accounts:** ₹4,74,850.00"
+                elif tool_name == "set_demo_card_state":
+                    locked = tool_data.get("card_locked", True)
+                    status_str = "frozen" if locked else "active"
+                    content = f"Done! Your debit card ending in **2048** is now **{status_str}**. No charges can be made with this card until you unfreeze it."
+                elif tool_name == "get_demo_card":
+                    locked = tool_data.get("locked", False)
+                    status_str = "frozen" if locked else "active"
+                    content = f"Your debit card ending in **2048** is currently **{status_str}**."
+                elif tool_name == "create_demo_dispute":
+                    case = tool_data.get("case", {})
+                    c_id = case.get("id", "DEMO-1001")
+                    merchant = case.get("merchant", "Stream+")
+                    amt = case.get("formatted_amount", "₹2,499.00")
+                    content = f"I've filed simulated dispute **{c_id}** for your {amt} charge at {merchant}. Our disputes team will review the transaction within 2 business days."
+                elif tool_name == "get_demo_spending":
+                    tot = tool_data.get("formatted_total", "₹5,489.00")
+                    cnt = tool_data.get("charge_count", 4)
+                    largest = tool_data.get("largest_charge", {})
+                    largest_str = f" The largest charge was {largest.get('formatted_amount', '₹2,499.00')} for {largest.get('merchant', 'Stream+')}." if largest else ""
+                    content = f"Your total recent spending is {tot} across {cnt} debit charges.{largest_str}"
+                elif tool_name == "get_demo_transactions":
+                    content = (
+                        "Here are your recent transactions, Maya:\n\n"
+                        "| Date | Merchant | Category | Amount |\n"
+                        "|---|---|---|---|\n"
+                        "| 2026-10-03 | Acme Studio | Salary | +₹85,000.00 |\n"
+                        "| 2026-10-03 | Blue Tokai | Food & drink | -₹480.00 |\n"
+                        "| 2026-10-02 | Fresh Basket | Groceries | -₹1,860.00 |\n"
+                        "| 2026-10-01 | Stream+ | Subscription | -₹2,499.00 |\n"
+                        "| 2026-09-30 | Metro Transit | Travel | -₹650.00 |"
+                    )
+                else:
+                    content = "I've checked that for you. Is there anything else about your accounts or cards I can assist with?"
+
+                return JSONResponse({
+                    "id": f"chatcmpl-demo-finish-{int(time.time())}",
+                    "object": "chat.completion",
+                    "created": int(time.time()),
+                    "model": "novabank-replay-fixture",
+                    "choices": [{
+                        "index": 0,
+                        "message": {"role": "assistant", "content": content},
+                        "finish_reason": "stop"
+                    }],
+                    "usage": {
+                        "prompt_tokens": 50,
+                        "completion_tokens": 60,
+                        "total_tokens": actual_tokens,
+                        "accumulated_budget_tokens": _accumulated_tokens - reservation + actual_tokens,
+                        "budget_limit": INFERENCE_BUDGET_TOKENS
+                    }
+                })
+
+            # Inspect tool calling sequence for W3 LangGraph dispute agent
             tool_messages = [m for m in messages if m.get("role") == "tool"]
             prompt_text = " ".join([m.get("content", "") for m in messages if isinstance(m.get("content"), str)])
             case_id = "case-501"
