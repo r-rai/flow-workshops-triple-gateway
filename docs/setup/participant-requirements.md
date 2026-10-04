@@ -32,7 +32,7 @@ and sign in with `maya@flobank.demo` / `flo-demo` (already filled in).
 
 Try a balance query, recent transactions, card freeze/unfreeze, and
 `Dispute tx-1004`, followed by a dispute-status query. When configured with
-`MINIMAX_API_KEY` in `.env`, the assistant connects to live inference (`MiniMax-M2.7`)
+`MINIMAX_API_KEY` in `.env`, the assistant connects to live inference with **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`)
 via APISIX Gate 1 (`demo-gateway`); in offline environments, it falls back to
 deterministic scripted replies.
 
@@ -101,7 +101,7 @@ global preflight also requires the pinned third-party images from W2–W4; run
 starting services. Prepare the Python environment described in the
 [VPS runbook](vps-setup-guide.md) before using the launcher.
 
-The customer bot connects to live hosted inference (`MiniMax-M2.7`) via APISIX
+The customer bot connects to live hosted inference with **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`) via APISIX
 Gate 1 when `MINIMAX_API_KEY` is present, and falls back gracefully to scripted
 replies in offline environments. The W3 investigation agent is a separate LangGraph
 workflow: replay is the default; live inference requires a participant-owned provider

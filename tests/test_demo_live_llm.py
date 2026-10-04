@@ -75,7 +75,7 @@ def test_normal_balance_question_with_mock_gateway(live_client, monkeypatch):
                     "id": "mock-round-1",
                     "object": "chat.completion",
                     "created": int(time.time()),
-                    "model": "MiniMax-M2.7",
+                    "model": "MiniMax-M2.7-highspeed",
                     "choices": [{
                         "index": 0,
                         "message": {
@@ -104,7 +104,7 @@ def test_normal_balance_question_with_mock_gateway(live_client, monkeypatch):
                     "id": "mock-round-2",
                     "object": "chat.completion",
                     "created": int(time.time()),
-                    "model": "MiniMax-M2.7",
+                    "model": "MiniMax-M2.7-highspeed",
                     "choices": [{
                         "index": 0,
                         "message": {
@@ -431,7 +431,7 @@ def test_status_endpoint_scripted_and_live(live_client, monkeypatch):
             "status": "ready",
             "mode": "live",
             "provider_configured": True,
-            "model": "MiniMax-M2.7",
+            "model": "MiniMax-M2.7-highspeed",
             "headroom_tokens": 50000,
         })
     monkeypatch.setattr(httpx.AsyncClient, "get", mock_get)
@@ -442,7 +442,7 @@ def test_status_endpoint_scripted_and_live(live_client, monkeypatch):
     assert data["chat_mode"] == "live"
     assert data["configured"] is True
     assert data["available"] is True
-    assert data["model"] == "MiniMax-M2.7"
+    assert data["model"] == "MiniMax-M2.7-highspeed"
 
     # Scripted mode
     monkeypatch.setenv("DEMO_CHAT_MODE", "scripted")

@@ -1,4 +1,4 @@
-# Workshop 4 Worksheet: The Day the Agent Broke the Bank – Triple-Gate Architecture & A2A Security
+# Workshop 4 Worksheet: The Day the Agent Broke the Bank: Implementing Triple-Gate Architecture & A2A Security for Autonomous AI Workloads
 
 **Duration**: 135 Minutes  
 **Profile**: `w4`  

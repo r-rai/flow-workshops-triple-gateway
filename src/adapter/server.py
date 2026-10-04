@@ -440,7 +440,7 @@ async def get_ai_status():
         "status": "ready",
         "mode": "replay" if use_replay else "live",
         "use_replay_fixtures": use_replay,
-        "model": os.getenv("LLM_MODEL", "MiniMax-M2.7"),
+        "model": os.getenv("LLM_MODEL", "MiniMax-M2.7-highspeed"),
         "provider_configured": provider_ready if not use_replay else True,
         "accumulated_tokens": current,
         "budget_limit": INFERENCE_BUDGET_TOKENS,
@@ -501,7 +501,7 @@ async def ai_chat_completions(req: Request):
                 }, status_code=503)
 
             provider_url = os.getenv("LLM_PROVIDER_URL", "https://api.minimax.io/v1/chat/completions")
-            model = body.get("model") or os.getenv("LLM_MODEL", "MiniMax-M2.7")
+            model = body.get("model") or os.getenv("LLM_MODEL", "MiniMax-M2.7-highspeed")
 
             payload = {
                 "model": model,

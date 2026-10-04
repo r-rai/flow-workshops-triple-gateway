@@ -20,7 +20,7 @@
 ## Delivered: Real LLM & Dual-Mode Real API Gateway in the Customer Demo
 
 Status: **Delivered and fully verified** on branch `feat/flo-bank-real-llm`.
-- Customer Flo bot connects to real hosted inference (`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`).
+- Customer Flo bot connects to real hosted inference with **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`).
 - Dual-mode backend architecture:
   - **Simulated Mode (`DEMO_BACKEND_MODE=simulated`, default)**: Standalone single-command Compose execution (`docker compose --profile demo up -d --build`) using in-memory session fixtures with integer minor unit precision (paise).
   - **Enterprise Mode (`DEMO_BACKEND_MODE=enterprise`)**: Real-time integration with APISIX Gate 3 (`:9080/api/v1`), issuing customer JWTs (`sub="cust-maya"`, `aud="novabank-api"`), full distributed trace propagation into Jaeger, and live mutations against Core Banking SQLite/Postgres tables for cards (`/api/v1/cards/card-2048/state`) and support cases (`/api/v1/cases`). Runnable via `docker compose --profile demo-enterprise up -d --build`.
@@ -339,7 +339,7 @@ In response to the final audit ([`docs/audits/2026-10-03-novabank-final-audit.md
   - **Status**: **Fully Implemented & Remediated**.
   - **Compiled Graph Architecture**: State machine defined in [`src/worker/dispute_agent.py`](../../src/worker/dispute_agent.py) (`DisputeResolutionWorkflow` -> `diagnose_and_propose_resolution`). The exact same compiled graph executes across both live and replay modes.
   - **Dual Mode Support**:
-    - **Live Mode (`USE_REPLAY_FIXTURES=false`)**: Egresses via APISIX Gate 1 (`/ai/chat/completions`) to `https://api.minimax.io/v1/chat/completions` using MiniMax-M2.7, executing multi-turn tool calling against allowlisted Gate 2 MCP tools (`get_case`, `get_account`).
+    - **Live Mode (`USE_REPLAY_FIXTURES=false`)**: Egresses via APISIX Gate 1 (`/ai/chat/completions`) to `https://api.minimax.io/v1/chat/completions` using MiniMax 2.7 Fast (`MiniMax-M2.7-highspeed`), executing multi-turn tool calling against allowlisted Gate 2 MCP tools (`get_case`, `get_account`).
     - **Offline Replay Mode (`USE_REPLAY_FIXTURES=true`)**: Gate 1 emits deterministic, multi-turn reasoning and tool-calling fixtures feeding the same compiled graph for zero-cost offline demonstration.
   - **Investigation Failure & Anti-Fabrication Hardening**:
     - Removed heuristic canned proposal fallbacks from live diagnosis. Malformed model outputs, provider errors, and exhausted iterations produce an explicit failure (`status: "FAILED"` / `INVESTIGATION_FAILED`), with zero payable proposal.
@@ -358,7 +358,7 @@ grep -q "MINIMAX_API_KEY" .env && echo "MiniMax credential configured"
 
 # 2. Set mode to live provider egress
 export USE_REPLAY_FIXTURES=false
-export LLM_MODEL=MiniMax-M2.7
+export LLM_MODEL=MiniMax-M2.7-highspeed
 
 # 3. Switch or restart workshop profile W3
 ./scripts/workshop switch w3

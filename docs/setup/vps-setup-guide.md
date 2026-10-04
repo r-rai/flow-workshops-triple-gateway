@@ -24,7 +24,7 @@ docker compose --profile demo up -d --build
 Open **http://localhost:8000** and use `maya@flobank.demo` / `flo-demo`.
 The standalone profile runs a three-service topology (`demo`, `demo-gateway`, `demo-inference`).
 When configured with `MINIMAX_API_KEY` in `.env`, Flo connects to live hosted LLM inference
-(`MiniMax-M2.7`) via APISIX Gate 1; otherwise, it falls back gracefully to deterministic scripted replies.
+(`MiniMax-M2.7-highspeed` - MiniMax 2.7 Fast) via APISIX Gate 1; otherwise, it falls back gracefully to deterministic scripted replies.
 Fictional banking data is session-scoped. Sessions expire after 30 minutes and reset on sign-out or process restart.
 
 For live APISIX Gate 3 integration against real Core Banking SQLite/PostgreSQL data:

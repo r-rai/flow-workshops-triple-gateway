@@ -2,10 +2,10 @@
 
 ## 📌 Executive Overview
 This guide provides complete instructions for instructors, facilitators, and operators delivering the 4-workshop enterprise series:
-1. **Workshop 1**: The Agentic API Evolution – Turning Core Banking APIs into MCP (45 min)
-2. **Workshop 2**: Beyond API Governance – Securing AI Agents & MCP (45 min)
-3. **Workshop 3**: Architecting the Agentic Enterprise – Middleware, Durable State, and Event-Driven AI (45 min)
-4. **Workshop 4**: The Day the Agent Broke the Bank – Triple-Gate Architecture and A2A Security (135 min)
+1. **Topic 1 (W1)**: Modernizing APIs for AI Agents: From OpenAPI to MCP (45 min)
+2. **Topic 2 (W2)**: Beyond API Governance: Securing AI Agents, MCP Servers, and Enterprise Integrations (45 min)
+3. **Topic 3 (W3)**: Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI (45 min)
+4. **Topic 4 (W4)**: The Day the Agent Broke the Bank: Implementing Triple-Gate Architecture & A2A Security for Autonomous AI Workloads (135 min)
 
 ---
 
@@ -19,7 +19,7 @@ docker compose --profile demo up -d --build
 
 Open **http://localhost:8000**; the prefilled login is
 `maya@flobank.demo` / `flo-demo`. Demonstrate a balance query, card freeze/unfreeze,
-and a dispute. The customer Flo bot connects to live inference (`MiniMax-M2.7`)
+and a dispute. The customer Flo bot connects to live inference with **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`)
 via APISIX Gate 1 when `MINIMAX_API_KEY` is set in `.env`, or falls back to
 deterministic scripted replies.
 

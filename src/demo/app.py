@@ -207,7 +207,7 @@ async def chat_status():
         'mode': mode_label,
         'configured': gw_status.get('configured', False),
         'available': gw_status.get('available', False),
-        'model': gw_status.get('model', 'MiniMax-M2.7'),
+        'model': gw_status.get('model', 'MiniMax-M2.7-highspeed'),
         'headroom_tokens': gw_status.get('headroom_tokens'),
     }
 

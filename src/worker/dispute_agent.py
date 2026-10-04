@@ -11,7 +11,7 @@ AI_GATEWAY_URL = os.getenv("AI_GATEWAY_URL", "http://apisix:9080/ai/chat/complet
 MCP_URL = os.getenv("MCP_URL", "http://apisix:9080/mcp")
 GATE3_KEY = os.getenv("GATE3_API_KEY", "gate3-secret-token")
 MCP_AUDIENCE = os.getenv("MCP_AUDIENCE", "novabank-mcp")
-LLM_MODEL = os.getenv("LLM_MODEL", "MiniMax-M2.7")
+LLM_MODEL = os.getenv("LLM_MODEL", "MiniMax-M2.7-highspeed")
 MAX_ITERATIONS = 6
 MAX_TOOL_CALLS = 8
 

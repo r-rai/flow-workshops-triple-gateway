@@ -125,7 +125,7 @@ The demo supports two backend modes:
 - **Enterprise (`DEMO_BACKEND_MODE=enterprise`):** Directly queries and mutates Core Banking data via APISIX Gate 3 (`:9080/api/v1`) using cryptographic customer JWT authentication (`aud="novabank-api"`), full distributed trace propagation into Jaeger, and real database updates for card state and support case disputes. Start via `docker compose --profile demo-enterprise up -d --build`.
 
 **Real LLM Integration:** The customer Flo bot connects to a real hosted LLM
-(`MiniMax-M2.7`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`)
+(**MiniMax 2.7 Fast** - `MiniMax-M2.7-highspeed`) through APISIX Gate 1 (`demo-gateway` -> `demo-inference` or workshop `apisix` -> `adapter`)
 while retaining the single Compose startup command (`docker compose --profile demo up -d --build`).
 When `MINIMAX_API_KEY` is configured in `.env`, Flo provides natural, tool-grounded AI conversation backed by
 allowlisted banking tools (`get_demo_accounts`, `get_demo_transactions`, `get_demo_spending`,

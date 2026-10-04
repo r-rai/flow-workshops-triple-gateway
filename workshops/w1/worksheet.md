@@ -1,8 +1,8 @@
-# Workshop 1 Exercise Worksheet: Modernizing APIs for AI Agents (OpenAPI -> MCP)
+# Workshop 1 Exercise Worksheet: Modernizing APIs for AI Agents: From OpenAPI to MCP
 
 **Duration:** 45 minutes  
 **Profile:** `w1`  
-**Prerequisites:** Docker Engine 24+, Python 3.10+, free port 9080.
+**Prerequisites:** Docker Engine 24+, Python 3.12+, free port 9080.
 
 ---
 
@@ -18,7 +18,7 @@
 
 From the repository root, start the profile and verify its status:
 ```bash
-./scripts/workshop start w1
+./scripts/workshop switch w1
 ./scripts/workshop status
 ```
 

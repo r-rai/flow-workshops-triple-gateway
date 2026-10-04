@@ -1,4 +1,4 @@
-# Workshop 2 Worksheet: Beyond API Governance – Securing AI Agents & MCP
+# Workshop 2 Worksheet: Beyond API Governance: Securing AI Agents, MCP Servers, and Enterprise Integrations
 
 **Duration**: 45 Minutes  
 **Profile**: `w2`  

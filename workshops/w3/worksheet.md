@@ -1,4 +1,4 @@
-# Workshop 3 Worksheet: Architecting the Agentic Enterprise – Middleware, Durable State, and Event-Driven AI
+# Workshop 3 Worksheet: Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI
 
 **Duration**: 45 Minutes  
 **Profile**: `w3`  
