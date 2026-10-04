@@ -33,15 +33,25 @@ services:
       - "127.0.0.1:${DEMO_HTTP_PORT:-8000}:8000"
     environment:
       - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-live}
+      - DEMO_BACKEND_MODE=${DEMO_BACKEND_MODE:-simulated}
+      - GATE3_URL=${GATE3_URL:-http://apisix:9080/api/v1}
+      - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
       - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://demo-gateway:9080/ai/chat/completions}
       - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://demo-gateway:9080/ai/status}
       - DEMO_MODEL=${LLM_MODEL:-MiniMax-M2.7}
       - DEMO_TURN_TIMEOUT_SEC=${DEMO_TURN_TIMEOUT_SEC:-45.0}
     networks:
       - demo
+      - backend
+      - edge
+      - capability
     depends_on:
-      - demo-gateway
-      - demo-inference
+      demo-gateway:
+        condition: service_started
+        required: false
+      demo-inference:
+        condition: service_started
+        required: false
     deploy:
       resources:
         limits:
@@ -52,7 +62,8 @@ services:
       timeout: 3s
       retries: 5
       start_period: 5s
-    profiles: ["demo"]
+    profiles: ["demo", "demo-enterprise"]
+
 
   demo-gateway:
     image: apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
@@ -115,7 +126,7 @@ services:
       resources:
         limits:
           memory: 384M
-    profiles: ["w1", "w2", "w3", "w4"]
+    profiles: ["w1", "w2", "w3", "w4", "demo-enterprise"]
 
   api:
     build:
@@ -137,6 +148,9 @@ services:
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
       - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-scripted}
+      - DEMO_BACKEND_MODE=${DEMO_BACKEND_MODE:-enterprise}
+      - GATE3_URL=${GATE3_URL:-http://apisix:9080/api/v1}
+      - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
       - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://apisix:9080/ai/chat/completions}
       - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://apisix:9080/ai/status}
     volumes:
@@ -154,7 +168,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    profiles: ["w1", "w2", "w3", "w4"]
+    profiles: ["w1", "w2", "w3", "w4", "demo-enterprise"]
 
   adapter:
     build:
@@ -193,7 +207,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    profiles: ["w2", "w3", "w4"]
+    profiles: ["w2", "w3", "w4", "demo-enterprise"]
 
   opa:
     image: openpolicyagent/opa:0.68.0-static@sha256:6a95ee2152d4006732916a8b63106a6e822827952234cc0e783d348ae1ead2cc
@@ -211,7 +225,8 @@ services:
       resources:
         limits:
           memory: 128M
-    profiles: ["w2", "w3", "w4"]
+    profiles: ["w2", "w3", "w4", "demo-enterprise"]
+
 
   postgres:
     image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea

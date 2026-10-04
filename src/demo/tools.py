@@ -11,10 +11,12 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass, field
 import json
+import os
 import re
 from typing import Any
 
 import httpx
+
 
 
 DEMO = {
@@ -169,7 +171,9 @@ def execute_demo_tool(
         return {"error": f"Tool '{name}' is not in the allowlist of permitted demo tools."}
 
     is_enterprise = (backend_mode == "enterprise") and bool(gate3_url)
-    headers = {"Authorization": f"Bearer {api_token}"} if api_token else {}
+    headers = {"X-API-Key": os.getenv("GATE3_API_KEY", "gate3-secret-token")}
+    if api_token:
+        headers["Authorization"] = f"Bearer {api_token}"
     try:
         from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
         TraceContextTextMapPropagator().inject(headers)

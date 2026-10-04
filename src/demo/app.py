@@ -117,7 +117,10 @@ def snapshot(session: DemoSession) -> dict[str, Any]:
     if session.backend_mode == 'enterprise':
         data['mode'] = 'enterprise'
         gate3_url = get_gate3_url()
-        headers = {"Authorization": f"Bearer {session.api_token}"} if session.api_token else {}
+        gate3_key = os.getenv("GATE3_API_KEY", "gate3-secret-token")
+        headers = {"X-API-Key": gate3_key}
+        if session.api_token:
+            headers["Authorization"] = f"Bearer {session.api_token}"
         try:
             rc = httpx.get(f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=5.0)
             rs = httpx.get(f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=5.0)
