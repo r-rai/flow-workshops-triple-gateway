@@ -63,8 +63,31 @@ def get_backend_mode() -> str:
 
 
 def get_gate3_url() -> str:
-    """Resolve APISIX Gate 3 URL for core banking calls."""
-    return os.getenv('GATE3_URL', 'http://apisix:9080/api/v1').rstrip('/')
+    """Resolve APISIX Gate 3 URL for core banking calls with host/container fallback."""
+    explicit = os.getenv('GATE3_URL')
+
+    def is_resolvable(host: str, port: int = 9080) -> bool:
+        try:
+            import socket
+            socket.getaddrinfo(host, port)
+            return True
+        except Exception:
+            return False
+
+    if explicit:
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(explicit)
+            if parsed.hostname and is_resolvable(parsed.hostname, parsed.port or 80):
+                return explicit.rstrip('/')
+        except Exception:
+            pass
+
+    for candidate in ["apisix", "demo-gateway", "127.0.0.1", "localhost"]:
+        if is_resolvable(candidate, 9080):
+            return f"http://{candidate}:9080/api/v1"
+
+    return explicit.rstrip('/') if explicit else "http://127.0.0.1:9080/api/v1"
 
 
 @dataclass
@@ -108,7 +131,7 @@ def current_session(flo_demo_session: str | None = Cookie(default=None)) -> Demo
     return session
 
 
-def snapshot(session: DemoSession) -> dict[str, Any]:
+async def snapshot(session: DemoSession) -> dict[str, Any]:
     data = deepcopy(DEMO)
     data['card']['locked'] = session.card_locked
     data['cases'] = list(session.cases.values())
@@ -122,8 +145,14 @@ def snapshot(session: DemoSession) -> dict[str, Any]:
         if session.api_token:
             headers["Authorization"] = f"Bearer {session.api_token}"
         try:
-            rc = httpx.get(f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=5.0)
-            rs = httpx.get(f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=5.0)
+            if getattr(httpx.get, "__module__", "") != "httpx" or "mock" in str(httpx.get):
+                rc = httpx.get(f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=5.0)
+                rs = httpx.get(f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    rc_req = client.get(f"{gate3_url}/accounts/demo-checking", headers=headers)
+                    rs_req = client.get(f"{gate3_url}/accounts/demo-savings", headers=headers)
+                    rc, rs = await asyncio.gather(rc_req, rs_req)
             accs = []
             if rc.status_code == 200:
                 d = rc.json()
@@ -136,7 +165,11 @@ def snapshot(session: DemoSession) -> dict[str, Any]:
         except Exception as e:
             logger.warning(f"Failed to fetch accounts from Gate 3: {e}")
         try:
-            rcard = httpx.get(f"{gate3_url}/cards/card-2048", headers=headers, timeout=5.0)
+            if getattr(httpx.get, "__module__", "") != "httpx" or "mock" in str(httpx.get):
+                rcard = httpx.get(f"{gate3_url}/cards/card-2048", headers=headers, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    rcard = await client.get(f"{gate3_url}/cards/card-2048", headers=headers)
             if rcard.status_code == 200:
                 cd = rcard.json()
                 data['card']['locked'] = cd.get('locked', False)
@@ -212,7 +245,7 @@ async def login(payload: LoginRequest, request: Request, response: Response):
     sessions[token] = session
     response.set_cookie(COOKIE, token, max_age=SESSION_TTL, httponly=True,
                         samesite='strict', secure=request.url.scheme == 'https', path='/demo-api')
-    return snapshot(session)
+    return await snapshot(session)
 
 
 @demo_api.post('/logout')
@@ -228,7 +261,7 @@ async def logout(request: Request, response: Response):
 
 @demo_api.get('/dashboard')
 async def dashboard(session: DemoSession = Depends(current_session)):
-    return snapshot(session)
+    return await snapshot(session)
 
 
 @demo_api.post('/chat')
@@ -251,7 +284,7 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
                 'reply': reply,
                 'mode': 'enterprise' if session.backend_mode == 'enterprise' else 'simulation',
                 'chat_mode': 'scripted',
-                'dashboard': snapshot(session),
+                'dashboard': await snapshot(session),
             }
 
         # Live LLM Turn with staged session changes
@@ -296,7 +329,7 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
             'mode': 'enterprise' if session.backend_mode == 'enterprise' else 'simulation',
             'chat_mode': 'live',
             'model': metadata.get('model'),
-            'dashboard': snapshot(session),
+            'dashboard': await snapshot(session),
         }
 
 

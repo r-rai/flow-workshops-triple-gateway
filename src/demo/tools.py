@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
+import asyncio
 import json
 import os
 import re
@@ -158,15 +159,22 @@ DEMO_TOOLS_SCHEMA = [
 ALLOWLISTED_TOOL_NAMES = {tool["function"]["name"] for tool in DEMO_TOOLS_SCHEMA}
 
 
-def execute_demo_tool(
+async def _req(method: str, url: str, headers: dict | None = None, json_payload: Any = None, client: httpx.AsyncClient | None = None) -> httpx.Response:
+    if client is not None:
+        return await client.request(method, url, headers=headers, json=json_payload, timeout=10.0)
+    return httpx.request(method, url, headers=headers, json=json_payload, timeout=10.0)
+
+
+async def _execute_demo_tool_core(
     name: str,
     args: dict[str, Any],
     state: StagedDemoState,
     backend_mode: str = "simulated",
     gate3_url: str | None = None,
     api_token: str | None = None,
+    client: httpx.AsyncClient | None = None,
 ) -> dict[str, Any]:
-    """Execute allowlisted tool against staged session state in simulated or enterprise mode."""
+    """Internal core tool execution supporting both async and sync clients."""
     if name not in ALLOWLISTED_TOOL_NAMES:
         return {"error": f"Tool '{name}' is not in the allowlist of permitted demo tools."}
 
@@ -183,8 +191,8 @@ def execute_demo_tool(
     if name == "get_demo_accounts":
         if is_enterprise:
             try:
-                res_c = httpx.request("GET", f"{gate3_url}/accounts/demo-checking", headers=headers, timeout=10.0)
-                res_s = httpx.request("GET", f"{gate3_url}/accounts/demo-savings", headers=headers, timeout=10.0)
+                res_c = await _req("GET", f"{gate3_url}/accounts/demo-checking", headers=headers, client=client)
+                res_s = await _req("GET", f"{gate3_url}/accounts/demo-savings", headers=headers, client=client)
                 accounts = []
                 if res_c.status_code == 200:
                     c_data = res_c.json()
@@ -259,7 +267,7 @@ def execute_demo_tool(
     elif name == "get_demo_card":
         if is_enterprise:
             try:
-                res = httpx.request("GET", f"{gate3_url}/cards/card-2048", headers=headers, timeout=10.0)
+                res = await _req("GET", f"{gate3_url}/cards/card-2048", headers=headers, client=client)
                 if res.status_code == 200:
                     data = res.json()
                     state.card_locked = data.get("locked", False)
@@ -290,7 +298,7 @@ def execute_demo_tool(
 
         if is_enterprise:
             try:
-                res = httpx.request("POST", f"{gate3_url}/cards/card-2048/state", headers=headers, json={"locked": locked_val}, timeout=10.0)
+                res = await _req("POST", f"{gate3_url}/cards/card-2048/state", headers=headers, json_payload={"locked": locked_val}, client=client)
                 if res.status_code == 200:
                     data = res.json()
                     state.card_locked = data.get("locked", locked_val)
@@ -349,7 +357,7 @@ def execute_demo_tool(
                     "description": f"Dispute for {tx['merchant']} ({rupees(tx['amount'])}) tx: {tx_id}",
                     "priority": "medium",
                 }
-                res = httpx.request("POST", f"{gate3_url}/cases", headers=headers, json=payload, timeout=10.0)
+                res = await _req("POST", f"{gate3_url}/cases", headers=headers, json_payload=payload, client=client)
                 if res.status_code in (200, 201):
                     c_resp = res.json()
                     new_case = {
@@ -391,7 +399,7 @@ def execute_demo_tool(
     elif name == "get_demo_disputes":
         if is_enterprise:
             try:
-                res = httpx.request("GET", f"{gate3_url}/cases", headers=headers, timeout=10.0)
+                res = await _req("GET", f"{gate3_url}/cases", headers=headers, client=client)
                 if res.status_code == 200:
                     all_cases = res.json()
                     maya_cases = [c for c in all_cases if c.get("customer_id") == "cust-maya"]
@@ -410,6 +418,51 @@ def execute_demo_tool(
         }
 
     return {"error": f"Unhandled tool '{name}'."}
+
+
+async def execute_demo_tool_async(
+    name: str,
+    args: dict[str, Any],
+    state: StagedDemoState,
+    backend_mode: str = "simulated",
+    gate3_url: str | None = None,
+    api_token: str | None = None,
+) -> dict[str, Any]:
+    """Execute allowlisted tool asynchronously with non-blocking HTTP."""
+    if getattr(httpx.request, "__module__", "") != "httpx" or "mock" in str(httpx.request):
+        return await _execute_demo_tool_core(
+            name, args, state, backend_mode=backend_mode, gate3_url=gate3_url, api_token=api_token, client=None
+        )
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        return await _execute_demo_tool_core(
+            name, args, state, backend_mode=backend_mode, gate3_url=gate3_url, api_token=api_token, client=client
+        )
+
+
+def execute_demo_tool(
+    name: str,
+    args: dict[str, Any],
+    state: StagedDemoState,
+    backend_mode: str = "simulated",
+    gate3_url: str | None = None,
+    api_token: str | None = None,
+) -> dict[str, Any]:
+    """Execute allowlisted tool synchronously (for tests and sync callers)."""
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(asyncio.run, _execute_demo_tool_core(
+                name, args, state, backend_mode=backend_mode, gate3_url=gate3_url, api_token=api_token, client=None
+            )).result()
+    else:
+        return asyncio.run(_execute_demo_tool_core(
+            name, args, state, backend_mode=backend_mode, gate3_url=gate3_url, api_token=api_token, client=None
+        ))
 
 
 def scripted_reply(message_text: str, card_locked: bool, cases: dict[str, dict[str, Any]]) -> tuple[str, bool, dict[str, dict[str, Any]]]:

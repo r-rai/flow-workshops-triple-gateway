@@ -36,8 +36,8 @@ services:
       - DEMO_BACKEND_MODE=${DEMO_BACKEND_MODE:-simulated}
       - GATE3_URL=${GATE3_URL:-http://apisix:9080/api/v1}
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
-      - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://demo-gateway:9080/ai/chat/completions}
-      - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://demo-gateway:9080/ai/status}
+      - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://apisix:9080/ai/chat/completions}
+      - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://apisix:9080/ai/status}
       - DEMO_MODEL=${LLM_MODEL:-MiniMax-M2.7}
       - DEMO_TURN_TIMEOUT_SEC=${DEMO_TURN_TIMEOUT_SEC:-45.0}
     networks:
@@ -68,11 +68,16 @@ services:
   demo-gateway:
     image: apache/apisix:3.19.0-debian@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APISIX_HTTP_PORT:-9080}:9080"
     volumes:
       - ./docker/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ./docker/apisix/apisix-demo.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     networks:
-      - demo
+      demo:
+        aliases:
+          - demo-gateway
+          - apisix
     depends_on:
       - demo-inference
     deploy:
@@ -119,9 +124,13 @@ services:
       - ./docker/apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ./docker/apisix/apisix-${ACTIVE_PROFILE:-w1}.yaml:/usr/local/apisix/conf/apisix.yaml:ro
     networks:
-      - edge
-      - capability
-      - backend
+      edge:
+      capability:
+      backend:
+      demo:
+        aliases:
+          - apisix
+          - demo-gateway
     deploy:
       resources:
         limits:
@@ -147,7 +156,7 @@ services:
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://jaeger:4318/v1/traces}
       - OTEL_METRICS_EXPORTER=none
       - OTEL_LOGS_EXPORTER=none
-      - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-scripted}
+      - DEMO_CHAT_MODE=${DEMO_CHAT_MODE:-}
       - DEMO_BACKEND_MODE=${DEMO_BACKEND_MODE:-enterprise}
       - GATE3_URL=${GATE3_URL:-http://apisix:9080/api/v1}
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
@@ -159,6 +168,7 @@ services:
     networks:
       - backend
       - persistence
+      - demo
     deploy:
       resources:
         limits:

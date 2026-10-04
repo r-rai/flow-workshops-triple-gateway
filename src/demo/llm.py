@@ -20,6 +20,7 @@ from src.demo.tools import (
     ALLOWLISTED_TOOL_NAMES,
     StagedDemoState,
     execute_demo_tool,
+    execute_demo_tool_async,
 )
 
 logger = logging.getLogger("flobank.demo.llm")
@@ -52,6 +53,45 @@ MAX_ROUNDS_PER_TURN = 4
 MAX_TOOL_CALLS_PER_TURN = 8
 DEFAULT_TURN_TIMEOUT_SEC = 45.0
 DEFAULT_MAX_HISTORY_TURNS = 6
+
+
+def resolve_gateway_endpoint(path: str = "/ai/chat/completions", explicit_url: str | None = None) -> str:
+    """Resolve Gate 1 AI gateway URL with automatic environment and network fallback.
+
+    Tries in order:
+    1. Explicitly passed URL if given.
+    2. DEMO_AI_GATEWAY_URL or DEMO_AI_STATUS_URL environment variable if resolvable.
+    3. Docker container hosts ('apisix', 'demo-gateway') if resolvable in Docker network.
+    4. Localhost loopback ('127.0.0.1', 'localhost') for local host / outside-Docker execution.
+    """
+    if explicit_url:
+        return explicit_url
+
+    env_var = "DEMO_AI_GATEWAY_URL" if path == "/ai/chat/completions" else "DEMO_AI_STATUS_URL"
+    env_url = os.getenv(env_var)
+
+    def is_resolvable(host: str, port: int = 9080) -> bool:
+        try:
+            import socket
+            socket.getaddrinfo(host, port)
+            return True
+        except Exception:
+            return False
+
+    if env_url:
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(env_url)
+            if parsed.hostname and is_resolvable(parsed.hostname, parsed.port or 80):
+                return env_url
+        except Exception:
+            pass
+
+    for candidate in ["apisix", "demo-gateway", "127.0.0.1", "localhost"]:
+        if is_resolvable(candidate, 9080):
+            return f"http://{candidate}:9080{path}"
+
+    return env_url or f"http://127.0.0.1:9080{path}"
 
 
 class LLMError(Exception):
@@ -108,7 +148,7 @@ def trim_history(messages: list[dict[str, Any]], max_turns: int = DEFAULT_MAX_HI
 
 async def check_gateway_status(status_url: str | None = None) -> dict[str, Any]:
     """Check AI gateway and provider readiness."""
-    url = status_url or os.getenv("DEMO_AI_STATUS_URL", DEFAULT_STATUS_URL)
+    url = resolve_gateway_endpoint("/ai/status", explicit_url=status_url)
     try:
         async with httpx.AsyncClient(timeout=2.0) as client:
             resp = await client.get(url)
@@ -167,7 +207,7 @@ async def run_demo_chat_turn(
     Raises:
         LLMError: on configuration, provider, or limit failure.
     """
-    url = gateway_url or os.getenv("DEMO_AI_GATEWAY_URL", DEFAULT_GATEWAY_URL)
+    url = resolve_gateway_endpoint("/ai/chat/completions", explicit_url=gateway_url)
     model_name = model or os.getenv("DEMO_MODEL", DEFAULT_MODEL)
     timeout = timeout_sec or float(os.getenv("DEMO_TURN_TIMEOUT_SEC", str(DEFAULT_TURN_TIMEOUT_SEC)))
 
@@ -287,7 +327,7 @@ async def run_demo_chat_turn(
                     fn_args = {}
                     tool_result = {"error": f"Invalid tool arguments JSON: {str(e)}"}
                 else:
-                    tool_result = execute_demo_tool(
+                    tool_result = await execute_demo_tool_async(
                         fn_name,
                         fn_args,
                         staged_state,
