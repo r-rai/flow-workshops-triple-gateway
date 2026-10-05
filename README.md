@@ -153,6 +153,11 @@ NODE_PATH=/tmp/flo-bank-browser/node_modules node tests/demo_bank_browser.cjs
 
 ## Workshop 2: Governance Studio
 
+Presenter narratives for the series are in the [workshop overview](docs/workshops/README.md):
+[W1: Give Flo the Right Tools](docs/workshops/workshop-1-story.md) and
+[W2: The Ticket That Tried to Give Orders](docs/workshops/workshop-2-story.md)
+connect API modernization to governed agent execution.
+
 The 45-minute AI governance session now has a Flo Bank console at
 **http://localhost:9080/workshop-2**, with a case-review conversation, recorded
 attack requests, optional live model review, real MCP/OPA decisions, persisted

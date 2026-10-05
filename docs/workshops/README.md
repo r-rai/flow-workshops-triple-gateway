@@ -24,6 +24,7 @@ docker compose --profile demo-enterprise up -d --build
 ---
 
 ## Topic 1 (W1): Modernizing APIs for AI Agents: From OpenAPI to MCP
+- **Workshop story**: [Give Flo the Right Tools](workshop-1-story.md), a 45-minute presenter narrative covering generation, curation, invocation and downstream authorization.
 - **Duration**: 45 minutes
 - **Profile**: `w1`
 - **Description**: Most enterprises already have well-documented REST APIs, but AI agents cannot reliably use them without an interface designed for tool discovery, structured invocation, and safe runtime interaction. This session shows how API architects and integration engineers can transform existing OpenAPI-described services into MCP-based, AI-consumable tools, where automation helps, where curation is essential, and how to preserve governance, security, and observability along the way.
@@ -32,6 +33,7 @@ docker compose --profile demo-enterprise up -d --build
 ---
 
 ## Topic 2 (W2): Beyond API Governance: Securing AI Agents, MCP Servers, and Enterprise Integrations
+- **Workshop story**: [The Ticket That Tried to Give Orders](workshop-2-story.md), a 45-minute presenter narrative covering untrusted case text, execution policy, approval evidence and policy outages.
 - **Interactive demo**: [Governance Studio walkthrough](../../workshops/w2/worksheet.md), available at `http://localhost:9080/workshop-2` in the W2 profile. Compare recorded proposals and live model review with actual policy, approval and banking evidence.
 - **Duration**: 45 minutes
 - **Profile**: `w2`
