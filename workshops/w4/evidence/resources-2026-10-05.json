@@ -1,0 +1,134 @@
+{
+  "timestamp": "2026-10-05T17:04:24.869808+00:00",
+  "kind": "single_point_resource_snapshot",
+  "profile": "w4",
+  "container_stats": [
+    {
+      "BlockIO": "8.19kB / 0B",
+      "CPUPerc": "0.26%",
+      "Container": "30e05ccaacd706bbb12c45567b70e4ed83fc7c9daccd7681cf2cef586abed1ad",
+      "ID": "30e05ccaacd7",
+      "MemPerc": "23.88%",
+      "MemUsage": "61.14MiB / 256MiB",
+      "Name": "flobank-workshops-adapter-1",
+      "NetIO": "858kB / 111kB",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "3.37MB / 19.3MB",
+      "CPUPerc": "0.30%",
+      "Container": "bb042338527d1f74c19b730f19ec54e710120fe8bf76878133603518950f132b",
+      "ID": "bb042338527d",
+      "MemPerc": "38.38%",
+      "MemUsage": "98.24MiB / 256MiB",
+      "Name": "flobank-workshops-api-1",
+      "NetIO": "416kB / 18.6MB",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "4.1kB / 28.7kB",
+      "CPUPerc": "0.91%",
+      "Container": "aac9fcef62e02d90013df9e11735dac27f83f288dbf33bc65e352e1c2510ea02",
+      "ID": "aac9fcef62e0",
+      "MemPerc": "27.84%",
+      "MemUsage": "106.9MiB / 384MiB",
+      "Name": "flobank-workshops-apisix-1",
+      "NetIO": "18.5MB / 18.6MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "24.6kB / 0B",
+      "CPUPerc": "0.02%",
+      "Container": "178378def4366f925acf16e6864eccf1ccc7f150c6258cc1d3e58292a84c0287",
+      "ID": "178378def436",
+      "MemPerc": "22.65%",
+      "MemUsage": "14.5MiB / 64MiB",
+      "Name": "flobank-workshops-incident-sandbox-1",
+      "NetIO": "2.74kB / 3kB",
+      "PIDs": "1"
+    },
+    {
+      "BlockIO": "741kB / 0B",
+      "CPUPerc": "0.03%",
+      "Container": "a13afb9c9040c5c4b7a661765df61d03420c993124d8723cb8a37e9ef4516093",
+      "ID": "a13afb9c9040",
+      "MemPerc": "6.21%",
+      "MemUsage": "15.89MiB / 256MiB",
+      "Name": "flobank-workshops-jaeger-1",
+      "NetIO": "360kB / 45.3kB",
+      "PIDs": "9"
+    },
+    {
+      "BlockIO": "51.2MB / 1.82MB",
+      "CPUPerc": "5.29%",
+      "Container": "1e25980374b7831a65c785536f14f1ae9977750b85ae590fd6497dd56b8fcd16",
+      "ID": "1e25980374b7",
+      "MemPerc": "96.17%",
+      "MemUsage": "492.4MiB / 512MiB",
+      "Name": "flobank-workshops-kafka-1",
+      "NetIO": "40.6kB / 40.8kB",
+      "PIDs": "95"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "16c17deaa2544d017850e2462a4db3ae095ddda15149f414bd66dc03dd67545b",
+      "ID": "16c17deaa254",
+      "MemPerc": "5.76%",
+      "MemUsage": "7.367MiB / 128MiB",
+      "Name": "flobank-workshops-opa-1",
+      "NetIO": "656B / 126B",
+      "PIDs": "9"
+    },
+    {
+      "BlockIO": "0B / 422kB",
+      "CPUPerc": "1.87%",
+      "Container": "b47e614c31a795839d2c70288c2df824fd040ea6e4ed83f9848afeeb5b6b04b4",
+      "ID": "b47e614c31a7",
+      "MemPerc": "4.78%",
+      "MemUsage": "18.34MiB / 384MiB",
+      "Name": "flobank-workshops-postgres-1",
+      "NetIO": "796B / 126B",
+      "PIDs": "6"
+    },
+    {
+      "BlockIO": "0B / 158MB",
+      "CPUPerc": "0.76%",
+      "Container": "bb986c8ef5106279f28138aa02dbeb9fab2393d3ac581dc541885da16be1539b",
+      "ID": "bb986c8ef510",
+      "MemPerc": "28.55%",
+      "MemUsage": "109.6MiB / 384MiB",
+      "Name": "flobank-workshops-temporal-1",
+      "NetIO": "45.8MB / 149kB",
+      "PIDs": "15"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.32%",
+      "Container": "09c2316a06d4aed1cc91b38adf044a6fbf453e2cfd38a7ce4a89aed1228e1a93",
+      "ID": "09c2316a06d4",
+      "MemPerc": "16.41%",
+      "MemUsage": "84.04MiB / 512MiB",
+      "Name": "flobank-workshops-worker-1",
+      "NetIO": "51.5kB / 51kB",
+      "PIDs": "8"
+    }
+  ],
+  "host_free_mib": "               total        used        free      shared  buff/cache   available\nMem:            7941        2721        3048          18        2683        5219\nSwap:           8191          79        8112\n",
+  "protected_services": [
+    "flobank-workshops-incident-sandbox-1 Up About a minute",
+    "flobank-workshops-apisix-1 Up About a minute",
+    "flobank-workshops-jaeger-1 Up About a minute",
+    "flobank-workshops-adapter-1 Up About a minute (healthy)",
+    "flobank-workshops-postgres-1 Up About a minute",
+    "flobank-workshops-api-1 Up About a minute (healthy)",
+    "flobank-workshops-kafka-1 Up About a minute",
+    "flobank-workshops-worker-1 Up About a minute",
+    "flobank-workshops-temporal-1 Up About a minute",
+    "flobank-workshops-opa-1 Up 26 seconds",
+    "caddy Up 2 days",
+    "portainer Up 2 days",
+    "uptime-kuma Up 2 days (healthy)",
+    "dozzle Up 2 days"
+  ]
+}

@@ -93,3 +93,13 @@ model access, enforce approved egress and tenant/resource authorization, redact
 sensitive telemetry, design idempotent execution and durable approvals, and test
 failure recovery. Plan legal/compliance requirements for the actual use case and
 jurisdiction with the responsible teams.
+
+## Fresh rehearsal notes (2026-10-05)
+
+Both the historical CLI and current Governance Studio outage rehearsals passed.
+Use `rehearsal_console.py --outage` for the current story: the CLI runner switches
+W2 itself and tests a ₹50,000 ceiling request; the console uses ₹15,000. Both
+exceed the ₹10,000 policy ceiling. Compare balance and payment-count deltas,
+not absolute balances, because profile verification and permitted scenarios
+create payments in the shared fictional ledger. Preserve evidence, then reset
+bank data before attendees start. See the [series dry-run report](../../docs/workshops/rehearsal-2026-10-05.md).

@@ -25,7 +25,7 @@ This step-by-step guide is designed for **participants and instructors** to set 
 
 ### System Requirements
 - **OS**: Windows 11 (with WSL2), macOS (Sonoma/Sequoia), or Linux (Ubuntu 22.04/24.04).
-- **RAM**: Minimum 8 GB host RAM (>= 5 GB allocated to Docker / WSL2).
+- **RAM**: Target 16 GB participant host RAM (>= 5 GB allocated to Docker / WSL2).
 - **Disk**: >= 10 GB free SSD disk space for Docker images, volumes, and build caches.
 - **CPU**: 4+ cores recommended.
 
@@ -187,7 +187,20 @@ PYTHONPATH=. .venv/bin/python workshops/w1/client.py call-account acc-101
 PYTHONPATH=. .venv/bin/python workshops/w1/client.py call-unauthorized
 ```
 
-### Step 5: Shut Down Workshop 1
+### Step 5: Verify the Curated Catalog
+
+```bash
+.venv/bin/python workshops/w1/client.py --curated init
+.venv/bin/python workshops/w1/client.py --curated list
+.venv/bin/python workshops/w1/client.py --curated call-account acc-101
+.venv/bin/python workshops/w1/client.py --curated call-unauthorized
+```
+
+Expect two tools, `get_account` and `get_case`, an authorized read and an embedded
+401 for invalid credentials. Follow the [W1 worksheet](../../workshops/w1/worksheet.md)
+for checkpoint comparison and fresh-seed rehearsal requirements.
+
+### Step 6: Shut Down Workshop 1
 ```bash
 ./scripts/workshop stop
 # Or: docker compose --profile w1 down
@@ -246,7 +259,7 @@ Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) and searc
 - **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `kafka`, `worker`
 - **Configured Memory Cap**: ~3,072 MiB
 - **Concept & Description**: The generative AI landscape is rapidly shifting from stateless, synchronous chat applications to autonomous, long-running, multi-agent workflows. However, integrating non-deterministic AI agents into deterministic enterprise infrastructure presents massive architectural challenges regarding state, reliability, and governance.
-- **Practical Walkthrough**: Treats agents as resilient, event-driven microservices. Through a live architectural demonstration of an "Autonomous System Resolver", attendees see the exact plumbing required to take agents to production: exposing legacy systems to LLMs securely via MCP and API gateways, triggering agentic cognition via Kafka event streams, and managing long-running, multi-week agent processes without state loss using Temporal and LangGraph (supporting live **MiniMax 2.7 Fast** inference or deterministic replay fixtures). Finally, demonstrates how to enforce safety through strict human-in-the-loop (HITL) execution pauses before high-stakes API commits.
+- **Practical Walkthrough**: Treats agents as resilient, event-driven microservices. Through a live architectural demonstration of an "Autonomous System Resolver", attendees see the exact plumbing required to take agents to production: exposing legacy systems to LLMs securely via MCP and API gateways, triggering agentic cognition via Kafka event streams, and illustrating durable approval waits using Temporal and LangGraph with live **MiniMax 2.7 Fast** inference or deterministic replay fixtures. The lab timeout is 24 hours; multi-week availability is not measured. Finally, demonstrates how to enforce safety through strict human-in-the-loop (HITL) execution pauses before high-stakes API commits.
 
 ### Step 1: Switch Profile & Start Workshop 3
 ```bash
@@ -292,11 +305,11 @@ PYTHONPATH=. .venv/bin/python workshops/w3/client.py emit --case-id case-501 --c
 docker compose --profile w3 start worker
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py query --case-id case-501
 ```
-*Verify*: Temporal maintains exact workflow identity and state; zero duplicate executions or payments occur.
+*Verify*: Temporal maintains exact workflow identity and state; the duplicate event reuses the workflow and settlement creates one payment. Failed activities may repeat inference and reads; this exercise does not prove exactly-once execution.
 
 ### Step 6: Deliver Human Approval Signal & Verify Settlement
 ```bash
-PYTHONPATH=. .venv/bin/python workshops/w3/client.py approve --case-id case-501 --reviewer ops-lead --comments "Verified double charge"
+PYTHONPATH=. .venv/bin/python workshops/w3/client.py approve --case-id case-501 --reviewer ops-lead --comments "Reviewed case evidence and validated proposal"
 ```
 *Verify*: The workflow completes, creating exactly one idempotent compensation payment in Core Banking.
 
@@ -399,6 +412,13 @@ If an exercise modifies database state or accounts and you wish to return to the
 # Example for the active W2 lab; substitute w1, w3 or w4 as appropriate.
 ./scripts/workshop reset w2
 ```
+Bank reset does not clear Temporal history or W4's persisted incident runs.
+For W3 repeat delivery, preserve evidence and use the disposable-lab rehearsal
+reset described in the worksheet. W4 technical rehearsal does not reset data;
+keep existing run evidence and reconcile uncertain outcomes before resetting.
+Reset only while the requested profile is active; the launcher resets the
+currently reachable API, not a separate database selected by its profile argument.
+
 *Alternatively, call the API directly:*
 ```bash
 curl -X POST "http://127.0.0.1:9080/api/v1/admin/reset" \
@@ -446,7 +466,7 @@ docker system prune -f
 | **`HTTP 401 Insufficient scope`** | JWT token does not have required permissions. | Ensure JWT was minted with the appropriate scope (e.g. `api:cards:read`, `api:payments:write`). |
 | **Model request timeout (504)** | Upstream LLM provider latency or missing API key. | For deterministic lab execution without external latency, set `USE_REPLAY_FIXTURES=true` or `DEMO_CHAT_MODE=scripted`. |
 | **Container memory killed (OOM)** | Running multiple workshop profiles simultaneously or host has < 5 GB RAM. | Ensure only one profile is active at a time. Increase Docker Desktop memory allocation in settings. |
-| **APISIX 404 Route Not Found** | APISIX loaded the wrong profile YAML configuration. | Verify `.env` has matching `ACTIVE_PROFILE=<profile>` and restart APISIX: `docker compose restart apisix`. |
+| **APISIX 404 Route Not Found** | APISIX loaded the wrong profile YAML configuration. | Use `./scripts/workshop switch <profile>` to recreate the container with the matching bind mount; a restart alone retains its old mount. |
 
 
 W4 delivery now uses the [Incident Room story](workshop-4-story.md) and

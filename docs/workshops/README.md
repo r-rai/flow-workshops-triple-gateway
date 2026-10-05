@@ -1,6 +1,6 @@
 # Workshop Series Overview & Architecture Mapping
 
-See the [complete delivery plan](delivery-plan.md) for timed agendas, exercise artifacts, checkpoints, facilitator preparation, and acceptance criteria. For participant hands-on commands, see the [Participant Infrastructure Guide](participant-infra-guide.md).
+See the [complete delivery plan](delivery-plan.md) for timed agendas, exercise artifacts, checkpoints, facilitator preparation, and acceptance criteria. For participant hands-on commands, see the [Participant Infrastructure Guide](participant-infra-guide.md). Fresh results and delivery caveats are in the [2026-10-05 rehearsal report](rehearsal-2026-10-05.md).
 
 ---
 

@@ -23,12 +23,12 @@ Presenter narrative: [The Resolver That Remembered](../../docs/workshops/worksho
 
 | Segment | Timing | Activity | Artifacts |
 |---|---|---|---|
-| **1. Autonomous Resolver** | 00:00–00:06 | Review customer double charge dispute ticket `case-501` | Dispute API `/cases/case-501` |
+| **1. Autonomous Resolver** | 00:00–00:06 | Review the customer’s disputed-charge ticket `case-501` | Dispute API `/cases/case-501` |
 | **2. State Ownership** | 00:06–00:13 | Architecture of Kafka (at-least-once) + Temporal (state history) + Idempotency | Architecture diagram |
 | **3. End-to-End Demo** | 00:13–00:23 | Emit event to Kafka; worker diagnoses refund and pauses in `WAITING_FOR_APPROVAL` | `workshops/w3/client.py` |
 | **4. Guided Recovery Exercise** | 00:23–00:35 | Kill worker container, redeliver duplicate Kafka event, restart worker; observe recovery | Docker stop/start |
 | **5. Approve and Inspect** | 00:35–00:41 | Send human approval signal; verify settlement payment and idempotency | Temporal UI / API audit |
-| **6. Review & Wrap-up** | 00:41–00:45 | Explain how durable wait scales from seconds to 30 days without resource exhaustion | Rehearsal evidence |
+| **6. Review & Wrap-up** | 00:41–00:45 | Explain the 24-hour lab timeout and what longer waits require | Rehearsal evidence |
 
 ---
 
@@ -74,7 +74,7 @@ Inspect the Temporal workflow state:
 Query again while the worker processes the event. Inspect `current_phase` and
 `proposal` in the response.
 
-**Verify**: The workflow is paused in `WAITING_FOR_APPROVAL` with proposed compensation `75000` (INR 750.00).
+**Verify**: The workflow is paused in `WAITING_FOR_APPROVAL` with proposed compensation `75000` (INR 750.00). This is a replay fixture, not a calculated refund for the ticket's claimed 45000 INR charge. Inspect graph/tool results and keep the model's rationale separate from verified case facts.
 
 ### Step 4: Simulate Worker Crash & Duplicate Redelivery
 In another terminal, stop the worker:
@@ -99,7 +99,7 @@ inspect the settlement evidence to confirm one payment.
 ### Step 5: Deliver Human Approval Signal
 Deliver the sign-off:
 ```bash
-.venv/bin/python workshops/w3/client.py approve --case-id case-501 --reviewer ops-lead --comments "Verified double charge"
+.venv/bin/python workshops/w3/client.py approve --case-id case-501 --reviewer ops-lead --comments "Reviewed case evidence and validated proposal"
 ```
 **Verify**: The workflow completes, creating exactly ONE payment in the Core Banking API with idempotency key `settle-dispute-case-501`, and marks `case-501` as `resolved`.
 

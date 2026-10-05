@@ -58,7 +58,7 @@ Compare an OpenAPI operation's method, path and schema with MCP initialization,
 tool discovery and invocation. Initialize the supplied client:
 
 ```bash
-python workshops/w1/client.py init
+.venv/bin/python workshops/w1/client.py init
 ```
 
 **Say:**
@@ -73,7 +73,7 @@ knowledge of the support team's job?”
 ## Scene 3 — The generator gives Flo too much (12–22 minutes)
 
 ```bash
-python workshops/w1/client.py list
+.venv/bin/python workshops/w1/client.py list
 ```
 
 Inspect the actual catalog and its tool count. Locate payment execution and
@@ -96,17 +96,25 @@ authorization remains a server responsibility.
 ## Scene 4 — A useful read and an executable curated catalog (22–32 minutes)
 
 ```bash
-python workshops/w1/client.py call-account acc-101
+.venv/bin/python workshops/w1/client.py call-account acc-101
 ```
 
 Show the returned account ID, balance and currency. Fresh seed data has
 `1500000` minor units, or **₹15,000**, for `acc-101`; record the actual result if
 the ledger has changed.
 
-Then show discovery at `/mcp/curated` and a `get_account` invocation using the
-requests in the [W1 rehearsal](../../workshops/w1/rehearsal_w1.py). The completed
+Then verify the prepared curated endpoint directly:
+
+```bash
+.venv/bin/python workshops/w1/client.py --curated init
+.venv/bin/python workshops/w1/client.py --curated list
+.venv/bin/python workshops/w1/client.py --curated call-account acc-101
+```
+
+Use the [W1 rehearsal](../../workshops/w1/rehearsal_w1.py) for a case read and
+excluded payment-list invocation. The completed
 catalog should contain exactly `get_account` and `get_case`. Demonstrate that an
-excluded mutation is rejected by tool lookup; do not perform a financial or
+excluded broad operation is rejected by tool lookup; do not perform a financial or
 administrative mutation to prove its absence.
 
 **Say:**
@@ -130,7 +138,7 @@ flowchart LR
 ```
 
 ```bash
-python workshops/w1/client.py call-unauthorized
+.venv/bin/python workshops/w1/client.py --curated call-unauthorized
 ```
 
 Inspect the embedded downstream response, not only the outer MCP HTTP status.

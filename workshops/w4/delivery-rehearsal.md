@@ -32,3 +32,13 @@ Acceptance checks (observer records actual evidence):
 - [ ] Presenter deployment observed within the repository’s 6 GB total operating budget; include host and container measurements.
 
 Observer decision ______; evidence links ______; required adjustments ______.
+
+## Technical preparation recorded 2026-10-05
+
+The incident API rehearsal, browser smoke and initial/completed policy and
+identity exercises passed on the Linux presenter host. Actual gate denials,
+independent approval, one bound settlement, isolated ₹90 lakh replay and
+observed traces are recorded in the [series dry-run report](../../docs/workshops/rehearsal-2026-10-05.md).
+Browser widths 320–1920 pixels passed the smoke test. This does not measure
+room/projector readability, participant checkpoint recovery time or 135 minutes
+of spoken delivery; the acceptance fields above remain pending.

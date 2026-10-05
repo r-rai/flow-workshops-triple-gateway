@@ -80,3 +80,18 @@ The worksheet's replay compensation is 75,000 paise (₹750).
 - **Why not just rely on Kafka?** Kafka provides at-least-once message delivery, not workflow state management. If an agent crashes midway through a 3-step decision, Kafka can redeliver the event, but without Temporal history and backend idempotency, steps 1 and 2 might execute twice!
 - **Activity Separation Rule**: Model/tool I/O and HTTP network calls belong strictly in Temporal Activities, never in workflow definitions. Workflow code must be deterministic so Temporal can replay the event history safely.
 - **Enterprise Resilience**: The workflow waits durably rather than holding an HTTP request open. This implementation sets a 24-hour approval timeout; a 30-day queue requires changing that timeout and defining expiry handling.
+
+## Replay evidence caveats from the 2026-10-05 rehearsal
+
+The `case-501` fixture says “Verified duplicate debit”, but the actual case
+reports an unapproved charge and `get_account` returns a balance, not transaction
+proof. Present that rationale as recorded model text; it does not establish a
+double charge or refund entitlement. The reviewer comments in the automated
+runner are also synthetic labels, not additional evidence.
+
+The optional `case-502` rejection fixture requests `acc-8802`, which is absent
+from the seed and returns 404. The graph records that tool error and still
+returns a fixture proposal for mandatory review. The measured result is a
+rejected/closed case with zero payments; it does not prove a fully successful
+investigation or approval of that unsafe proposal. Show the error if using this
+alternate ending. Replay and live diagnosis must remain clearly labelled.

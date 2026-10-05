@@ -70,3 +70,16 @@ proposals on the active stack; they do not reset data. Evidence is written to
 The script records a **technical rehearsal**, not 135 minutes of human delivery. It checks the fixed attack suite, independent approval, exact settlement, one effect, refresh/idempotency and trace collection, and restores OPA after outage. Unit tests cover proposal expiry and lost approval/payment responses.
 
 For timed delivery, choose Presenter view and start the delivery clock. Advance chapter cues at actual transitions; export observed timing. Complete [delivery-rehearsal.md](delivery-rehearsal.md) with observed break/recovery/readability and delivery duration. Acceptance stays pending until a real 135-minute rehearsal is recorded. Production claims remain limited to selected lab controls and this repository’s A2A subset.
+
+## Fresh resource and checkpoint findings (2026-10-05)
+
+Initial policy denied `vendor-alpha`; the completed policy permitted one ₹250
+payment while both attacker requests remained denied. Initial identity exchange
+returned 403; completed exchange returned 200 with the read scope. The original
+active policy was restored after the rehearsal.
+
+The W4 resource snapshot measured about 1.06 GiB across workshop containers,
+including the sandbox. Kafka used 492.4 MiB of its 512 MiB cap (96.17%); inspect
+`docker stats` and OOM/restart state during preparation and longer delivery.
+This is a single-point Linux measurement, not a peak-load or Windows benchmark.
+See the [series report](../../docs/workshops/rehearsal-2026-10-05.md) for dated evidence.

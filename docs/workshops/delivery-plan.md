@@ -3,6 +3,10 @@
 Status: the workshop runtime, W3 LangGraph remediation, and Flo Bank customer demo are implemented on `main`. Separate live/replay W3 rehearsal evidence was recorded on 2026-10-04. The customer chatbot connects to real hosted inference with **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`) via APISIX Gate 1 with allowlisted session tools, supports dual-mode backend execution (standalone simulated vs APISIX Gate 3 real Core Banking), and retains deterministic offline scripted mode for zero-key environments.
 Source session descriptions: [original brief](workshot.txt).
 
+Fresh technical rehearsals for W1–W4 and documentation corrections are recorded
+in the [2026-10-05 dry-run report](rehearsal-2026-10-05.md). Technical execution
+and observed ledger effects do not replace measured human delivery acceptance.
+
 ## Delivery model
 
 - Audience: experienced API/integration engineers and architects.

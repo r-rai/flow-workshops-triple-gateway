@@ -80,7 +80,7 @@ hosted-model call). Its timestamped evidence supplements the historical CLI rehe
    ```
 
 4. **Verify Offline Replay Provider Fallback (W2–W4)**:
-   The platform defaults to `USE_REPLAY_FIXTURES=true`, which serves deterministic model fixtures without provider calls. W1 has no Gate 1 inference route, so skip this check for W1. The customer Flo bot remains scripted in every profile.
+   The platform defaults to `USE_REPLAY_FIXTURES=true`, which serves deterministic model fixtures without provider calls. W1 has no Gate 1 inference route, so skip this check for W1. Customer chat mode is separate: W1 defaults to scripted; W2–W4 may use live chat when configured. Set `DEMO_CHAT_MODE=scripted` explicitly for an offline customer demo.
    ```bash
    curl -s -X POST http://127.0.0.1:9080/ai/chat/completions \
      -H "Content-Type: application/json" \
@@ -99,11 +99,22 @@ hosted-model call). Its timestamped evidence supplements the historical CLI rehe
 | Workshop | Profile | Automated Rehearsal Command | Verification Command | Evidence Location |
 |---|---|---|---|---|
 | **W1: OpenAPI to MCP** | `w1` | `.venv/bin/python workshops/w1/rehearsal_w1.py` | `./scripts/workshop verify w1` | `workshops/w1/evidence/rehearsal-evidence.json` |
-| **W2: Governance** | `w2` | `.venv/bin/python workshops/w2/rehearsal_w2.py` | `./scripts/workshop verify w2` | `workshops/w2/evidence/rehearsal-evidence.json` |
+| **W2: Governance** | `w2` | `.venv/bin/python workshops/w2/rehearsal_console.py --outage` | `./scripts/workshop verify w2` | `workshops/w2/evidence/console-<UTC>.json` |
 | **W3: Durability** | `w3` | `.venv/bin/python workshops/w3/rehearsal_w3.py` | `./scripts/workshop verify w3` | `workshops/w3/evidence/rehearsal-evidence.json` |
-| **W4: Triple-Gate** | `w4` | `.venv/bin/python workshops/w4/rehearsal_w4.py` | `./scripts/workshop verify w4` | `workshops/w4/evidence/incident-<UTC>.json` |
+| **W4: Triple-Gate** | `w4` | `.venv/bin/python workshops/w4/rehearsal_w4.py --vulnerable --outage` | `./scripts/workshop verify w4` | `workshops/w4/evidence/incident-<UTC>.json` |
 
 ---
+
+Before using the index, complete each worksheet's readiness requirements.
+W1 needs a fresh bank seed; W3 clears local bank data and Temporal history; W4
+needs its configured reviewer secret and optional presenter sandbox. Save evidence
+before scripts overwrite `rehearsal-evidence.json`. The W2 historical CLI runner
+switches/restarts W2 itself and uses a ₹50,000 ceiling request, while the current
+console story uses ₹15,000; both deny above ₹10,000. Prefer the console rehearsal
+for current delivery. Automated seconds-long runs do not certify spoken duration.
+
+Fresh cross-workshop findings and evidence are in the
+[2026-10-05 rehearsal report](rehearsal-2026-10-05.md).
 
 ## 🔒 Security Invariants Enforced
 

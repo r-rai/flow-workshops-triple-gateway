@@ -1,0 +1,17 @@
+{
+  "checkpoint": "initial",
+  "config": {
+    "subject": "w4-pair-viewer",
+    "audience": "flobank-mcp",
+    "role": "viewer",
+    "source_scopes": [
+      "mcp:tools"
+    ],
+    "requested_scope": "api:payments:write",
+    "target_audience": "flobank-api"
+  },
+  "status_code": 403,
+  "response": {
+    "detail": "Requested scope not authorized for subject: ['api:payments:write']"
+  }
+}

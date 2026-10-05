@@ -260,3 +260,18 @@ The separate recorded [replay](../../workshops/w3/evidence/rehearsal-replay-2026
 and [live](../../workshops/w3/evidence/rehearsal-live-2026-10-04T090416Z.json)
 rehearsals provide presenter preparation examples; collect new evidence for the
 session being delivered.
+
+## Replay evidence caveats from the 2026-10-05 rehearsal
+
+The `case-501` fixture says “Verified duplicate debit”, but the actual case
+reports an unapproved charge and `get_account` returns a balance, not transaction
+proof. Present that rationale as recorded model text; it does not establish a
+double charge or refund entitlement. The reviewer comments in the automated
+runner are also synthetic labels, not additional evidence.
+
+The optional `case-502` rejection fixture requests `acc-8802`, which is absent
+from the seed and returns 404. The graph records that tool error and still
+returns a fixture proposal for mandatory review. The measured result is a
+rejected/closed case with zero payments; it does not prove a fully successful
+investigation or approval of that unsafe proposal. Show the error if using this
+alternate ending. Replay and live diagnosis must remain clearly labelled.
