@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173e34" />
+    <title>Flo Bank — Governance Studio</title>
+    <link rel="stylesheet" href="/demo-assets/governance.css" />
+    <script src="/demo-assets/governance.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="/" class="brand" aria-label="Flo Bank dashboard"
+        ><span class="brand-icon">f</span>flo <small>bank</small></a
+      >
+      <span class="studio-label">GOVERNANCE STUDIO</span>
+      <a href="/" class="back">Customer dashboard ↗</a>
+    </header>
+    <main>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">WORKSHOP 02 / 45 MINUTES</p>
+          <h1>
+            Give agents capability.<br /><em>Keep control of the outcome.</em>
+          </h1>
+          <p class="subtitle">
+            Follow a support request from agent proposal to policy decision and
+            banking evidence.
+          </p>
+        </div>
+        <div class="lab-badge">
+          <span class="dot"></span> FICTIONAL BANK · REAL CONTROLS<br /><small
+            >APISIX · MCP · OPA · Core Banking</small
+          >
+        </div>
+      </div>
+      <section id="signin" class="signin panel">
+        <div>
+          <h2>Enter the workshop</h2>
+          <p>
+            This lab uses signed sample identities and shared fictional bank
+            data. Permitted payments change that lab ledger.
+          </p>
+        </div>
+        <form id="signin-form">
+          <label
+            >Email<input
+              id="email"
+              type="email"
+              value="maya@flobank.demo"
+              autocomplete="username"
+              required
+          /></label>
+          <label
+            >Password<input
+              id="password"
+              type="password"
+              value="flo-demo"
+              autocomplete="current-password"
+              required
+          /></label>
+          <button type="submit" class="primary">Enter studio ↗</button>
+        </form>
+      </section>
+      <p id="error" class="error" role="alert" hidden></p>
+      <div id="workspace" hidden>
+        <section class="gates" aria-label="Three governance boundaries">
+          <article>
+            <span class="gate-number">01</span>
+            <div>
+              <h2>Inference</h2>
+              <p>Model access &amp; usage</p>
+              <small id="gate1">Live review or recorded proposal</small>
+            </div>
+          </article>
+          <article>
+            <span class="gate-number">02</span>
+            <div>
+              <h2>Capabilities</h2>
+              <p>Identity &amp; argument policy</p>
+              <small id="gate2">MCP adapter → OPA</small>
+            </div>
+          </article>
+          <article>
+            <span class="gate-number">03</span>
+            <div>
+              <h2>Enterprise</h2>
+              <p>API auth &amp; business rules</p>
+              <small id="gate3">Observed ledger effects</small>
+            </div>
+          </article>
+        </section>
+        <div class="work-grid">
+          <section class="panel conversation">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">THE SUPPORT DESK</p>
+                <h2>A request is only the beginning.</h2>
+              </div>
+              <span class="avatar">f</span>
+            </div>
+            <div
+              id="transcript"
+              class="transcript"
+              role="log"
+              aria-live="polite"
+              aria-label="Case review conversation"
+            >
+              <article class="bubble flo">
+                <strong>Flo · workshop guide</strong>
+                <p>
+                  A support ticket contains an instruction to move money to a
+                  prohibited account. Explore what happens when an agent
+                  proposes that action.
+                </p>
+                <p>
+                  Choose a scenario below. Recorded scenarios use fixed
+                  proposals and real policy/API calls. “Ask Flo” makes one live
+                  model call.
+                </p>
+              </article>
+            </div>
+            <div class="scenario-area">
+              <div class="scenario-heading">
+                <strong>Choose a demo</strong><span>Amounts shown in INR</span>
+              </div>
+              <div id="scenarios" class="scenarios"></div>
+              <p id="running" class="running" role="status" hidden>
+                Checking the request through the workshop services…
+              </p>
+              <p class="caption">
+                Live review sends only the fictional case ID and description to
+                the configured model provider. Runs are limited to 20 per
+                sign-in.
+              </p>
+            </div>
+          </section>
+          <aside class="panel evidence-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">FOLLOW THE EVIDENCE</p>
+                <h2>Decision &amp; business effect</h2>
+              </div>
+              <span id="mode" class="pill">Ready</span>
+            </div>
+            <div id="empty-evidence" class="empty">
+              <span>◎</span>
+              <h3>Make the boundary visible.</h3>
+              <p>
+                Every run shows the signed role, requested arguments, service
+                response and account balance before and after.
+              </p>
+            </div>
+            <div id="evidence" hidden>
+              <div id="decision-card" class="decision-card">
+                <span class="eyebrow">OBSERVED OUTCOME</span>
+                <h3 id="outcome"></h3>
+                <p id="reason"></p>
+              </div>
+              <dl class="identity">
+                <div>
+                  <dt>Caller</dt>
+                  <dd id="principal"></dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd id="role"></dd>
+                </div>
+                <div>
+                  <dt>Model</dt>
+                  <dd id="model"></dd>
+                </div>
+              </dl>
+              <div class="effect-grid">
+                <div>
+                  <span>Balance change</span
+                  ><strong id="balance-delta"></strong>
+                </div>
+                <div>
+                  <span>New payments</span><strong id="payment-delta"></strong>
+                </div>
+              </div>
+              <p id="balance-detail" class="caption"></p>
+              <div id="approval-card" class="approval-card" hidden>
+                <strong>Persisted approval</strong>
+                <p id="approval-detail"></p>
+              </div>
+              <details open>
+                <summary>Proposed tool arguments</summary>
+                <pre id="proposal"></pre>
+              </details>
+              <details>
+                <summary>Boundary responses</summary>
+                <pre id="events"></pre>
+              </details>
+              <details>
+                <summary>Trace correlation</summary>
+                <p class="caption">
+                  Use this trace ID in Jaeger at port 16686. Trace availability
+                  depends on the collector; this ID alone does not prove every
+                  span was exported.
+                </p>
+                <code id="trace"></code>
+              </details>
+              <button id="download" class="secondary">
+                Download this run ↓
+              </button>
+              <p class="caption">
+                Balance and payment counts are observations of the shared lab
+                account. Run one presenter at a time for clear attribution.
+              </p>
+            </div>
+          </aside>
+        </div>
+        <section class="blueprint panel">
+          <div>
+            <p class="eyebrow">TAKE IT INTO THE ENTERPRISE</p>
+            <h2>A governance blueprint, beyond this demo.</h2>
+            <p>
+              Assign an owner to each boundary and carry identity, purpose and
+              evidence across them.
+            </p>
+          </div>
+          <details>
+            <summary>Approved AI inventory &amp; access</summary>
+            <p>
+              Register models, agents, MCP servers and tool owners. Use managed
+              identities, approved provider routes and controlled network
+              egress. The lab's shared sign-in and signing key are teaching
+              conveniences, not enterprise identity management.
+            </p>
+          </details>
+          <details>
+            <summary>Data protection &amp; responsible use</summary>
+            <p>
+              Classify data before inference; minimize fields, redact sensitive
+              content, set provider retention and residency rules, and review
+              high-impact actions. This case demo minimizes its input but does
+              not implement a DLP scanner or prove prompt-injection prevention.
+            </p>
+          </details>
+          <details>
+            <summary>Policy, audit &amp; operations</summary>
+            <p>
+              Version and test tool policies; bind approval to exact arguments;
+              deny when policy is unavailable. Correlate gateway traces with
+              durable business records. Define audit access, retention, incident
+              response and evaluations for each use case; traces alone do not
+              establish compliance.
+            </p>
+          </details>
+        </section>
+        <footer>
+          <span>Flo Bank · Beyond API Governance</span
+          ><button id="signout">End lab session</button
+          ><span>₹1,000 automatic limit · ₹10,000 approval ceiling</span>
+        </footer>
+      </div>
+    </main>
+  </body>
+</html>

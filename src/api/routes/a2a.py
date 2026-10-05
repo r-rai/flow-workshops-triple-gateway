@@ -206,6 +206,14 @@ def complete_a2a_task(
         except Exception:
             task_input = {}
 
+        # Bind the debit source as well as amount, currency, and destination.
+        expected_source = task_input.get("source_account") or task_input.get("account_id")
+        if expected_source and payment.account_id != expected_source:
+            raise HTTPException(status_code=400, detail="Settlement source account mismatch")
+        expected_proposal = task_input.get("proposal_id")
+        if expected_proposal and payment.proposal_id != expected_proposal:
+            raise HTTPException(status_code=400, detail="Settlement proposal mismatch")
+
         # Validate amount
         expected_amount = task_input.get("amount")
         if expected_amount is not None and int(payment.amount) != int(expected_amount):

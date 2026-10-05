@@ -199,17 +199,18 @@ docker compose --profile w2 up -d --build
 ```
 
 ### Step 3: Inspect Adversarial Support Ticket & Execute Prompt Injection Defense
-In ticket `case-502`, an attacker embeds an indirect prompt injection attempting to siphon ₹9,00,000 to `fraud-account-66`:
+Open **http://localhost:9080/workshop-2** and use the prefilled sample login. Follow the [W2 worksheet](../../workshops/w2/worksheet.md). The case text contains an indirect prompt injection; the recorded tool request uses 900,000 minor units (₹9,000) to `fraud-account-66`.
 ```bash
-# Run rehearsal demonstrating Gate 2 OPA policy intercepting malicious injection:
-PYTHONPATH=. .venv/bin/python workshops/w2/rehearsal_w2.py
+# Rehearse the console against the already-running W2 stack:
+.venv/bin/python workshops/w2/rehearsal_console.py --outage
+# Add --live to include one real hosted-model case review.
 ```
 *Key Guarantees Verified:*
-- **Tiered Risk Evaluation**: Low Risk (< ₹500) allowed; Medium Risk (₹500 to ₹10,000) pauses for human approval; High Risk (> ₹10,000) or prohibited accounts denied.
+- **Tiered Risk Evaluation**: For a permitted support-agent beneficiary: up to and including ₹1,000 allowed; above ₹1,000 through ₹10,000 records a pending approval; above ₹10,000 or prohibited beneficiaries denied.
 - **Fail-Closed Resiliency**: If OPA crashes, the adapter fails closed, blocking all financial mutations.
 
 ### Step 4: Inspect End-to-End Tracing in Jaeger
-Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) and inspect the distributed waterfall spans (`traceparent`) linking the prompt injection trigger to the OPA denial decision.
+Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) and search for the console trace ID. Confirm exported spans, then correlate the recorded tool response and banking evidence; a trace ID alone does not prove all hops were captured.
 
 ### Step 5: Shut Down Workshop 2
 ```bash
@@ -417,3 +418,10 @@ docker system prune -f
 | **Model request timeout (504)** | Upstream LLM provider latency or missing API key. | For deterministic lab execution without external latency, set `USE_REPLAY_FIXTURES=true` or `DEMO_CHAT_MODE=scripted`. |
 | **Container memory killed (OOM)** | Running multiple workshop profiles simultaneously or host has < 5 GB RAM. | Ensure only one profile is active at a time. Increase Docker Desktop memory allocation in settings. |
 | **APISIX 404 Route Not Found** | APISIX loaded the wrong profile YAML configuration. | Verify `.env` has matching `ACTIVE_PROFILE=<profile>` and restart APISIX: `docker compose restart apisix`. |
+
+
+W4 delivery now uses the [Incident Room story](workshop-4-story.md) and
+[W4 setup/answer key](../../workshops/w4/answer-key.md). Open `/workshop-4` only
+under `w4`. The recorded ₹90 lakh incident executes in its separate local
+presenter sandbox. Technical rehearsal evidence and measured 135-minute human
+delivery acceptance are recorded separately.

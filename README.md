@@ -151,7 +151,25 @@ npm install --prefix /tmp/flo-bank-browser playwright
 NODE_PATH=/tmp/flo-bank-browser/node_modules node tests/demo_bank_browser.cjs
 ```
 
-## Status
+## Workshop 2: Governance Studio
+
+The 45-minute AI governance session now has a Flo Bank console at
+**http://localhost:9080/workshop-2**, with a case-review conversation, recorded
+attack requests, optional live model review, real MCP/OPA decisions, persisted
+approval evidence, and observed banking effects.
+
+```bash
+docker compose --profile w2 build api adapter
+./scripts/workshop switch w2
+```
+
+Use the prefilled sample sign-in. Follow the [W2 worksheet](workshops/w2/worksheet.md)
+and [facilitator guide](workshops/w2/answer-key.md). Rehearse the browser API with
+`.venv/bin/python workshops/w2/rehearsal_console.py --outage`; add `--live` for one
+hosted-model call. Recorded scenarios need no provider key. The lab's permitted
+payment changes shared fictional banking data.
+
+## Verification status
 
 The repository includes the workshop runtime and a customer simulation. See
 `config/manifest.json` and the workshop evidence for verification of individual
@@ -162,3 +180,26 @@ with local participant labs and limited replay-based VPS fallback.
 
 > Keep deterministic enterprise controls. Add agent-aware controls
 > around them.
+
+## Workshop 4: Incident Room
+
+The 135-minute incident-response workshop has a W4-only console at
+**http://localhost:9080/workshop-4**. It combines a recorded ₹90 lakh incident in
+an opt-in isolated ledger with real gate decisions, independent approvals,
+A2A task binding and downloadable server evidence. Each pair uses one local
+instance; shared hosting is an observation/fallback surface.
+
+Follow the [presenter story](docs/workshops/workshop-4-story.md),
+[worksheet](workshops/w4/worksheet.md) and [facilitator setup](workshops/w4/answer-key.md).
+The [technical rehearsal](workshops/w4/rehearsal_w4.py) verifies service behavior;
+[human delivery acceptance](workshops/w4/delivery-rehearsal.md) separately records
+135 minutes including break, checkpoint recovery and projector readability.
+
+
+## Presenter materials
+
+This repository includes [presenter materials](.presenter-private/README.md),
+facilitator notes, answers, checkpoints, and recorded rehearsal evidence for
+Workshops 1–4. A separate audience repository will be created later. The
+historical `.presenter-private` folder name is retained for links and does not
+provide access control for committed files.

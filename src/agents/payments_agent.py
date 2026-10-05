@@ -1,3 +1,4 @@
+import os
 import httpx
 from typing import Dict, Any
 from src.core.security import create_jwt_token
@@ -64,7 +65,7 @@ class PaymentsAgent:
                 raise RuntimeError(f"Payment execution failed: {resp.status_code} {resp.text}")
             return resp.json()
 
-    async def dispatch_payment_task(self, task_id: str) -> Dict[str, Any]:
+    async def dispatch_payment_task(self, task_id: str, proposal_id: str | None = None) -> Dict[str, Any]:
         """
         Executes an A2A delegated payment task:
         1. Reads task specifications from A2A API.
@@ -79,8 +80,8 @@ class PaymentsAgent:
             task_input = task.get("input", {})
 
             amount = int(task_input.get("amount", 50000))
-            destination = task_input.get("destination_account") or "acc-101"
-            source_acc = task_input.get("source_account", "acc-102")
+            destination = task_input.get("destination_account") or task_input.get("beneficiary") or "acc-101"
+            source_acc = task_input.get("source_account") or task_input.get("account_id") or "acc-102"
             case_id = task_input.get("case_id", "case-501")
 
             idemp_key = f"settle-a2a-{task_id}"
@@ -90,6 +91,10 @@ class PaymentsAgent:
                 "amount": amount,
                 "currency": task_input.get("currency", "INR")
             }
+            # Approval is obtained independently; the executor only references it.
+            approved_proposal = proposal_id or task_input.get("proposal_id")
+            if approved_proposal:
+                pay_payload["proposal_id"] = approved_proposal
             p_res = await client.post(
                 f"{self.base_url}/api/v1/payments",
                 headers={**self.get_headers(), "Idempotency-Key": idemp_key},

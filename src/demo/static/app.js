@@ -70,6 +70,8 @@ function addMessage(text, role = "bot", isError = false) {
 }
 
 function renderDashboard(data) {
+  $("#governance-link").hidden = data.workshop_profile !== "w2";
+  $("#incident-link").hidden = data.workshop_profile !== "w4";
   $("#checking-balance").textContent = currency(data.accounts[0].balance);
   $("#savings-balance").textContent = currency(data.accounts[1].balance);
   $("#spending-total").textContent = currency(

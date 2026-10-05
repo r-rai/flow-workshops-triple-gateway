@@ -1,0 +1,68 @@
+{
+  "label": "RECORDED EVIDENCE \u2014 not a fresh runtime rehearsal",
+  "source": "workshops/w1/evidence/rehearsal-evidence.json",
+  "recorded_response_date": "Sun, 04 Oct 2026 06:08:47 GMT",
+  "broad_tools_count": 23,
+  "broad_tool_names": [
+    "healthz_healthz_get",
+    "readyz_readyz_get",
+    "read_account_api_v1_accounts__id__get",
+    "get_all_cases_api_v1_cases_get",
+    "read_case_api_v1_cases__id__get",
+    "update_case_endpoint_api_v1_cases__id__patch",
+    "propose_payment_api_v1_payments_proposals_post",
+    "list_payments_api_v1_payments_get",
+    "execute_payment_api_v1_payments_post",
+    "get_approval_api_v1_approvals__id__get",
+    "approve_proposal_api_v1_approvals__id__approve_post",
+    "reject_proposal_api_v1_approvals__id__reject_post",
+    "read_incident_api_v1_incidents__id__get",
+    "remediate_incident_api_v1_incidents__id__remediate_post",
+    "reset_database_api_v1_admin_reset_post",
+    "get_agent_card_api_v1_a2a_card_get",
+    "submit_a2a_task_api_v1_a2a_tasks_post",
+    "get_a2a_task_api_v1_a2a_tasks__task_id__get",
+    "complete_a2a_task_api_v1_a2a_tasks__task_id__complete_post",
+    "token_exchange_endpoint_api_v1_oauth_token_post",
+    "token_exchange_endpoint_oauth_token_post",
+    "well_known_agent__well_known_agent_json_get",
+    "openapi_curated_openapi_curated_json_get"
+  ],
+  "curated_tools": [
+    "get_account",
+    "get_case"
+  ],
+  "account": {
+    "name": "Acme Retail Checking",
+    "status": "active",
+    "id": "acc-101",
+    "balance": 1500000,
+    "currency": "INR"
+  },
+  "case": {
+    "issue_type": "disputed_transaction",
+    "status": "open",
+    "customer_id": "cust-8801",
+    "id": "case-501",
+    "priority": "medium",
+    "description": "Customer claims unapproved charge of 45000 INR on checking account."
+  },
+  "excluded_tool": "list_payments_api_v1_payments_get",
+  "excluded_response": {
+    "result": {
+      "isError": true,
+      "content": [
+        {
+          "type": "text",
+          "text": "MCP error -32602: Tool list_payments_api_v1_payments_get not found"
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 24
+  },
+  "downstream_denial_recorded_endpoint": "/mcp (broad), not /mcp/curated",
+  "denial_mcp_transport_status": 200,
+  "denial_downstream_status": 401,
+  "denial_message": "Invalid API key in request"
+}

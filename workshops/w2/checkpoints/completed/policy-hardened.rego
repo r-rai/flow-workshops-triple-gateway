@@ -56,6 +56,7 @@ decision = "deny" {
 
 reason = "AMOUNT_EXCEEDS_TRANSFER_CEILING" {
     input.tool == "create_payment"
+    not is_blacklisted(input.arguments.beneficiary)
     input.arguments.amount > 1000000
 }
 

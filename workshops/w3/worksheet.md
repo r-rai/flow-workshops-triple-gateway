@@ -1,5 +1,7 @@
 # Workshop 3 Worksheet: Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI
 
+Presenter narrative: [The Resolver That Remembered](../../docs/workshops/workshop-3-story.md).
+
 **Duration**: 45 Minutes  
 **Profile**: `w3`  
 **Focus**: Durable workflow execution, event-driven AI with Apache Kafka, Temporal durable execution, and zero-duplicate financial side effects across system crashes.

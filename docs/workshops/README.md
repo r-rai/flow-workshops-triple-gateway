@@ -32,6 +32,7 @@ docker compose --profile demo-enterprise up -d --build
 ---
 
 ## Topic 2 (W2): Beyond API Governance: Securing AI Agents, MCP Servers, and Enterprise Integrations
+- **Interactive demo**: [Governance Studio walkthrough](../../workshops/w2/worksheet.md), available at `http://localhost:9080/workshop-2` in the W2 profile. Compare recorded proposals and live model review with actual policy, approval and banking evidence.
 - **Duration**: 45 minutes
 - **Profile**: `w2`
 - **Description**: As organizations rapidly integrate Large Language Models (LLMs), AI agents, MCP servers, and AI gateways into enterprise ecosystems, traditional API governance models are no longer sufficient. AI systems introduce new challenges including prompt injection attacks, uncontrolled tool access, data leakage, shadow AI adoption, compliance risks, and lack of observability.
@@ -40,6 +41,7 @@ docker compose --profile demo-enterprise up -d --build
 ---
 
 ## Topic 3 (W3): Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI
+- **Workshop story**: [The Resolver That Remembered](workshop-3-story.md), a 45-minute Flo Bank narrative with presenter dialogue, crash recovery, human approval, and settlement evidence.
 - **Duration**: 45 minutes
 - **Profile**: `w3`
 - **Description**: The generative AI landscape is rapidly shifting from stateless, synchronous chat applications to autonomous, long-running, multi-agent workflows. However, integrating non-deterministic AI agents into deterministic enterprise infrastructure presents massive architectural challenges regarding state, reliability, and governance.
@@ -50,12 +52,8 @@ docker compose --profile demo-enterprise up -d --build
 ## Topic 4 (W4): The Day the Agent Broke the Bank: Implementing Triple-Gate Architecture & A2A Security for Autonomous AI Workloads
 - **Duration**: 135 minutes (2h 15m)
 - **Profile**: `w4`
-- **Description**: Traditional API gateways protect systems from fast humans, but they are fundamentally blind to autonomous AI agents. When an enterprise deploys agentic workflows (via frameworks like LangGraph or CrewAI) and exposes internal business APIs as "Tools," standard REST security fails. Prompt injections don't violate network schemas, and non-deterministic agentic reasoning loops routinely bypass traditional rate limits, risking massive financial and data liability.
-- **Practical Walkthrough**: Uses a "live incident response" storytelling approach to deconstruct a high-consequence system compromise: *The Day NegotiatorBot Broke the Bank*. Through the lens of a multi-million-dollar automated exploit driven by a subtle prompt injection, participants map out why legacy OAuth and standard API proxies failed to stop the breach. Moving from forensic analysis to modern architecture, attendees learn how to systematically remediate the vulnerability by deploying a production-ready Triple-Gate Architecture across three distinct security perimeters:
-  1. **Defending the Inference Boundary (Gate 1 - AI Gateway)**
-  2. **Governing Capability Execution (Gate 2 - Tool / MCP Gateway)**
-  3. **Securing Micro-Scoped Identity Propagation (Gate 3 - Standard API Gateway)** via OAuth Token Exchange ($RFC\ 8693$)
-  Finally, demonstrates how to achieve deep observability across recursive agentic loops using modern OpenTelemetry GenAI span tracing and safely govern autonomous Agent-to-Agent (A2A) interactions in production.
+- **Description**: Become Flo Bank’s response team after a fictional ₹90 lakh loss. Investigate the ticket, recorded proposal and NegotiatorBot → PaymentsAgent handoff; repair controls and prove a legitimate payment still works.
+- **Practical Walkthrough**: The W4-only Incident Room executes the recorded attack in a separate local presenter ledger. Protected services demonstrate inference limits, argument-aware MCP policy, audience/scope enforcement, independent transaction approval and task/payment binding. Pairs use small prepared local policy and identity exercises. Real responses, ledger observations and trace status determine outcomes. Optional live comparison is bounded and accurately labelled; production requirements and broader A2A conformance remain separate work.
 
 ---
 
@@ -63,3 +61,10 @@ docker compose --profile demo-enterprise up -d --build
 - **Run One Profile at a Time**: Always run one active workshop profile at a time to stay strictly within the host memory limits (`./scripts/workshop switch <w1|w2|w3|w4>`).
 - **Persistence**: All profiles use pinned image tags and persistent volumes.
 - See the [VPS runbook](../setup/vps-setup-guide.md) for hardware limits and host coexistence policies.
+
+
+W4 delivery now uses the [Incident Room story](workshop-4-story.md) and
+[W4 setup/answer key](../../workshops/w4/answer-key.md). Open `/workshop-4` only
+under `w4`. The recorded ₹90 lakh incident executes in its separate local
+presenter sandbox. Technical rehearsal evidence and measured 135-minute human
+delivery acceptance are recorded separately.

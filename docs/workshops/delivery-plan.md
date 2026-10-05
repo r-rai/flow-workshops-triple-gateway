@@ -43,12 +43,19 @@ Do not claim the development deployment itself is production-ready. Explain whic
 **Duration:** 45 minutes. **Profile:** `w2`.
 **Outcome:** enforce identity-aware and argument-aware tool policy independently of model instructions.
 
+**Delivery surface:** Flo Bank [Governance Studio](../../workshops/w2/worksheet.md)
+at `http://localhost:9080/workshop-2`. The chat-style console combines fixed
+recorded proposals with real MCP/OPA/API execution, plus an optional one-call
+live case review through Gate 1. It shows validated role, tool arguments,
+persisted approval status, measured ledger changes and downloadable trace-linked
+evidence. See the [presenter guide](../../workshops/w2/answer-key.md).
+
 | Minutes | Activity | Presenter cue / participant action |
 |---|---|---|
 | 0–5 | Threat scenario | Read a synthetic support case containing injected instructions |
 | 5–12 | Governance responsibilities | Separate identity, capability policy, and backend business rules |
 | 12–22 | Unsafe proposal, blocked execution | Show that valid model output is not authorization |
-| 22–34 | Guided policy exercise | Modify role, amount, and beneficiary rules; run allow/deny cases |
+| 22–34 | Guided policy exercise | Predict and compare role, amount, and beneficiary decisions; inspect allow/deny rules |
 | 34–41 | Failure and audit | Stop OPA, verify no execution, and inspect decision reasons |
 | 41–45 | Review and questions | Map controls to enterprise governance responsibilities |
 
@@ -97,29 +104,27 @@ For the existing dispute implementation, the stable workflow ID is `dispute-case
 
 **Provider references (checked 2026-10-04):** [MiniMax OpenAI-compatible API](https://platform.minimax.io/docs/api-reference/text-openai-api) and [model invocation/configuration](https://platform.minimax.io/docs/guides/text-generation). Recheck model availability and protocol requirements during implementation. Actual LangGraph execution also works offline; paid inference is required only for the live MiniMax demonstration.
 
-## Workshop 4 — The Day the Agent Broke the Bank: Triple-Gate Architecture and A2A Security
+## Workshop 4 — The Day the Agent Broke the Bank
 
-**Duration:** 135 minutes. **Profile:** `w4`.
-**Outcome:** investigate a synthetic incident and apply three boundaries, restricted identity, durable approval, and A2A task authorization.
+**Duration:** 135 minutes including the 60–67 minute break. **Profile:** `w4`.
 
-| Minutes | Activity | Presenter cue / participant action |
-|---|---|---|
-| 0–10 | Incident briefing | Introduce NegotiatorBot and the payment scenario |
-| 10–25 | Reproduce the unsafe action | Use a private vulnerable checkpoint with synthetic balances |
-| 25–40 | Gate 1 | Apply provider access and inference budgets; explain limits of input filters |
-| 40–60 | Gate 2 exercise | Restrict tools and enforce argument-aware policy |
-| 60–65 | Break | Restore the next prepared checkpoint if needed |
-| 65–85 | Gate 3 exercise | Inspect exchanged tokens, audiences, scopes, and denied requests |
-| 85–105 | Approval exercise | Pause, approve, resume; reject changed arguments and duplicates |
-| 105–120 | A2A demonstration/exercise | NegotiatorBot delegates to PaymentsAgent; reject another principal's task access |
-| 120–130 | Incident reconstruction | Correlate traces, policy decisions, approvals, and business audit records |
-| 130–135 | Review and questions | Discuss production separation, operations, and residual risks |
+Use the [Incident Room presenter story](workshop-4-story.md) for the authoritative
+chapter schedule: opening 0–8, follow money 8–20, Gate 1 20–33, Gate 2 33–53,
+bypass 53–60, break/recovery 60–67, identity 67–85, approval 85–103, A2A 103–119,
+proof 119–130, incident review 130–135.
 
-**Exercise artifact:** remediated configuration and a short incident evidence worksheet.
+Pairs use predict → run → inspect → change → retest with local prepared policy
+and identity checkpoints. The ₹90 lakh loss executes only in a separate opt-in
+vulnerable ledger; protected services retain their controls. The final business
+path requires independent approval and exactly one bound settlement. Recorded
+proposals are labelled recorded; optional bounded live review and trace failures
+stay accurately labelled.
 
-**Acceptance:** wrong-audience and insufficient-scope tokens fail; unsafe tool execution fails even when requested by the model; approval binds to exact payment arguments; agent identities cannot self-approve or access another owner's tasks; duplicates do not create duplicate payments.
-
-**Checkpoints:** vulnerable → inference controls → capability controls → API identity → durable approval → secured A2A. Vulnerable checkpoints remain local or presenter-only and are never shared fallback defaults.
+Deliver [worksheet](../../workshops/w4/worksheet.md),
+[answer key](../../workshops/w4/answer-key.md),
+[evidence sheet](../../workshops/w4/incident-evidence.md) and
+[human rehearsal record](../../workshops/w4/delivery-rehearsal.md).
+Automated technical verification does not certify timed human delivery.
 
 ## Shared facilitator package
 

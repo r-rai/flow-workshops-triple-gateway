@@ -1,0 +1,162 @@
+{
+  "timestamp": "2026-10-04T214854Z",
+  "docker_stats": [
+    {
+      "BlockIO": "16.4kB / 0B",
+      "CPUPerc": "0.02%",
+      "Container": "a5bb2f46f6050dd2e3681fa3ff6437578e7c02c05a849d4cff788ecb6ac70c06",
+      "ID": "a5bb2f46f605",
+      "MemPerc": "22.41%",
+      "MemUsage": "14.34MiB / 64MiB",
+      "Name": "flobank-workshops-incident-sandbox-1",
+      "NetIO": "1.91kB / 1.56kB",
+      "PIDs": "1"
+    },
+    {
+      "BlockIO": "13.7MB / 28.7kB",
+      "CPUPerc": "0.78%",
+      "Container": "fd60f1eceaf1da284faf92d095a34f90631ff02b5c21b98dfb386ddd861177c3",
+      "ID": "fd60f1eceaf1",
+      "MemPerc": "28.70%",
+      "MemUsage": "110.2MiB / 384MiB",
+      "Name": "flobank-workshops-apisix-1",
+      "NetIO": "6.4MB / 6.42MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "19.5MB / 16MB",
+      "CPUPerc": "0.26%",
+      "Container": "cd728506624ae532def79ad9f6977aff14d70b4e44f9972ac9a4bddbdf08f9ed",
+      "ID": "cd728506624a",
+      "MemPerc": "32.41%",
+      "MemUsage": "82.96MiB / 256MiB",
+      "Name": "flobank-workshops-api-1",
+      "NetIO": "302kB / 6.56MB",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "508kB / 0B",
+      "CPUPerc": "0.03%",
+      "Container": "409bd904ee3593d33af0836d70a159692f41face08a9151b0135ea232d1007c8",
+      "ID": "409bd904ee35",
+      "MemPerc": "6.51%",
+      "MemUsage": "16.66MiB / 256MiB",
+      "Name": "flobank-workshops-jaeger-1",
+      "NetIO": "401kB / 67.1kB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "20.3MB / 0B",
+      "CPUPerc": "0.25%",
+      "Container": "afcf9094f5c867d7495ed57ebe6e4c6e21d639c56811b757b5e3ef479cbe4592",
+      "ID": "afcf9094f5c8",
+      "MemPerc": "24.39%",
+      "MemUsage": "62.43MiB / 256MiB",
+      "Name": "flobank-workshops-adapter-1",
+      "NetIO": "864kB / 164kB",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "43.6MB / 0B",
+      "CPUPerc": "0.39%",
+      "Container": "21d6f9c990f8b4c93d515e351dc9a89ec329764b5ce1a4cdf6e06b4c223043f0",
+      "ID": "21d6f9c990f8",
+      "MemPerc": "20.27%",
+      "MemUsage": "103.8MiB / 512MiB",
+      "Name": "flobank-workshops-worker-1",
+      "NetIO": "199kB / 197kB",
+      "PIDs": "8"
+    },
+    {
+      "BlockIO": "897kB / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "f2730547eb6958f98123a1fd8686d0340cab9bfd27922e9262aabc200a3a2a3c",
+      "ID": "f2730547eb69",
+      "MemPerc": "6.27%",
+      "MemUsage": "8.023MiB / 128MiB",
+      "Name": "flobank-workshops-opa-1",
+      "NetIO": "3.47kB / 1.25kB",
+      "PIDs": "9"
+    },
+    {
+      "BlockIO": "9.66MB / 426kB",
+      "CPUPerc": "0.00%",
+      "Container": "ef311825f00b9510e0d330c1333dba172b1a1cbf81206ee6c5579aa773dc7b46",
+      "ID": "ef311825f00b",
+      "MemPerc": "5.25%",
+      "MemUsage": "20.15MiB / 384MiB",
+      "Name": "flobank-workshops-postgres-1",
+      "NetIO": "1.33kB / 126B",
+      "PIDs": "6"
+    },
+    {
+      "BlockIO": "123MB / 6.34MB",
+      "CPUPerc": "2.09%",
+      "Container": "cf89a4eac7c572703e9c0afd30ec22e90429520e066118f5e0fd2d05aafe9017",
+      "ID": "cf89a4eac7c5",
+      "MemPerc": "97.97%",
+      "MemUsage": "501.6MiB / 512MiB",
+      "Name": "flobank-workshops-kafka-1",
+      "NetIO": "154kB / 165kB",
+      "PIDs": "95"
+    },
+    {
+      "BlockIO": "20.7MB / 168MB",
+      "CPUPerc": "2.03%",
+      "Container": "87eb1fa37f2f69f652d887132c7fd73ce63da9bd6b7b89b1ed6789bda2eb9c11",
+      "ID": "87eb1fa37f2f",
+      "MemPerc": "31.89%",
+      "MemUsage": "122.5MiB / 384MiB",
+      "Name": "flobank-workshops-temporal-1",
+      "NetIO": "45.8MB / 166kB",
+      "PIDs": "15"
+    },
+    {
+      "BlockIO": "67.1MB / 1.78MB",
+      "CPUPerc": "0.00%",
+      "Container": "4fb849fe3735388e7a89501941e294d3c6efbd301104a634047cc4b0d92fad15",
+      "ID": "4fb849fe3735",
+      "MemPerc": "0.33%",
+      "MemUsage": "26.56MiB / 7.755GiB",
+      "Name": "caddy",
+      "NetIO": "10.2MB / 51.5MB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "87.7MB / 83.2MB",
+      "CPUPerc": "0.02%",
+      "Container": "213548e843519605f7b0f3bd408f3d6bd419074593e6da400417457e868adb2d",
+      "ID": "213548e84351",
+      "MemPerc": "0.38%",
+      "MemUsage": "30.5MiB / 7.755GiB",
+      "Name": "portainer",
+      "NetIO": "7.3kB / 3.63kB",
+      "PIDs": "7"
+    },
+    {
+      "BlockIO": "319MB / 24.3MB",
+      "CPUPerc": "0.58%",
+      "Container": "a639610c56a5fbf071111877ec4d6dc539a04a900bc77c3ace307ed1e4135cd5",
+      "ID": "a639610c56a5",
+      "MemPerc": "1.44%",
+      "MemUsage": "114.5MiB / 7.755GiB",
+      "Name": "uptime-kuma",
+      "NetIO": "11.8kB / 3.79kB",
+      "PIDs": "19"
+    },
+    {
+      "BlockIO": "70MB / 963kB",
+      "CPUPerc": "0.00%",
+      "Container": "01b6c58bd991f78719e1bef8be8d414f5ec0eaa976238ea3131d1076e1962a65",
+      "ID": "01b6c58bd991",
+      "MemPerc": "0.32%",
+      "MemUsage": "25.09MiB / 7.755GiB",
+      "Name": "dozzle",
+      "NetIO": "15.2kB / 11.1kB",
+      "PIDs": "10"
+    }
+  ],
+  "host_free_bytes": "               total        used        free      shared  buff/cache   available\nMem:      8326934528  2840498176  3775430656    19456000  2248548352  5486436352\nSwap:     8589930496    84672512  8505257984\n",
+  "budget_bytes": 6000000000,
+  "scope": "Full W4 presenter stack including isolated ledger and existing host services. Single rehearsal snapshot, not sustained load qualification."
+}

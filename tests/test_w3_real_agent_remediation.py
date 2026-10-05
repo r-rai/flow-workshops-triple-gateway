@@ -266,15 +266,15 @@ async def test_workflow_investigation_failure_does_not_close_or_reject_dispute()
         assert res["result"]["status"] == "INVESTIGATION_FAILED"
 
 @pytest.mark.asyncio
-async def test_concurrent_budget_admission():
+async def test_concurrent_budget_admission(monkeypatch):
     """Finding 4: Concurrent requests must reserve budget atomically, preventing budget overruns."""
     from src.adapter.server import app
     import src.adapter.server as adapter_module
     from httpx import AsyncClient, ASGITransport, Response
 
-    # Configure a 1000-token budget with 900 tokens already used
-    adapter_module.INFERENCE_BUDGET_TOKENS = 1000
-    adapter_module._accumulated_tokens = 900
+    # Headroom admits one bounded 200-output-token request, not two.
+    monkeypatch.setattr(adapter_module, "INFERENCE_BUDGET_TOKENS", 1000)
+    monkeypatch.setattr(adapter_module, "_accumulated_tokens", 700)
 
     original_post = AsyncClient.post
 
@@ -295,7 +295,8 @@ async def test_concurrent_budget_admission():
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             req_payload = {
-                "messages": [{"role": "user", "content": "Investigate dispute"}]
+                "messages": [{"role": "user", "content": "Investigate dispute"}],
+                "max_tokens": 200
             }
             res1, res2 = await asyncio.gather(
                 ac.post("/ai/chat/completions", json=req_payload),
