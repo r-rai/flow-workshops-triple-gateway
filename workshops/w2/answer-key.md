@@ -6,7 +6,7 @@ on screen; use terminal commands for startup and the OPA outage only.
 
 ## Preflight
 
-1. Build `api` and `adapter`, switch to W2 and run `./scripts/workshop verify w2`.
+1. Complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests). Run `./scripts/workshop pull w2`, `./scripts/workshop switch w2`, then `./scripts/workshop verify w2`.
 2. Run `.venv/bin/python workshops/w2/rehearsal_console.py --outage`; add `--live`
    only when provider credentials and the fictional-data transfer are intended.
 3. Inspect timestamped console evidence. Reset seeded lab data before delivery

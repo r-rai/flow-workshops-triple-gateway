@@ -4,13 +4,15 @@ Use the [presenter story](../../docs/workshops/workshop-4-story.md), [participan
 
 ## Setup and isolation
 
-Build before attendees arrive. Configure an independent reviewer password locally. Keep it out of exported evidence. For the local presenter only, generate a distinct incident sandbox key and enable the replay:
+Complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) and run shell commands in Bash on Linux/WSL. Build before attendees arrive. Configure an independent reviewer password locally. Keep it out of exported evidence. For the local presenter only, generate a distinct incident sandbox key and enable the replay:
 
 ```bash
 export W4_REVIEWER_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
 export W4_SANDBOX_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
 export W4_ENABLE_VULNERABLE=true
-docker compose --profile w4 --profile w4-presenter build api adapter incident-sandbox
+export W4_OBSERVATION_ONLY=false
+./scripts/workshop pull w4
+docker compose --profile w4 --profile w4-presenter build incident-sandbox
 ./scripts/workshop switch w4
 docker compose --profile w4 --profile w4-presenter up -d incident-sandbox
 ```
@@ -50,6 +52,14 @@ If a run remains unresolved because the API cannot be read, keep it unresolved a
 The completed checkpoint is a local configuration repair, not a UI enforcement toggle. Restoration must be confirmed with actual service results.
 
 ## Rehearsals
+
+Use the same shell as setup so `W4_REVIEWER_PASSWORD` matches the running API.
+In a new shell, export the existing configured password; generating a new one
+without recreating the API causes reviewer authentication to fail. Restore the
+completed policy checkpoint before rehearsal. `--vulnerable` requires the
+presenter sandbox setup above. These rehearsals create fictional payments and
+proposals on the active stack; they do not reset data. Evidence is written to
+`workshops/w4/evidence/incident-<timestamp>.json`.
 
 ```bash
 .venv/bin/python workshops/w4/rehearsal_w4.py --vulnerable --outage

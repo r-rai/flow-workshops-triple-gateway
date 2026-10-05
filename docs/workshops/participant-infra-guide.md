@@ -32,7 +32,7 @@ This step-by-step guide is designed for **participants and instructors** to set 
 ### Required Software Installed on Host
 - **Git** (`git --version` >= 2.30)
 - **Docker Desktop** (or Docker Engine on Linux) with **Docker Compose v2** (`docker compose version` >= 2.20)
-- **Python 3.12** (recommended for verification scripts and tests)
+- **Python 3.12** with `venv` and pip (required for workshop Python clients, launcher preflight, verification scripts and tests; optional for Docker-only demos)
 - **curl** and a modern web browser (Chrome, Edge, Firefox, or Safari)
 
 > [!IMPORTANT]
@@ -60,13 +60,33 @@ cp .env.example .env
 MINIMAX_API_KEY="your-minimax-api-key"
 ```
 
-### Step 2.3: Set Up Python Virtual Environment (For Verification & Tests)
+### Step 2.3: Set Up Python Virtual Environment (For Workshop Clients, Verification & Tests)
+
+Run the launcher in Bash on Linux or WSL; it uses Linux utilities such as
+`free` and GNU `sed`. Python clients and direct Docker Compose commands can also
+run from Bash on macOS. On Windows,
+create the environment inside WSL; the launcher and `.venv/bin/python` commands
+below use Unix paths. Docker-only customer demos can skip this Python setup.
+
+From the repository root, using Python 3.12:
+
 ```bash
+python3 --version
 python3 -m venv .venv
-source .venv/bin/activate    # On Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install --upgrade pip
-pip install -r docker/api/requirements.txt -r docker/worker/requirements.txt pytest pytest-asyncio
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r docker/api/requirements.txt -r docker/worker/requirements.txt pytest pytest-asyncio
+.venv/bin/python -c "import httpx, aiokafka, temporalio, jose; print('Workshop client dependencies ready')"
 ```
+
+The existing requirements include `httpx` for the W1 MCP client and W2/W4 HTTP
+scripts, and `aiokafka`/`temporalio` for the W3 client. Installing dependencies
+inside Docker does not install them into your host Python. Use `.venv/bin/python`
+for worksheet commands; environment activation is unnecessary. W1 participants
+who only run `client.py` can use the [minimal W1 setup](../../workshops/w1/worksheet.md#before-the-session-prepare-the-python-client).
+
+If environment creation reports that `ensurepip` is unavailable on Ubuntu/Debian,
+install the `python3-venv` package matching your interpreter (for example,
+`python3.12-venv` for Python 3.12), then rerun `python3 -m venv .venv`.
 
 ### Step 2.4: Pre-Pull Pinned Images & Run Preflight Validation
 Download all pinned third-party container images (APISIX, OPA, PostgreSQL, Kafka, Jaeger) in advance:
@@ -135,7 +155,7 @@ Integrates Flo Bank directly with **APISIX Gate 3** (`:9080/api/v1`). Queries li
 ```bash
 ./scripts/workshop switch w1
 ```
-*Or using cross-platform Docker Compose:*
+*Or using Docker Compose from Bash:*
 ```bash
 export ACTIVE_PROFILE=w1
 docker compose --profile w1 up -d --build
@@ -187,7 +207,7 @@ PYTHONPATH=. .venv/bin/python workshops/w1/client.py call-unauthorized
 ```bash
 ./scripts/workshop switch w2
 ```
-*Or using cross-platform Docker Compose:*
+*Or using Docker Compose from Bash:*
 ```bash
 export ACTIVE_PROFILE=w2
 docker compose --profile w2 up -d --build
@@ -232,7 +252,7 @@ Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) and searc
 ```bash
 ./scripts/workshop switch w3
 ```
-*Or using cross-platform Docker Compose:*
+*Or using Docker Compose from Bash:*
 ```bash
 export ACTIVE_PROFILE=w3
 docker compose --profile w3 up -d --build
@@ -244,6 +264,11 @@ docker compose --profile w3 up -d --build
 ```
 
 ### Step 3: Trigger Autonomous Resolver via Kafka
+
+Use `USE_REPLAY_FIXTURES=true` in `.env` before starting W3 for the expected
+₹750 compensation. Follow the [W3 readiness notes](../../workshops/w3/worksheet.md#step-1-environment-readiness)
+for previous completed workflows and client connection settings.
+
 Emit customer dispute `case-501` to the Kafka topic:
 ```bash
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py emit --case-id case-501 --customer-id cust-8801
@@ -258,13 +283,13 @@ PYTHONPATH=. .venv/bin/python workshops/w3/client.py query --case-id case-501
 ### Step 5: Test Worker Crash & Duplicate Redelivery Resilience
 ```bash
 # Simulate unexpected worker crash:
-docker stop flobank-workshops-worker-1
+docker compose --profile w3 stop worker
 
 # Redeliver duplicate Kafka event:
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py emit --case-id case-501 --customer-id cust-8801
 
 # Restart worker and query workflow state:
-docker start flobank-workshops-worker-1
+docker compose --profile w3 start worker
 PYTHONPATH=. .venv/bin/python workshops/w3/client.py query --case-id case-501
 ```
 *Verify*: Temporal maintains exact workflow identity and state; zero duplicate executions or payments occur.
@@ -276,6 +301,11 @@ PYTHONPATH=. .venv/bin/python workshops/w3/client.py approve --case-id case-501 
 *Verify*: The workflow completes, creating exactly one idempotent compensation payment in Core Banking.
 
 ### Step 7: Run Full Workshop 3 Rehearsal Suite
+
+This resets banking data and deletes local Temporal SQLite history. Preserve
+evidence first and use a disposable local lab. This is a technical rehearsal,
+not a measured 45-minute delivery.
+
 ```bash
 PYTHONPATH=. .venv/bin/python workshops/w3/rehearsal_w3.py
 ```
@@ -293,54 +323,50 @@ PYTHONPATH=. .venv/bin/python workshops/w3/rehearsal_w3.py
 - **Duration**: 135 minutes (2h 15m)
 - **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `kafka`, `worker`
 - **Configured Memory Cap**: ~3,072 MiB
-- **Concept & Description**: Traditional API gateways protect systems from fast humans, but they are fundamentally blind to autonomous AI agents. When an enterprise deploys agentic workflows (via frameworks like LangGraph or CrewAI) and exposes internal business APIs as "Tools," standard REST security fails. Prompt injections don't violate network schemas, and non-deterministic agentic reasoning loops routinely bypass traditional rate limits, risking massive financial and data liability.
-- **Practical Walkthrough**: Uses a "live incident response" storytelling approach to deconstruct a high-consequence system compromise: *The Day NegotiatorBot Broke the Bank*. Through the lens of a multi-million-dollar automated exploit driven by a subtle prompt injection, participants map out why legacy OAuth and standard API proxies failed to stop the breach. Moving from forensic analysis to modern architecture, attendees learn how to systematically remediate the vulnerability by deploying a production-ready Triple-Gate Architecture across three distinct security perimeters:
-  1. **Defending the Inference Boundary (Gate 1 - AI Gateway)**
-  2. **Governing Capability Execution (Gate 2 - Tool / MCP Gateway)**
-  3. **Securing Micro-Scoped Identity Propagation (Gate 3 - Standard API Gateway)** via OAuth Token Exchange ($RFC\ 8693$)
-  Finally, demonstrates how to achieve deep observability across recursive agentic loops using modern OpenTelemetry GenAI span tracing and safely govern autonomous Agent-to-Agent (A2A) interactions in production.
+- **Exercise**: Use the [W4 worksheet](../../workshops/w4/worksheet.md) for the Incident Room, local policy/identity repairs, independent review and task/payment evidence. The recorded ₹90 lakh incident runs in an isolated presenter ledger; it is not a live model compromise or production certification.
 
-### Step 1: Switch Profile & Start Workshop 4
-```bash
-./scripts/workshop switch w4
-```
-*Or using cross-platform Docker Compose:*
-```bash
-export ACTIVE_PROFILE=w4
-docker compose --profile w4 up -d --build
-```
+### Step 1: Configure and Start Workshop 4
+
+Follow the [W4 facilitator setup](../../workshops/w4/answer-key.md#setup-and-isolation)
+before attendees arrive. Set the independent reviewer password before starting
+services. The optional vulnerable replay additionally needs a distinct sandbox
+key, `W4_ENABLE_VULNERABLE=true` and the `w4-presenter` service. Plain W4 startup
+does not configure these requirements.
 
 ### Step 2: Verify Infrastructure Health
+
 ```bash
+./scripts/workshop status
 ./scripts/workshop verify w4
 ```
 
-### Step 3: Verify Gate 3 Audience Separation & Token Exchange
+### Step 3: Open the Incident Room
+
+Open **http://localhost:9080/workshop-4**, sign in with the prefilled sample login,
+and check readiness. Follow the worksheet's local policy and identity exercises.
+Use a separate browser session for independent review with the configured
+reviewer password. Export run evidence before resetting or changing profiles.
+
+### Step 4: Inspect Delegation and Settlement Evidence
+
+Run **legitimate delegation** immediately before independent review. Inspect
+self-approval rejection, argument tampering, exact approved execution/retry and
+task/payment binding in the console. The [answer key](../../workshops/w4/answer-key.md)
+lists expected boundary results and ledger deltas.
+
+### Step 5: Run the Technical Rehearsal
+
+From the setup shell with the same `W4_REVIEWER_PASSWORD`:
+
 ```bash
-# Inspect agent card discovery:
-curl -s http://127.0.0.1:9080/.well-known/agent.json | jq .
+.venv/bin/python workshops/w4/rehearsal_w4.py
+# With the configured local presenter sandbox and an OPA outage:
+.venv/bin/python workshops/w4/rehearsal_w4.py --vulnerable --outage
 ```
 
-### Step 4: Verify Anti-Self-Approval & Argument Hash Tampering Rejection
-```bash
-# Execute anti-self-approval and parameter tampering tests:
-PYTHONPATH=. .venv/bin/python -c "
-import asyncio
-from src.agents.payments_agent import PaymentsAgent
-async def main():
-    agent = PaymentsAgent()
-    p = await agent.submit_proposal('acc-102', 'acc-101', 150000)
-    print('Proposal created:', p['proposal_id'])
-    res = await agent.attempt_self_approval(p['proposal_id'])
-    print('Self-approval rejection status (expected 403):', res['status_code'])
-asyncio.run(main())
-"
-```
-
-### Step 5: Execute Full Workshop 4 A2A Security Rehearsal
-```bash
-PYTHONPATH=. .venv/bin/python workshops/w4/rehearsal_w4.py
-```
+These commands create fictional payments/proposals and save timestamped JSON in
+`workshops/w4/evidence/`. They do not reset the stack or measure 135 minutes of
+human delivery. Restore the completed policy checkpoint before rehearsal.
 
 ### Step 6: Shut Down Workshop 4
 ```bash
@@ -370,7 +396,8 @@ Always run **one workshop profile at a time** to respect memory limits:
 ### Resetting Seed Database State
 If an exercise modifies database state or accounts and you wish to return to the clean workshop initial seed (`seed/v1_seed.json`):
 ```bash
-./scripts/workshop reset <w1|w2|w3|w4>
+# Example for the active W2 lab; substitute w1, w3 or w4 as appropriate.
+./scripts/workshop reset w2
 ```
 *Alternatively, call the API directly:*
 ```bash
@@ -411,6 +438,8 @@ docker system prune -f
 
 | Issue / Symptom | Root Cause | Solution |
 |---|---|---|
+| **`ModuleNotFoundError: No module named httpx`** | The host client interpreter lacks its dependency; Docker packages are separate. | Complete Step 2.3 and run `.venv/bin/python workshops/w1/client.py init`. For only the W1 client, install with `.venv/bin/python -m pip install httpx==0.27.0`. |
+| **`.venv/bin/python: No such file or directory`** | No virtual environment exists in the current repository. | Run Step 2.3 from the repository root; on Windows use Bash inside WSL. |
 | **Port 9080 already in use** | A previous workshop profile or local proxy is occupying port 9080. | Run `./scripts/workshop stop` or check `ss -ltn '( sport = :9080 )'`. |
 | **Port 8000 already in use** | Local service listening on 8000. | In `.env`, set `DEMO_HTTP_PORT=8001`, restart demo, and open [http://localhost:8001](http://localhost:8001). |
 | **`HTTP 401 Missing API key`** | Request to Gate 3 omitted required key-auth header. | Include `-H "X-API-Key: gate3-secret-token"` in requests to `:9080/api/v1/*`. |

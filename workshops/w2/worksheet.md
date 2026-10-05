@@ -1,5 +1,7 @@
 # Workshop 2 — Beyond API Governance
 
+Before running Python commands or the Bash launcher, complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) from the repository root. Use Bash on Linux/WSL for the launcher; macOS users can run Python clients and direct Docker Compose commands.
+
 **Securing AI Agents, MCP Servers, and Enterprise Integrations**
 
 **Duration:** 45 minutes · **Profile:** `w2` · **Experience:** Flo Bank Governance Studio
@@ -9,7 +11,7 @@
 From the repository root, with Docker and the workshop Python environment ready:
 
 ```bash
-docker compose --profile w2 build api adapter
+./scripts/workshop pull w2
 ./scripts/workshop switch w2
 ./scripts/workshop verify w2
 ```

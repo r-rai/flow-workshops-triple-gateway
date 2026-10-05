@@ -1,5 +1,7 @@
 # Workshop 4 · The Day the Agent Broke the Bank
 
+Before running Python commands or the Bash launcher, complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) from the repository root. Use Bash on Linux/WSL for the launcher; macOS users can run Python clients and direct Docker Compose commands.
+
 You are Flo Bank’s response team. NegotiatorBot handles customer cases; PaymentsAgent carries out settlements. A malicious ticket became a payment instruction. The opening loss is **₹90 lakh = 900,000,000 paise**. The incident is a recorded proposal executed against an isolated vulnerable ledger. It does not demonstrate a live model compromise.
 
 Before the session, install dependencies, pull/build images and start your local `w4` instance using the [infrastructure guide](../../docs/workshops/participant-infra-guide.md). Use one instance per pair. Open `http://localhost:9080/workshop-4` and sign in with `maya@flobank.demo` / `flo-demo`. Shared presenter hosting is for observation and recovery, not a multi-tenant lab.
@@ -19,6 +21,20 @@ For every exercise: **predict → run → inspect → change → retest**. Predi
 | 103–119 | Identify the principal allowed to read, execute, approve and complete | Foreign read 403, unauthorized completion 403, mismatch 400; bound task/payment |
 | 119–130 | Explain one denial and prove one legitimate payment | Run → proposal → task → payment → ledger; observed traces or explicit incomplete label |
 | 130–135 | Revisit your vote; assign each control an owner | Incident review below |
+
+## Start and check the local lab
+
+Have the facilitator complete the [W4 setup](answer-key.md#setup-and-isolation)
+before the timed session. It configures the independent reviewer password and
+optional isolated incident replay. Then check the running W4 stack:
+
+```bash
+./scripts/workshop status
+./scripts/workshop verify w4
+```
+
+Open the Incident Room and check readiness before running a scenario. Starting
+`w4` alone does not enable the isolated vulnerable replay.
 
 ## Pair exercise: local tool policy
 
@@ -44,11 +60,17 @@ Expected: the attack requests remain denied; the permitted request creates one 2
 .venv/bin/python workshops/w4/exercise_exchange.py initial
 ```
 
-Inspect `checkpoints/initial/identity.json`: a viewer requests `api:payments:write`. Predict the denial. Change only `requested_scope` to `api:accounts:read`, rerun, then compare with the completed checkpoint:
+Inspect `workshops/w4/checkpoints/initial/identity.json`: a viewer requests `api:payments:write`. Predict the denial. Change only `requested_scope` to `api:accounts:read`, rerun the `initial` command, then compare with the completed checkpoint:
 
 ```bash
 .venv/bin/python workshops/w4/exercise_exchange.py completed
 ```
+
+The expected HTTP statuses are 403 for the original initial checkpoint and 200
+for the corrected/completed request. The CLI saves sanitized timestamped JSON in
+`workshops/w4/evidence/`. It mints a token locally: if `.env` overrides JWT signing,
+issuer or audience settings, export those same values into the CLI shell before
+running it; this script does not load `.env` automatically.
 
 Use the supplied completed file rather than editing it when you need a checkpoint. Requests mint lab credentials server-side/CLI-side; evidence contains no tokens. In the console, compare **valid exchange**, **wrong audience** and **scope escalation** independently.
 

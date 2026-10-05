@@ -83,6 +83,10 @@ Docker Desktop or Docker Engine with Compose is all you need. No local Python,
 `.env` setup, LLM key, or additional scripts are required for this profile.
 The first build downloads the base image and dependencies.
 
+For W1–W4 Python clients and the Bash workshop launcher, local Python and
+installed dependencies are required. Complete the [workshop Python setup](docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests)
+before running worksheet commands. Docker installs packages only inside containers.
+
 Stop the demo with:
 
 ```bash

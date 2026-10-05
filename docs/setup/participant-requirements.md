@@ -90,6 +90,14 @@ reset, and verification. It runs under Bash (Linux/WSL), and verification uses
 the repository's Python virtual environment. It is not needed for the standalone
 demo. See the [VPS runbook](vps-setup-guide.md) for workshop operator commands.
 
+## Python workshop clients
+
+Docker-only demos do not need local Python. The W1–W4 Python clients and the
+Bash launcher require a host Python environment. Before the session, complete
+the [Python setup](../workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests).
+The W1 worksheet also includes a minimal `httpx` installation for its MCP client.
+Run client commands with `.venv/bin/python` from the repository root.
+
 ## Before the workshop
 
 Build or download the required images before workshop day. Do not depend on
