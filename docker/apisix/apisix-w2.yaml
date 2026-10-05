@@ -1,7 +1,7 @@
 routes:
   # Customer simulation: isolated from Gate 3 enterprise APIs.
   - id: w2_bank_demo
-    uris: ["/", "/demo-assets/*", "/demo-api/*"]
+    uris: ["/", "/workshop-2", "/demo-assets/*", "/demo-api/*"]
     upstream:
       type: roundrobin
       nodes:

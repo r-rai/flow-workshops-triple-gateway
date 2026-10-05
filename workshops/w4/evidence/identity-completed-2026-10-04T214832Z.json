@@ -1,0 +1,30 @@
+{
+  "checkpoint": "completed",
+  "config": {
+    "subject": "w4-pair-viewer",
+    "audience": "flobank-mcp",
+    "role": "viewer",
+    "source_scopes": [
+      "mcp:tools"
+    ],
+    "requested_scope": "api:accounts:read",
+    "target_audience": "flobank-api"
+  },
+  "status_code": 200,
+  "response": {
+    "issued_token_type": "urn:ietf:params:oauth:token-type:access_token",
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "scope": "api:accounts:read",
+    "identity": {
+      "sub": "w4-pair-viewer",
+      "aud": "flobank-api",
+      "scope": "api:accounts:read",
+      "role": "viewer",
+      "delegated_by": null,
+      "act": {
+        "sub": "w4-pair-viewer"
+      }
+    }
+  }
+}

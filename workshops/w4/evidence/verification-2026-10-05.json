@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-10-04T22:00:15.065910+00:00",
+  "tests": {
+    "command": ".venv/bin/python -m pytest tests -q --tb=short",
+    "passed": 109,
+    "warnings": 2
+  },
+  "technical_rehearsal": "incident-2026-10-04T215801Z.json",
+  "browser": "passed fixed attacks, isolated loss, independent reviewer refresh, one bound settlement, evidence export, widths 320/390/700/1024/1920",
+  "host_used_bytes": 2840498176,
+  "host_total_minus_available_bytes": 2840498176,
+  "workshop_container_mib": 1042.66,
+  "budget_bytes": 6000000000,
+  "memory_evidence": "memory-2026-10-04T214854Z.json",
+  "human_delivery_acceptance": "pending actual 135-minute rehearsal including break, exercise recovery and projector readability",
+  "restoration": {
+    "profile": "w2",
+    "w2_profile_smoke": "passed",
+    "w4_page_and_console_api_outside_w4": 404,
+    "w2_console_and_customer_session": "passed",
+    "presenter_sandbox_removed": true
+  }
+}

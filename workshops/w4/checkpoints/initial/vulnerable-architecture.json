@@ -1,24 +1,8 @@
 {
-  "checkpoint": "vulnerable",
-  "name": "The Day the Agent Broke the Bank - Initial State",
-  "vulnerabilities": [
-    {
-      "gate": 1,
-      "flaw": "Unbounded model inference, prompts blindly execute tools without input budget or replay bounds"
-    },
-    {
-      "gate": 2,
-      "flaw": "Coarse tool-level allowance without argument inspection (fraudulent beneficiaries permitted)"
-    },
-    {
-      "gate": 3,
-      "flaw": "Single monolithic token without audience separation or scope downscoping"
-    },
-    {
-      "approval": "No anti-self-approval rule, allowing caller to sign off on own proposals"
-    },
-    {
-      "a2a": "Unrestricted task registry permitting foreign agents to inspect and modify delegated tasks"
-    }
-  ]
+  "checkpoint": "initial",
+  "protected_stack": "hardened",
+  "vulnerable_replay": "Separate opt-in incident-sandbox only; no protected credentials or volumes",
+  "policy_file": "policy.rego",
+  "identity_file": "identity.json",
+  "protocol_claim": "implemented A2A subset; broader conformance unverified"
 }

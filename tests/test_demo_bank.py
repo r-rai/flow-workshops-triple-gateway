@@ -121,7 +121,10 @@ def test_demo_is_routed_through_each_gateway_profile(profile):
     config = yaml.safe_load(Path(f'docker/apisix/apisix-{profile}.yaml').read_text())
     route = next((r for r in config['routes'] if r['id'] == f'{profile}_bank_demo'), None)
     assert route is not None, 'customer demo route is missing'
-    assert route['uris'] == ['/', '/demo-assets/*', '/demo-api/*']
+    expected = ['/', '/demo-assets/*', '/demo-api/*']
+    if profile in ('w2', 'w4'):
+        expected.insert(1, f'/workshop-{profile[1:]}')
+    assert route['uris'] == expected
     assert route['upstream']['nodes'] == {'api:8000': 1}
     # The customer demo is not part of the enterprise tool catalog.
     assert not route.get('plugins')

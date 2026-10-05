@@ -1,0 +1,10 @@
+{
+  "subject": "w4-pair-viewer",
+  "audience": "flobank-mcp",
+  "role": "viewer",
+  "source_scopes": [
+    "mcp:tools"
+  ],
+  "requested_scope": "api:accounts:read",
+  "target_audience": "flobank-api"
+}

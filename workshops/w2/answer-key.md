@@ -1,115 +1,95 @@
-# Workshop 2 Answer Key & Facilitator Guide
+# Workshop 2 — Facilitator guide and answer key
 
-## 📋 Quick Diagnostic & Verification
-Run the verification check at any time to validate the environment:
-```bash
-./scripts/workshop verify w2
-```
+Use the [worksheet](worksheet.md) for the 45-minute schedule, commands and exact
+expected outputs. Keep Governance Studio at **http://localhost:9080/workshop-2**
+on screen; use terminal commands for startup and the OPA outage only.
 
-To run the complete automated 45-minute rehearsal simulation:
-```bash
-.venv/bin/python workshops/w2/rehearsal_w2.py
-```
+## Preflight
 
----
+1. Build `api` and `adapter`, switch to W2 and run `./scripts/workshop verify w2`.
+2. Run `.venv/bin/python workshops/w2/rehearsal_console.py --outage`; add `--live`
+   only when provider credentials and the fictional-data transfer are intended.
+3. Inspect timestamped console evidence. Reset seeded lab data before delivery
+   with `./scripts/workshop reset w2 --yes` after preserving evidence you need.
+4. Open Jaeger; inspect an exported trace using a console trace ID. Have a saved
+   JSON run available if provider or telemetry services fail during the session.
+5. Verify OPA is unpaused. Keep one workshop profile and one presenter active.
 
-## 🔑 Exercise Solutions & Policy Formulations
+## Presenter narrative
 
-### Exercise 1: Defeating Prompt Injections via Gate 2 OPA Policy
-In `workshops/w2/checkpoints/initial/policy-broad.rego`, OPA only checks coarse tool names:
-```rego
-# INSECURE INITIAL CHECKPOINT
-package flobank.policy
+**0–5:** “Our support agent can read a ticket. The ticket contains an instruction
+from outside the trust boundary. What would authorize the requested payment?”
+Run the recorded injection. Explain that fixed model output makes this policy
+exercise reproducible; the real MCP, OPA and bank services still execute.
 
-default allow = false
+**5–12:** Draw three responsibilities: model/provider access at Gate 1; signed
+identity plus actual tool arguments at Gate 2; scoped API identity and business
+invariants at Gate 3. The physical gateway is shared in this lab. Show which
+requests actually happened in the evidence rather than claiming all gates ran
+for every button.
 
-allow if {
-    input.tool != ""
-}
-```
-**Fix (Hardened Rego)** in `workshops/w2/checkpoints/completed/policy-hardened.rego`:
-```rego
-package flobank.policy
+**12–22:** Run the optional live review. Accept a refusal as a valid model result.
+Do not weaken its prompt to force a dramatic attack. If it proposes an invalid
+call, validation stops it before the MCP payment request. If it proposes a valid
+call, external policy decides. Return to the recorded attack to demonstrate a
+repeatable denial regardless of model behavior.
 
-import future.keywords.if
-import future.keywords.in
+**22–34:** Compare the four request/identity buttons. Ask attendees to predict
+each result first. Show a persisted proposal ID and `pending` status alongside
+zero new payments; a successful MCP envelope alone does not imply payment.
 
-default decision = "deny"
-default reason = "NO_MATCHING_POLICY"
+**34–41:** Pause OPA and use the small-payment button. Show timeout denial and
+observed zero changes; unpause OPA. Correlate trace ID, request, decision, proposal
+and payment records. The observer's account reads still work during the outage.
 
-decision := "deny" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account == "fraud-account-66"
-}
-reason := "PROHIBITED_BENEFICIARY" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account == "fraud-account-66"
-}
-```
+**41–45:** Use the blueprint panels to ask who owns inventory, approved egress,
+data classification, tool policy, high-impact review, evidence retention and
+incident response. The lab is a reference implementation, not a compliance claim.
 
----
+## Answers and implementation boundaries
 
-### Exercise 2: Implementing Three-Tier Risk Thresholds
+| Question | Answer |
+|---|---|
+| Can instructions in a ticket grant a role? | No. The console issues a fixed short-lived lab JWT; the adapter validates it. Text and request headers cannot choose the role used in this demo. |
+| Why is the injected proposal denied? | The actual `beneficiary` argument matches `fraud-account-66`, a prohibited beneficiary. Amount is 900,000 minor units (₹9,000) in the recorded fixture. |
+| What is the automatic threshold? | Support/teller low-risk payments up to and including 100,000 minor units (₹1,000); 100,001–1,000,000 requires approval. |
+| Why does the viewer fail on ₹250? | Its signed role satisfies no payment rule; default decision is `deny`, reason `NO_MATCHING_RULE`. |
+| Does approval-required move funds? | It creates a persisted proposal. The console checks the shared account balance and payment count before and after; expected deltas are zero. |
+| Does pausing OPA bypass policy? | No. The adapter timeout produces `POLICY_TIMEOUT_FAIL_CLOSED`. An unavailable service can instead produce `POLICY_UNAVAILABLE_FAIL_CLOSED`. |
+| Does live refusal prove OPA blocked a payment? | No. The response is explicitly `no_tool_proposed`; only the case-read policy was exercised. |
+| Does a trace ID prove end-to-end auditability? | No. Confirm exported spans and durable banking records; define storage retention and access controls separately. |
+| Does the demo stop data leakage or shadow AI everywhere? | No. Minimal provider input is shown; enterprise inventory, approved egress and DLP are blueprint extensions. |
 
-```rego
-# Low tier: Allow under INR 500 (50,000 minor units)
-decision := "allow" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account != "fraud-account-66"
-    input.arguments.amount <= 50000
-}
-reason := "LOW_RISK_AUTO_APPROVED" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account != "fraud-account-66"
-    input.arguments.amount <= 50000
-}
+## Policy exercise
 
-# Medium tier: Approval Required for INR 500 to INR 10,000
-decision := "approval_required" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account != "fraud-account-66"
-    input.arguments.amount > 50000
-    input.arguments.amount <= 1000000
-}
-reason := "REQUIRES_HUMAN_APPROVAL" if {
-    input.tool == "create_payment"
-    input.arguments.destination_account != "fraud-account-66"
-    input.arguments.amount > 50000
-    input.arguments.amount <= 1000000
-}
+The active file is `spikes/spike3_opa/policy.rego`; the completed teaching copy is
+`workshops/w2/checkpoints/completed/policy-hardened.rego`. Both use
+`input.arguments.beneficiary`, not `destination_account`. OPA 0.68 supports the
+existing rule syntax; preserve mutually exclusive reason rules when modifying it.
+For a payment that is both above the ceiling and blacklisted,
+`PROHIBITED_BENEFICIARY` takes precedence, avoiding conflicting complete-rule outputs.
 
-# High tier: Deny above INR 10,000
-decision := "deny" if {
-    input.tool == "create_payment"
-    input.arguments.amount > 1000000
-}
-reason := "TRANSACTION_LIMIT_EXCEEDED" if {
-    input.tool == "create_payment"
-    input.arguments.amount > 1000000
-}
-```
+Inspect the existing rules together. Removing `support_agent` from both small
+payment decision/reason rules changes its ₹250 result to the default denial.
+Merely raising OPA's auto-allow ceiling does not remove Core Banking's independent
+100,000-minor-unit approval requirement. This illustrates policy layering.
 
----
+## Enterprise blueprint and references
 
-### Exercise 3: Fail-Closed Resiliency Pattern
-In adapter code (`src/adapter/server.py`):
-```python
-try:
-    async with httpx.AsyncClient(timeout=1.0) as client:
-        resp = await client.post("http://opa:8181/v1/data/flobank/policy", json=policy_input)
-        if resp.status_code == 200:
-            result = resp.json().get("result", {})
-            return result
-        else:
-            return {"decision": "deny", "reason": "OPA_ERROR_STATUS"}
-except Exception:
-    # Crucial Fail-Closed guarantee
-    return {"decision": "deny", "reason": "POLICY_TIMEOUT_FAIL_CLOSED"}
-```
+Use an inventory with owners and use cases; evaluate risks in context; measure
+behavior and failures; manage residual risks throughout operation. This teaching
+mapping follows the four NIST AI RMF functions, including its inventory and
+monitoring outcomes. It is not a certification checklist.
+[NIST AI RMF Core](https://airc.nist.gov/airmf-resources/airmf/5-sec-core/).
 
----
+Validate intended token audiences at the MCP boundary and use appropriately scoped
+downstream credentials. The lab demonstrates audience separation and token
+exchange; it does not implement the complete current MCP authorization discovery
+flow. The MCP security guidance rejects token passthrough.
+[MCP Security Best Practices](https://modelcontextprotocol.io/docs/draft/tutorials/security/security_best_practices).
 
-## 💡 Facilitator Tips
-- Highlight to participants that Gate 1 (Model Guardrails) alone is probabilistic and insufficient against indirect injections hidden in third-party payloads.
-- Gate 2 (OPA) provides deterministic policy checks on actual extracted tool arguments before executing side effects.
-- Gate 3 (APISIX Gateway) provides transport and cryptographic enforcement (RFC 8693 token exchange, loopback network isolation, rate limits).
+Before production, replace shared lab identities/secrets, require authenticated
+model access, enforce approved egress and tenant/resource authorization, redact
+sensitive telemetry, design idempotent execution and durable approvals, and test
+failure recovery. Plan legal/compliance requirements for the actual use case and
+jurisdiction with the responsible teams.

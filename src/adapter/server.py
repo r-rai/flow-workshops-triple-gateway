@@ -379,6 +379,8 @@ async def handle_mcp(req: Request):
                         case_id = norm_args.get("id")
                         res = client.get(f"{GATE3_URL}/cases/{case_id}", headers=headers)
                     elif tool_name == "create_payment":
+                        if req.headers.get("Idempotency-Key"):
+                            headers["Idempotency-Key"] = req.headers["Idempotency-Key"]
                         res = client.post(f"{GATE3_URL}/payments", headers=headers, json=norm_args)
                     else:
                         return JSONResponse({"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": "Method not found"}})
@@ -464,9 +466,12 @@ async def ai_chat_completions(req: Request):
     has_tools = bool(tools)
 
     # Atomic token budget reservation before dispatch
-    est_prompt = max(15, len(json.dumps(messages)) // 4)
-    est_req = 150 if has_tools else 75
-    reservation = min(est_prompt, 200) + est_req
+    est_prompt = max(15, len(json.dumps({"messages": messages, "tools": tools})) // 4)
+    requested_output = body.get("max_tokens", body.get("max_completion_tokens", 2048))
+    if type(requested_output) is not int or requested_output <= 0:
+        return JSONResponse({"error": {"type": "invalid_max_tokens", "code": 400}}, status_code=400)
+    requested_output = min(requested_output, 2048)
+    reservation = est_prompt + requested_output
 
     async with _budget_lock:
         if _accumulated_tokens + reservation > INFERENCE_BUDGET_TOKENS:
@@ -511,12 +516,7 @@ async def ai_chat_completions(req: Request):
                 payload["tools"] = tools
             if "tool_choice" in body:
                 payload["tool_choice"] = body["tool_choice"]
-            if "max_tokens" in body:
-                payload["max_tokens"] = min(int(body["max_tokens"]), 2048)
-            elif "max_completion_tokens" in body:
-                payload["max_tokens"] = min(int(body["max_completion_tokens"]), 2048)
-            else:
-                payload["max_tokens"] = 2048
+            payload["max_tokens"] = requested_output
             if "temperature" in body:
                 payload["temperature"] = body["temperature"]
 

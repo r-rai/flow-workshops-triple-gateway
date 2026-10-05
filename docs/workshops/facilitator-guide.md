@@ -40,6 +40,11 @@ Current service sets and configured limits are in the
 
 ## ⚙️ VPS Architecture & Resource Protection Policy
 
+For W2, use the dedicated [Governance Studio facilitator guide](../../workshops/w2/answer-key.md)
+and open `http://localhost:9080/workshop-2`. The browser-API rehearsal is
+`.venv/bin/python workshops/w2/rehearsal_console.py --outage` (`--live` adds one
+hosted-model call). Its timestamped evidence supplements the historical CLI rehearsal.
+
 ### Resource Budget & Coexistence Invariant
 - **Host**: Linux VPS (`vmi3355051` / 8 GB RAM total).
 - **Hard Limit**: The workshop platform must operate within a strict **6 GB operating memory budget**.
@@ -96,7 +101,7 @@ Current service sets and configured limits are in the
 | **W1: OpenAPI to MCP** | `w1` | `.venv/bin/python workshops/w1/rehearsal_w1.py` | `./scripts/workshop verify w1` | `workshops/w1/evidence/rehearsal-evidence.json` |
 | **W2: Governance** | `w2` | `.venv/bin/python workshops/w2/rehearsal_w2.py` | `./scripts/workshop verify w2` | `workshops/w2/evidence/rehearsal-evidence.json` |
 | **W3: Durability** | `w3` | `.venv/bin/python workshops/w3/rehearsal_w3.py` | `./scripts/workshop verify w3` | `workshops/w3/evidence/rehearsal-evidence.json` |
-| **W4: Triple-Gate** | `w4` | `.venv/bin/python workshops/w4/rehearsal_w4.py` | `./scripts/workshop verify w4` | `workshops/w4/evidence/rehearsal-evidence.json` |
+| **W4: Triple-Gate** | `w4` | `.venv/bin/python workshops/w4/rehearsal_w4.py` | `./scripts/workshop verify w4` | `workshops/w4/evidence/incident-<UTC>.json` |
 
 ---
 
@@ -127,3 +132,9 @@ Current service sets and configured limits are in the
   - **Status**: Unverified on local infrastructure.
   - **Reason**: The host system is a Linux VPS. While total Linux container active memory across 9 microservices peaks at ~951 MB / 907 MiB (comfortably within the 6 GB VPS operating budget), Windows 11 WSL2 introduces virtualization overhead (Vmmem process allocation and dynamic memory reclamation) that cannot be measured on a native Linux kernel. This benchmark must be confirmed during participant onboarding on native Windows 11 hardware.
 
+
+W4 delivery now uses the [Incident Room story](workshop-4-story.md) and
+[W4 setup/answer key](../../workshops/w4/answer-key.md). Open `/workshop-4` only
+under `w4`. The recorded ₹90 lakh incident executes in its separate local
+presenter sandbox. Technical rehearsal evidence and measured 135-minute human
+delivery acceptance are recorded separately.

@@ -99,6 +99,7 @@ class DemoSession:
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     backend_mode: str = "simulated"
     api_token: str | None = None
+    governance_runs: int = 0
 
 
 
@@ -123,8 +124,21 @@ class ChatRequest(BaseModel):
         return value.strip()
 
 
+def create_customer_token():
+    from src.core.security import create_jwt_token
+    return create_jwt_token('cust-maya',os.getenv('API_AUDIENCE','flobank-api'),
+        ['api:accounts:read','api:cards:read','api:cards:write','api:cases:read','api:cases:write'],'customer')
+
+
 def current_session(flo_demo_session: str | None = Cookie(default=None)) -> DemoSession:
     session = sessions.get(flo_demo_session or '')
+    if session is None and flo_demo_session and os.getenv('ACTIVE_PROFILE') == 'w4':
+        from src.demo.incident import restored_session
+        persisted = restored_session(flo_demo_session)
+        if persisted:
+            token = create_customer_token() if persisted[1] == 'enterprise' else None
+            session = DemoSession(expires_at=persisted[0], backend_mode=persisted[1], api_token=token)
+            sessions[flo_demo_session] = session
     if session is None or session.expires_at <= time.time():
         sessions.pop(flo_demo_session or '', None)
         raise HTTPException(401, 'Your demo session ended. Please sign in again.')
@@ -137,6 +151,7 @@ async def snapshot(session: DemoSession) -> dict[str, Any]:
     data['cases'] = list(session.cases.values())
     data['chat_mode'] = get_chat_mode()
     data['backend_mode'] = session.backend_mode
+    data['workshop_profile'] = os.getenv('ACTIVE_PROFILE')
     if session.backend_mode == 'enterprise':
         data['mode'] = 'enterprise'
         gate3_url = get_gate3_url()
@@ -241,9 +256,13 @@ async def login(payload: LoginRequest, request: Request, response: Response):
             logger.warning(f"Failed to mint customer JWT token: {e}")
 
     token = secrets.token_urlsafe(32)
-    session = DemoSession(expires_at=now + SESSION_TTL, backend_mode=b_mode, api_token=api_token)
+    session_ttl = 10800 if os.getenv('ACTIVE_PROFILE') == 'w4' else SESSION_TTL
+    session = DemoSession(expires_at=now + session_ttl, backend_mode=b_mode, api_token=api_token)
     sessions[token] = session
-    response.set_cookie(COOKIE, token, max_age=SESSION_TTL, httponly=True,
+    if os.getenv('ACTIVE_PROFILE') == 'w4':
+        from src.demo.incident import register_session
+        register_session(token, session.expires_at, b_mode)
+    response.set_cookie(COOKIE, token, max_age=session_ttl, httponly=True,
                         samesite='strict', secure=request.url.scheme == 'https', path='/demo-api')
     return await snapshot(session)
 
@@ -252,6 +271,9 @@ async def login(payload: LoginRequest, request: Request, response: Response):
 async def logout(request: Request, response: Response):
     token = request.cookies.get(COOKIE)
     session = sessions.pop(token, None)
+    if os.getenv('ACTIVE_PROFILE') == 'w4':
+        from src.demo.incident import revoke_session
+        revoke_session(token)
     if session:
         session.expires_at = 0
         session.history.clear()
@@ -334,6 +356,11 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
 
 
 
+from src.demo.governance import create_router, require_w2
+
+demo_api.include_router(create_router(current_session))
+from src.demo.incident import create_router as incident_router, require_w4
+demo_api.include_router(incident_router(current_session))
 app.mount('/demo-api', demo_api)
 app.mount('/demo-assets', StaticFiles(directory=STATIC), name='demo-assets')
 
@@ -341,3 +368,13 @@ app.mount('/demo-assets', StaticFiles(directory=STATIC), name='demo-assets')
 @app.get('/', include_in_schema=False)
 async def index():
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-cache'})
+
+
+@app.get('/workshop-2', include_in_schema=False, dependencies=[Depends(require_w2)])
+async def governance_console():
+    return FileResponse(STATIC / 'governance.html', headers={'Cache-Control': 'no-cache'})
+
+
+@app.get('/workshop-4', include_in_schema=False, dependencies=[Depends(require_w4)])
+async def incident_console():
+    return FileResponse(STATIC / 'incident.html', headers={'Cache-Control': 'no-cache'})

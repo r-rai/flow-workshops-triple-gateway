@@ -1,6 +1,8 @@
 name: flobank-workshops
 
 networks:
+  incident:
+    internal: true
   edge:
     name: flobank-edge
   capability:
@@ -145,12 +147,14 @@ services:
     restart: unless-stopped
     environment:
       - ENVIRONMENT=workshop
+      - ACTIVE_PROFILE=${ACTIVE_PROFILE:-w1}
       - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/flobank.sqlite}
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-flobank-super-secret-signing-key-for-lab}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ISSUER=${JWT_ISSUER:-https://identity.flobank.internal/realms/flobank}
       - API_AUDIENCE=${API_AUDIENCE:-flobank-api}
+      - MCP_AUDIENCE=${MCP_AUDIENCE:-flobank-mcp}
       - ENABLE_TELEMETRY=${ENABLE_TELEMETRY:-true}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://jaeger:4318/v1/traces}
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-http://jaeger:4318/v1/traces}
@@ -162,10 +166,15 @@ services:
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
       - DEMO_AI_GATEWAY_URL=${DEMO_AI_GATEWAY_URL:-http://apisix:9080/ai/chat/completions}
       - DEMO_AI_STATUS_URL=${DEMO_AI_STATUS_URL:-http://apisix:9080/ai/status}
+      - W4_REVIEWER_PASSWORD=${W4_REVIEWER_PASSWORD:-}
+      - W4_ENABLE_VULNERABLE=${W4_ENABLE_VULNERABLE:-false}
+      - W4_OBSERVATION_ONLY=${W4_OBSERVATION_ONLY:-false}
+      - W4_SANDBOX_KEY=${W4_SANDBOX_KEY:-}
     volumes:
       - flobank_api_data:/app/data
       - ./seed/v1_seed.json:/app/seed/v1_seed.json:ro
     networks:
+      - incident
       - backend
       - persistence
       - demo
@@ -188,6 +197,8 @@ services:
     restart: unless-stopped
     environment:
       - OPA_URL=http://opa:8181/v1/data/flobank/policy
+      - JWT_ISSUER=${JWT_ISSUER:-https://identity.flobank.internal/realms/flobank}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - GATE3_URL=http://apisix:9080/api/v1
       - GATE3_API_KEY=${GATE3_API_KEY:-gate3-secret-token}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-flobank-super-secret-signing-key-for-lab}
@@ -348,3 +359,23 @@ services:
           memory: 512M
     profiles: ["w3", "w4"]
 
+  # Opt-in local presenter replay. No banking keys, provider keys, or protected volumes.
+  incident-sandbox:
+    build:
+      context: .
+      dockerfile: docker/incident/Dockerfile
+    command: ["python", "/incident_sandbox.py"]
+    environment:
+      - W4_SANDBOX_KEY=${W4_SANDBOX_KEY:-}
+    networks:
+      - incident
+    tmpfs:
+      - /incident:size=16m
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    profiles: ["w4-presenter"]

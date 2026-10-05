@@ -1,0 +1,3292 @@
+[
+  {
+    "run_id": "run-9ac66fac3b95430670669eb6",
+    "trace_id": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "79a85cc9c3c4fa8a",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082193692,
+            "duration": 666,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "c21f2b4e13faacd6"
+              }
+            ]
+          },
+          {
+            "span_id": "6fc782326c3c06d5",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082194452,
+            "duration": 128,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "c21f2b4e13faacd6"
+              }
+            ]
+          },
+          {
+            "span_id": "996e3c9543211d49",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082240233,
+            "duration": 427,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "376ff029a4212444"
+              }
+            ]
+          },
+          {
+            "span_id": "c21f2b4e13faacd6",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082187213,
+            "duration": 7383,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "2c9dfdac6aa159b4"
+              }
+            ]
+          },
+          {
+            "span_id": "997148c3e538a4f1",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082212142,
+            "duration": 462,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "e7146edfe5ecee34"
+              }
+            ]
+          },
+          {
+            "span_id": "a8e39767d48775b9",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082240719,
+            "duration": 54,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "376ff029a4212444"
+              }
+            ]
+          },
+          {
+            "span_id": "f1ea96f579a9725a",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082212659,
+            "duration": 85,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "e7146edfe5ecee34"
+              }
+            ]
+          },
+          {
+            "span_id": "376ff029a4212444",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082236312,
+            "duration": 4470,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "2aeb6cac8fe64fe6"
+              }
+            ]
+          },
+          {
+            "span_id": "e7146edfe5ecee34",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082203853,
+            "duration": 8906,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "d8dfffae40239487"
+              }
+            ]
+          },
+          {
+            "span_id": "c333cf6a377854cf",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082252669,
+            "duration": 301,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "40fa3c11c4802671"
+              }
+            ]
+          },
+          {
+            "span_id": "b6004930863cfe43",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082253022,
+            "duration": 77,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "40fa3c11c4802671"
+              }
+            ]
+          },
+          {
+            "span_id": "40fa3c11c4802671",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082248513,
+            "duration": 4595,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "b4d2acb748f416cefb2ee5bec1bc3cdc",
+                "spanID": "9368ec3b7c607b48"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-2020c00de2e9b5f9f249c9c9",
+    "trace_id": "cda05d93819519d38573ce040af28847",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "cda05d93819519d38573ce040af28847",
+        "services": [
+          "flobank-adapter",
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "dc62454800f230e9",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082333939,
+            "duration": 266,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "7041823476e500f4"
+              }
+            ]
+          },
+          {
+            "span_id": "21c95b4dff9ff17e",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082322996,
+            "duration": 441,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "75fb916f519101e1"
+              }
+            ]
+          },
+          {
+            "span_id": "d44793b47420c1b3",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082323514,
+            "duration": 59,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "75fb916f519101e1"
+              }
+            ]
+          },
+          {
+            "span_id": "75fb916f519101e1",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082318698,
+            "duration": 4883,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "a8961ca50a4f7d77"
+              }
+            ]
+          },
+          {
+            "span_id": "abaa7ba9ed6b5e05",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082386972,
+            "duration": 107,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "3eea38dd989b25e0"
+              }
+            ]
+          },
+          {
+            "span_id": "921e4d707bf5b790",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082411602,
+            "duration": 600,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "e24e49bf52935d8b"
+              }
+            ]
+          },
+          {
+            "span_id": "7041823476e500f4",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082330704,
+            "duration": 3640,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "f5d0f633bc349362"
+              }
+            ]
+          },
+          {
+            "span_id": "91afc4a2d5061c45",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082386250,
+            "duration": 641,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "3eea38dd989b25e0"
+              }
+            ]
+          },
+          {
+            "span_id": "a58ef8b4a321dea9",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082334254,
+            "duration": 80,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "7041823476e500f4"
+              }
+            ]
+          },
+          {
+            "span_id": "3eea38dd989b25e0",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082380990,
+            "duration": 6103,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1df3bedc71edca64"
+              }
+            ]
+          },
+          {
+            "span_id": "485c0964089b0275",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082412319,
+            "duration": 167,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "e24e49bf52935d8b"
+              }
+            ]
+          },
+          {
+            "span_id": "e24e49bf52935d8b",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082406424,
+            "duration": 6095,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "08fab64442b6689a"
+              }
+            ]
+          },
+          {
+            "span_id": "23e809d1b30770c2",
+            "operation": "POST /ai/chat/completions http receive",
+            "start_time": 1791151082356155,
+            "duration": 1498,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "0abe99f10a70a580",
+            "operation": "GET /ai/budget",
+            "start_time": 1791151082340682,
+            "duration": 1172,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "ddfe7e06f1376bc4"
+              }
+            ]
+          },
+          {
+            "span_id": "220a98eb389ae1ef",
+            "operation": "POST /ai/chat/completions http receive",
+            "start_time": 1791151082355742,
+            "duration": 339,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "8c82282bf5271804",
+            "operation": "POST /ai/chat/completions http receive",
+            "start_time": 1791151082355132,
+            "duration": 24,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "eaedcec7716818a9",
+            "operation": "POST /ai/chat/completions http receive",
+            "start_time": 1791151082355210,
+            "duration": 456,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "7e5348293f08cdb5",
+            "operation": "POST /ai/chat/completions http receive",
+            "start_time": 1791151082357736,
+            "duration": 124,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "96ee0db0f6482e61",
+            "operation": "POST /ai/chat/completions http send",
+            "start_time": 1791151082361116,
+            "duration": 516,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "ed9dd2576bb6f8d8",
+            "operation": "POST /ai/chat/completions http send",
+            "start_time": 1791151082361737,
+            "duration": 93,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "1c3f0e8ab2783102"
+              }
+            ]
+          },
+          {
+            "span_id": "1c3f0e8ab2783102",
+            "operation": "POST /ai/chat/completions",
+            "start_time": 1791151082354813,
+            "duration": 7031,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "aa24bc8928b7a5bd"
+              }
+            ]
+          },
+          {
+            "span_id": "7baf55a643969b33",
+            "operation": "GET /ai/budget http send",
+            "start_time": 1791151082341767,
+            "duration": 71,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "0abe99f10a70a580"
+              }
+            ]
+          },
+          {
+            "span_id": "0316ed287cb527cc",
+            "operation": "GET /ai/budget http send",
+            "start_time": 1791151082341199,
+            "duration": 496,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "cda05d93819519d38573ce040af28847",
+                "spanID": "0abe99f10a70a580"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-ce4db940f9550d6147d732f4",
+    "trace_id": "22d5ae9edf98761d8271244a3ea05280",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "22d5ae9edf98761d8271244a3ea05280",
+        "services": [
+          "flobank-adapter",
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "6aaa00610584ea88",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082545641,
+            "duration": 485,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "05caa4d9e241bb4c"
+              }
+            ]
+          },
+          {
+            "span_id": "124ae7c6b4249f93",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082546193,
+            "duration": 87,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "05caa4d9e241bb4c"
+              }
+            ]
+          },
+          {
+            "span_id": "a32989697441a402",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082629353,
+            "duration": 590,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "3499958d766b36ab"
+              }
+            ]
+          },
+          {
+            "span_id": "05caa4d9e241bb4c",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082540829,
+            "duration": 5463,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "b8f89dfd89204305"
+              }
+            ]
+          },
+          {
+            "span_id": "61085394eefef933",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082560220,
+            "duration": 549,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "ce8083fb23207f87"
+              }
+            ]
+          },
+          {
+            "span_id": "a71081934c4ef0ef",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082560854,
+            "duration": 117,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "ce8083fb23207f87"
+              }
+            ]
+          },
+          {
+            "span_id": "ce8083fb23207f87",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082556056,
+            "duration": 4930,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "2ad675123db310dc"
+              }
+            ]
+          },
+          {
+            "span_id": "3499958d766b36ab",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082624842,
+            "duration": 5253,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "e3fc50aa2b35824d"
+              }
+            ]
+          },
+          {
+            "span_id": "17e15295d3fa6653",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082630014,
+            "duration": 70,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "3499958d766b36ab"
+              }
+            ]
+          },
+          {
+            "span_id": "9d0ccbd4de00bb8e",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082643564,
+            "duration": 414,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "b3322f2bf572d073"
+              }
+            ]
+          },
+          {
+            "span_id": "fe101f248ba1b42e",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082644042,
+            "duration": 92,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "b3322f2bf572d073"
+              }
+            ]
+          },
+          {
+            "span_id": "b3322f2bf572d073",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082638997,
+            "duration": 5151,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "d0cd3e5255ee7a33"
+              }
+            ]
+          },
+          {
+            "span_id": "89a82cf172fb5b33",
+            "operation": "POST /mcp http receive",
+            "start_time": 1791151082581029,
+            "duration": 29,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "fbedf060aaf77059"
+              }
+            ]
+          },
+          {
+            "span_id": "40d6ebbf4d723723",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151082612075,
+            "duration": 475,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "fbedf060aaf77059"
+              }
+            ]
+          },
+          {
+            "span_id": "ca08fad8151a33dc",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151082612626,
+            "duration": 84,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "fbedf060aaf77059"
+              }
+            ]
+          },
+          {
+            "span_id": "fbedf060aaf77059",
+            "operation": "POST /mcp",
+            "start_time": 1791151082580607,
+            "duration": 32113,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "22d5ae9edf98761d8271244a3ea05280",
+                "spanID": "6391320db100ee1b"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-432411d691e57ae995c9a8c9",
+    "trace_id": "82cc5370bfa61d1442dc7f85734b7723",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "82cc5370bfa61d1442dc7f85734b7723",
+        "services": [
+          "flobank-adapter",
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "c8ab83e9cb83c974",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082743803,
+            "duration": 1452,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "7a1b6e5f45746b5a"
+              }
+            ]
+          },
+          {
+            "span_id": "0ebf48206475ded8",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082760518,
+            "duration": 146,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "5926b4d4ab67d03f"
+              }
+            ]
+          },
+          {
+            "span_id": "fd4b0fdbd423c487",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082745366,
+            "duration": 143,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "7a1b6e5f45746b5a"
+              }
+            ]
+          },
+          {
+            "span_id": "7a1b6e5f45746b5a",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082721807,
+            "duration": 23717,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "8145a287001a24c6"
+              }
+            ]
+          },
+          {
+            "span_id": "7086ff901a08d149",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082760027,
+            "duration": 412,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "5926b4d4ab67d03f"
+              }
+            ]
+          },
+          {
+            "span_id": "cf3cc81c1e70a0af",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082821250,
+            "duration": 120,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "87dc6825098785e9"
+              }
+            ]
+          },
+          {
+            "span_id": "f156b965fd2e8c15",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082800608,
+            "duration": 6019,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "ec66d3ce7bfcdb4a"
+              }
+            ]
+          },
+          {
+            "span_id": "5926b4d4ab67d03f",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082755262,
+            "duration": 5413,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "798bd00a5216472b"
+              }
+            ]
+          },
+          {
+            "span_id": "c09fa71efd3acd08",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082820647,
+            "duration": 518,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "87dc6825098785e9"
+              }
+            ]
+          },
+          {
+            "span_id": "667bbb6a342c304e",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082805871,
+            "duration": 578,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "f156b965fd2e8c15"
+              }
+            ]
+          },
+          {
+            "span_id": "87dc6825098785e9",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082816114,
+            "duration": 5269,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "2ec94ec643997aca"
+              }
+            ]
+          },
+          {
+            "span_id": "ba02e6c225a3ba7c",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082806541,
+            "duration": 71,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "f156b965fd2e8c15"
+              }
+            ]
+          },
+          {
+            "span_id": "9989ef0deada6208",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151082787918,
+            "duration": 395,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "c4ecd22a39149852"
+              }
+            ]
+          },
+          {
+            "span_id": "22d082860775c1cd",
+            "operation": "POST /mcp http receive",
+            "start_time": 1791151082772797,
+            "duration": 22,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "c4ecd22a39149852"
+              }
+            ]
+          },
+          {
+            "span_id": "ec4cc87772808000",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151082788367,
+            "duration": 65,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "c4ecd22a39149852"
+              }
+            ]
+          },
+          {
+            "span_id": "c4ecd22a39149852",
+            "operation": "POST /mcp",
+            "start_time": 1791151082772188,
+            "duration": 16252,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "82cc5370bfa61d1442dc7f85734b7723",
+                "spanID": "36154dfa1ebc14f6"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-4424a1aea4049ce7b1d476b7",
+    "trace_id": "85f730e8a24fc9f47021cba1aacc79c0",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "85f730e8a24fc9f47021cba1aacc79c0",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "4c6b43c77ddbe8cc",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082903239,
+            "duration": 1413,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "62c89b69cf3612a2"
+              }
+            ]
+          },
+          {
+            "span_id": "09d0bc9c3d0f30eb",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082904754,
+            "duration": 97,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "62c89b69cf3612a2"
+              }
+            ]
+          },
+          {
+            "span_id": "62c89b69cf3612a2",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082895163,
+            "duration": 9703,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "c66a208e41318b9e"
+              }
+            ]
+          },
+          {
+            "span_id": "50e70c8e84d25597",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082926440,
+            "duration": 652,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "f377cc8a8f54c265"
+              }
+            ]
+          },
+          {
+            "span_id": "f377cc8a8f54c265",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082923747,
+            "duration": 3540,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "d771941c3183f07a"
+              }
+            ]
+          },
+          {
+            "span_id": "465e32b2c6ca3fc7",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082916629,
+            "duration": 365,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "c6d0a5d153b0a118"
+              }
+            ]
+          },
+          {
+            "span_id": "82359fcb4f3d6dca",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082927170,
+            "duration": 94,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "f377cc8a8f54c265"
+              }
+            ]
+          },
+          {
+            "span_id": "c6d0a5d153b0a118",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082912834,
+            "duration": 4361,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "d2acc3df007d3ae0"
+              }
+            ]
+          },
+          {
+            "span_id": "e22626e0e0f355ac",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082942535,
+            "duration": 479,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "df5e058b46ceeda7"
+              }
+            ]
+          },
+          {
+            "span_id": "0cc6c84726f76823",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082917078,
+            "duration": 104,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "c6d0a5d153b0a118"
+              }
+            ]
+          },
+          {
+            "span_id": "0639175dd5c81f20",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151082943082,
+            "duration": 65,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "df5e058b46ceeda7"
+              }
+            ]
+          },
+          {
+            "span_id": "df5e058b46ceeda7",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151082937200,
+            "duration": 5957,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "da3f2ed9e4ef0f57"
+              }
+            ]
+          },
+          {
+            "span_id": "46d4fed81fa5ce0c",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082956808,
+            "duration": 484,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "fafd33c3dd35ebeb"
+              }
+            ]
+          },
+          {
+            "span_id": "9d431958c12c281b",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151082957363,
+            "duration": 119,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "fafd33c3dd35ebeb"
+              }
+            ]
+          },
+          {
+            "span_id": "fafd33c3dd35ebeb",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151082951167,
+            "duration": 6328,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "85f730e8a24fc9f47021cba1aacc79c0",
+                "spanID": "18f2b0c6a05f3989"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-e528361295ae4254f038ed40",
+    "trace_id": "e88f0ebfa3176847647eecd3e21f7b70",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "e88f0ebfa3176847647eecd3e21f7b70",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "3d43b41819335e28",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083045110,
+            "duration": 90,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "a80b8ca93991918f"
+              }
+            ]
+          },
+          {
+            "span_id": "0bf50802b9f7554f",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083043614,
+            "duration": 1408,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "a80b8ca93991918f"
+              }
+            ]
+          },
+          {
+            "span_id": "04ec471d98e657ad",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083057267,
+            "duration": 553,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "ee4daf9c060c1ff3"
+              }
+            ]
+          },
+          {
+            "span_id": "a80b8ca93991918f",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083035426,
+            "duration": 9788,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "8f3ef1bf26e5cc87"
+              }
+            ]
+          },
+          {
+            "span_id": "ee4daf9c060c1ff3",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083053023,
+            "duration": 5012,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "5b6f77e0c7aaf0df"
+              }
+            ]
+          },
+          {
+            "span_id": "ba09f8730264d372",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083057914,
+            "duration": 108,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "ee4daf9c060c1ff3"
+              }
+            ]
+          },
+          {
+            "span_id": "483201f30c06770e",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151083068408,
+            "duration": 436,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "2e74149bbe18b598"
+              }
+            ]
+          },
+          {
+            "span_id": "314a0a60d57abb48",
+            "operation": "POST /api/v1/payments http receive",
+            "start_time": 1791151083066112,
+            "duration": 26,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "2e74149bbe18b598"
+              }
+            ]
+          },
+          {
+            "span_id": "2e74149bbe18b598",
+            "operation": "POST /api/v1/payments",
+            "start_time": 1791151083065826,
+            "duration": 3227,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "79f741b64c957980"
+              }
+            ]
+          },
+          {
+            "span_id": "96de7e299b18319f",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151083068933,
+            "duration": 107,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "2e74149bbe18b598"
+              }
+            ]
+          },
+          {
+            "span_id": "56d809848d8665e2",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083082675,
+            "duration": 89,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "098c3494a48f2b1f"
+              }
+            ]
+          },
+          {
+            "span_id": "b4b2647b266c9c87",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083081985,
+            "duration": 610,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "098c3494a48f2b1f"
+              }
+            ]
+          },
+          {
+            "span_id": "73eb336cdbb1ce9f",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083096141,
+            "duration": 471,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "e8ead920c39b43fd"
+              }
+            ]
+          },
+          {
+            "span_id": "27e7618a6d13cc24",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083096703,
+            "duration": 120,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "e8ead920c39b43fd"
+              }
+            ]
+          },
+          {
+            "span_id": "098c3494a48f2b1f",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083077298,
+            "duration": 5480,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "ba5318c7d07255c3"
+              }
+            ]
+          },
+          {
+            "span_id": "e8ead920c39b43fd",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083091342,
+            "duration": 5495,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "e88f0ebfa3176847647eecd3e21f7b70",
+                "spanID": "7303d04ca21daf7d"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-f7fe6359b87764e8691dec38",
+    "trace_id": "ce9e262b90ae82169e053a8dde970c45",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "ce9e262b90ae82169e053a8dde970c45",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "934b5502e485ec36",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083206974,
+            "duration": 636,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "98373f1cc3a1500c"
+              }
+            ]
+          },
+          {
+            "span_id": "5e9f03d027b287c8",
+            "operation": "POST /oauth/token http send",
+            "start_time": 1791151083236402,
+            "duration": 523,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "da136157c08af78f"
+              }
+            ]
+          },
+          {
+            "span_id": "f97ab6d3e430c060",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083207701,
+            "duration": 113,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "98373f1cc3a1500c"
+              }
+            ]
+          },
+          {
+            "span_id": "98373f1cc3a1500c",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083200210,
+            "duration": 7619,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "8d60c0e01834e636"
+              }
+            ]
+          },
+          {
+            "span_id": "ce132a1abbf6fdb1",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083224066,
+            "duration": 646,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "189ec69fa848b8f6"
+              }
+            ]
+          },
+          {
+            "span_id": "350a419021e00508",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083224808,
+            "duration": 131,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "189ec69fa848b8f6"
+              }
+            ]
+          },
+          {
+            "span_id": "189ec69fa848b8f6",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083217917,
+            "duration": 7038,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "2686c0bdbb4bbb52"
+              }
+            ]
+          },
+          {
+            "span_id": "246dd37489720b7c",
+            "operation": "POST /oauth/token http receive",
+            "start_time": 1791151083235333,
+            "duration": 31,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "da136157c08af78f"
+              }
+            ]
+          },
+          {
+            "span_id": "6a4c75a7fb93c584",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083252756,
+            "duration": 102,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "2bed708a593fb203"
+              }
+            ]
+          },
+          {
+            "span_id": "11e7455f9f853076",
+            "operation": "POST /oauth/token http send",
+            "start_time": 1791151083236996,
+            "duration": 80,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "da136157c08af78f"
+              }
+            ]
+          },
+          {
+            "span_id": "da136157c08af78f",
+            "operation": "POST /oauth/token",
+            "start_time": 1791151083234837,
+            "duration": 2251,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "c11ced8e61cbdce5"
+              }
+            ]
+          },
+          {
+            "span_id": "b9ed0d6c59fe1da7",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083252002,
+            "duration": 650,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "2bed708a593fb203"
+              }
+            ]
+          },
+          {
+            "span_id": "2bed708a593fb203",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083245852,
+            "duration": 7022,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "be3e4c4361aa2567"
+              }
+            ]
+          },
+          {
+            "span_id": "5dabf177dfcfebe5",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083268317,
+            "duration": 649,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "ff13ee09286db260"
+              }
+            ]
+          },
+          {
+            "span_id": "787f9d908d1693f5",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083269059,
+            "duration": 129,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "ff13ee09286db260"
+              }
+            ]
+          },
+          {
+            "span_id": "ff13ee09286db260",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083262954,
+            "duration": 6253,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "ce9e262b90ae82169e053a8dde970c45",
+                "spanID": "b3134d0078a8045c"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-6571a9d18fbb4b0b079b0b58",
+    "trace_id": "837de52d691a27ec30cba8a0b8ba741b",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "837de52d691a27ec30cba8a0b8ba741b",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "703eac37d7ed042d",
+            "operation": "POST /oauth/token http receive",
+            "start_time": 1791151083383302,
+            "duration": 35,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "0ec4e2e838f9a937"
+              }
+            ]
+          },
+          {
+            "span_id": "80ffe99d4c734122",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083356770,
+            "duration": 1647,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "385dbcd51d92fb25"
+              }
+            ]
+          },
+          {
+            "span_id": "b65b4e5457697d68",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083358573,
+            "duration": 115,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "385dbcd51d92fb25"
+              }
+            ]
+          },
+          {
+            "span_id": "385dbcd51d92fb25",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083348548,
+            "duration": 10159,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "00ec2be8010a364f"
+              }
+            ]
+          },
+          {
+            "span_id": "db79f5227a11ad4a",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083373114,
+            "duration": 594,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "d44ab02ccc388d5a"
+              }
+            ]
+          },
+          {
+            "span_id": "14c03227e6ce670d",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083373789,
+            "duration": 116,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "d44ab02ccc388d5a"
+              }
+            ]
+          },
+          {
+            "span_id": "d44ab02ccc388d5a",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083368130,
+            "duration": 5788,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "d1b5edf3fd9acac2"
+              }
+            ]
+          },
+          {
+            "span_id": "45fd94ca646f847a",
+            "operation": "POST /oauth/token http send",
+            "start_time": 1791151083384324,
+            "duration": 443,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "0ec4e2e838f9a937"
+              }
+            ]
+          },
+          {
+            "span_id": "8c71c0c3c42e312e",
+            "operation": "POST /oauth/token http send",
+            "start_time": 1791151083384839,
+            "duration": 81,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "0ec4e2e838f9a937"
+              }
+            ]
+          },
+          {
+            "span_id": "0ec4e2e838f9a937",
+            "operation": "POST /oauth/token",
+            "start_time": 1791151083382821,
+            "duration": 2112,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "0680c41a4819135e"
+              }
+            ]
+          },
+          {
+            "span_id": "c8968117e98d7008",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083399133,
+            "duration": 610,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "bf92790eb3a6cd2e"
+              }
+            ]
+          },
+          {
+            "span_id": "caff57b220e399bf",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083399827,
+            "duration": 68,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "bf92790eb3a6cd2e"
+              }
+            ]
+          },
+          {
+            "span_id": "bf92790eb3a6cd2e",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083393715,
+            "duration": 6193,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "3e3b65a2d8f106da"
+              }
+            ]
+          },
+          {
+            "span_id": "b42356f84653acce",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083414060,
+            "duration": 511,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "ead3dc10de067dd9"
+              }
+            ]
+          },
+          {
+            "span_id": "df2d3d709313b855",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083414658,
+            "duration": 113,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "ead3dc10de067dd9"
+              }
+            ]
+          },
+          {
+            "span_id": "ead3dc10de067dd9",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083409698,
+            "duration": 5089,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "837de52d691a27ec30cba8a0b8ba741b",
+                "spanID": "4a7145cabfed4a01"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-635634ef733ed09ed471e21b",
+    "trace_id": "1a9becf4775568f2e841907fef35662a",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "1a9becf4775568f2e841907fef35662a",
+        "services": [
+          "flobank-adapter",
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "478692083dbf7960",
+            "operation": "POST /api/v1/payments",
+            "start_time": 1791151083564601,
+            "duration": 24130,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "f207e957ae1230e5"
+              }
+            ]
+          },
+          {
+            "span_id": "28f1694633f0f370",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083490228,
+            "duration": 743,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "51ec59e70fd4a6e0"
+              }
+            ]
+          },
+          {
+            "span_id": "24cfcc03131cd8fc",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083607756,
+            "duration": 63,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "a03b33fe0cbd098d"
+              }
+            ]
+          },
+          {
+            "span_id": "9ed303b1d33e45ea",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083505372,
+            "duration": 159,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "b4eb940cedb253de"
+              }
+            ]
+          },
+          {
+            "span_id": "b4eb940cedb253de",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083500511,
+            "duration": 5035,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "692f547de45dadf6"
+              }
+            ]
+          },
+          {
+            "span_id": "c1f5ce1de6087abc",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083607258,
+            "duration": 442,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "a03b33fe0cbd098d"
+              }
+            ]
+          },
+          {
+            "span_id": "a2f6179ff4790487",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151083491056,
+            "duration": 102,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "51ec59e70fd4a6e0"
+              }
+            ]
+          },
+          {
+            "span_id": "51ec59e70fd4a6e0",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083483036,
+            "duration": 8133,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "dcdad2c02b5beb88"
+              }
+            ]
+          },
+          {
+            "span_id": "b300e2dd4ebb03c0",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083504772,
+            "duration": 482,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "b4eb940cedb253de"
+              }
+            ]
+          },
+          {
+            "span_id": "4ff4dea10df044a8",
+            "operation": "POST /api/v1/payments http receive",
+            "start_time": 1791151083564839,
+            "duration": 30,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "478692083dbf7960"
+              }
+            ]
+          },
+          {
+            "span_id": "a03b33fe0cbd098d",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151083602674,
+            "duration": 5154,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "947a095dc66710e7"
+              }
+            ]
+          },
+          {
+            "span_id": "a964eb4e8663a9e4",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151083588011,
+            "duration": 551,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "478692083dbf7960"
+              }
+            ]
+          },
+          {
+            "span_id": "b0d9c4bd0690ddb4",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151083588642,
+            "duration": 78,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "478692083dbf7960"
+              }
+            ]
+          },
+          {
+            "span_id": "174a3dcfdb1cde74",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083620359,
+            "duration": 347,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "61064df579c53086"
+              }
+            ]
+          },
+          {
+            "span_id": "02dee6a0a59dfbd2",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151083620763,
+            "duration": 64,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "61064df579c53086"
+              }
+            ]
+          },
+          {
+            "span_id": "61064df579c53086",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151083615700,
+            "duration": 5139,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "0311d6f222a40039"
+              }
+            ]
+          },
+          {
+            "span_id": "fc94d557fa9d89f6",
+            "operation": "POST /mcp http receive",
+            "start_time": 1791151083517864,
+            "duration": 30,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "b5e10cac6502bb7c"
+              }
+            ]
+          },
+          {
+            "span_id": "b5e10cac6502bb7c",
+            "operation": "POST /mcp",
+            "start_time": 1791151083517406,
+            "duration": 73471,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "f207e957ae1230e5"
+              }
+            ]
+          },
+          {
+            "span_id": "76f55629c8ee89f0",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151083590254,
+            "duration": 459,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "b5e10cac6502bb7c"
+              }
+            ]
+          },
+          {
+            "span_id": "c70d9386f0e0c922",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151083590778,
+            "duration": 83,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "1a9becf4775568f2e841907fef35662a",
+                "spanID": "b5e10cac6502bb7c"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-9d6aa7518de226ebf441290d",
+    "trace_id": "acc8c346ac8bb8cca570e321fd2f504b",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "acc8c346ac8bb8cca570e321fd2f504b",
+        "services": [
+          "flobank-adapter",
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "baafcda0ca62df69",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151084260027,
+            "duration": 628,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "69edb501e49b09a6"
+              }
+            ]
+          },
+          {
+            "span_id": "100440b3feacd82b",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151084260717,
+            "duration": 61,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "69edb501e49b09a6"
+              }
+            ]
+          },
+          {
+            "span_id": "69edb501e49b09a6",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151084250584,
+            "duration": 10203,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "7d243dd65a7f47bc"
+              }
+            ]
+          },
+          {
+            "span_id": "e56436c6f8257310",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151084293549,
+            "duration": 1007,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "e2a384b50e5971a1"
+              }
+            ]
+          },
+          {
+            "span_id": "f72a876019bdd11a",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151084373554,
+            "duration": 6339,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "0c0b12b182e6e595"
+              }
+            ]
+          },
+          {
+            "span_id": "e2a384b50e5971a1",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151084268694,
+            "duration": 26318,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "c779d53b7242b843"
+              }
+            ]
+          },
+          {
+            "span_id": "6cfbfcef790a869e",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151084379787,
+            "duration": 92,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "f72a876019bdd11a"
+              }
+            ]
+          },
+          {
+            "span_id": "2aa7decd64e402db",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151084294654,
+            "duration": 343,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "e2a384b50e5971a1"
+              }
+            ]
+          },
+          {
+            "span_id": "dda0bd7e1caef9c2",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151084365427,
+            "duration": 91,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "df024fe525c8b70f"
+              }
+            ]
+          },
+          {
+            "span_id": "537130597a7cbad6",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151084364451,
+            "duration": 905,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "df024fe525c8b70f"
+              }
+            ]
+          },
+          {
+            "span_id": "df024fe525c8b70f",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151084356038,
+            "duration": 9491,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "aff798ee4a65ac00"
+              }
+            ]
+          },
+          {
+            "span_id": "ffbdcd2b825691f5",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151084378710,
+            "duration": 945,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "f72a876019bdd11a"
+              }
+            ]
+          },
+          {
+            "span_id": "4093f04dd27029b9",
+            "operation": "POST /mcp http receive",
+            "start_time": 1791151084309713,
+            "duration": 49,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "f75929bfd3d17e70"
+              }
+            ]
+          },
+          {
+            "span_id": "7e9e93001596c1a2",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151084343978,
+            "duration": 392,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "f75929bfd3d17e70"
+              }
+            ]
+          },
+          {
+            "span_id": "cea82283b7058b41",
+            "operation": "POST /mcp http send",
+            "start_time": 1791151084343172,
+            "duration": 734,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "f75929bfd3d17e70"
+              }
+            ]
+          },
+          {
+            "span_id": "f75929bfd3d17e70",
+            "operation": "POST /mcp",
+            "start_time": 1791151084308889,
+            "duration": 35525,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "acc8c346ac8bb8cca570e321fd2f504b",
+                "spanID": "622b79b4812f6798"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "run_id": "run-615859c292a17de3ce00dfc3",
+    "trace_id": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+    "collector_status_code": 200,
+    "traces": [
+      {
+        "trace_id": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+        "services": [
+          "flobank-api"
+        ],
+        "spans": [
+          {
+            "span_id": "72e5683714593033",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085032283,
+            "duration": 516,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "27eeb494f77d4d79"
+              }
+            ]
+          },
+          {
+            "span_id": "7a19aef8c0115c29",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085032875,
+            "duration": 83,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "27eeb494f77d4d79"
+              }
+            ]
+          },
+          {
+            "span_id": "27eeb494f77d4d79",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151085026660,
+            "duration": 6310,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "499ed7fd6d401f1b"
+              }
+            ]
+          },
+          {
+            "span_id": "fe7de22dec01f252",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085047872,
+            "duration": 415,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "0c24837dfbcfc1df"
+              }
+            ]
+          },
+          {
+            "span_id": "79f919e50849ec4f",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085048344,
+            "duration": 220,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "0c24837dfbcfc1df"
+              }
+            ]
+          },
+          {
+            "span_id": "0c24837dfbcfc1df",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151085040010,
+            "duration": 8570,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "e3522611abad668c"
+              }
+            ]
+          },
+          {
+            "span_id": "98eecc350cad68b0",
+            "operation": "POST /api/v1/a2a/tasks http receive",
+            "start_time": 1791151085055365,
+            "duration": 20,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "912d5cc79d372711"
+              }
+            ]
+          },
+          {
+            "span_id": "0bdbacac7bffdfcb",
+            "operation": "POST /api/v1/a2a/tasks http send",
+            "start_time": 1791151085070531,
+            "duration": 414,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "912d5cc79d372711"
+              }
+            ]
+          },
+          {
+            "span_id": "b55c024e339d4a0b",
+            "operation": "POST /api/v1/a2a/tasks http send",
+            "start_time": 1791151085071008,
+            "duration": 66,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "912d5cc79d372711"
+              }
+            ]
+          },
+          {
+            "span_id": "912d5cc79d372711",
+            "operation": "POST /api/v1/a2a/tasks",
+            "start_time": 1791151085055126,
+            "duration": 15957,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "06edfd612e84c132"
+              }
+            ]
+          },
+          {
+            "span_id": "e2b5d2d518482c03",
+            "operation": "GET /api/v1/a2a/tasks/{task_id} http send",
+            "start_time": 1791151085082397,
+            "duration": 295,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4d392bbbf5281f79"
+              }
+            ]
+          },
+          {
+            "span_id": "c0504700014f8fba",
+            "operation": "GET /api/v1/a2a/tasks/{task_id} http send",
+            "start_time": 1791151085082741,
+            "duration": 47,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4d392bbbf5281f79"
+              }
+            ]
+          },
+          {
+            "span_id": "4d392bbbf5281f79",
+            "operation": "GET /api/v1/a2a/tasks/{task_id}",
+            "start_time": 1791151085078237,
+            "duration": 4562,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "abe80d5f9828564c"
+              }
+            ]
+          },
+          {
+            "span_id": "1f487ee97c149ce3",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http receive",
+            "start_time": 1791151085090250,
+            "duration": 40,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "effed386e9539185"
+              }
+            ]
+          },
+          {
+            "span_id": "e59b47ff47c819e4",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085094009,
+            "duration": 337,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "effed386e9539185"
+              }
+            ]
+          },
+          {
+            "span_id": "129822a7fa5059b7",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085094398,
+            "duration": 54,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "effed386e9539185"
+              }
+            ]
+          },
+          {
+            "span_id": "effed386e9539185",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete",
+            "start_time": 1791151085090038,
+            "duration": 4423,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "dc37a34b4b1bd08e"
+              }
+            ]
+          },
+          {
+            "span_id": "c203c004ec237e61",
+            "operation": "POST /api/v1/payments/proposals http receive",
+            "start_time": 1791151085101177,
+            "duration": 18,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4effd51605a78a0c"
+              }
+            ]
+          },
+          {
+            "span_id": "91eafa703aafeee9",
+            "operation": "POST /api/v1/payments/proposals http send",
+            "start_time": 1791151085117234,
+            "duration": 473,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4effd51605a78a0c"
+              }
+            ]
+          },
+          {
+            "span_id": "89795d94874279f6",
+            "operation": "POST /api/v1/payments/proposals http send",
+            "start_time": 1791151085117769,
+            "duration": 171,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4effd51605a78a0c"
+              }
+            ]
+          },
+          {
+            "span_id": "4effd51605a78a0c",
+            "operation": "POST /api/v1/payments/proposals",
+            "start_time": 1791151085100959,
+            "duration": 16995,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "4895618be33134ed"
+              }
+            ]
+          },
+          {
+            "span_id": "30f57429f45bebd1",
+            "operation": "POST /api/v1/approvals/{id}/approve http receive",
+            "start_time": 1791151085126026,
+            "duration": 22,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "07e3b41f13f67e8f"
+              }
+            ]
+          },
+          {
+            "span_id": "71ed2f014003c41d",
+            "operation": "POST /api/v1/approvals/{id}/approve http send",
+            "start_time": 1791151085133745,
+            "duration": 608,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "07e3b41f13f67e8f"
+              }
+            ]
+          },
+          {
+            "span_id": "6b89d32a5e05a4cb",
+            "operation": "POST /api/v1/approvals/{id}/approve http send",
+            "start_time": 1791151085134433,
+            "duration": 93,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "07e3b41f13f67e8f"
+              }
+            ]
+          },
+          {
+            "span_id": "07e3b41f13f67e8f",
+            "operation": "POST /api/v1/approvals/{id}/approve",
+            "start_time": 1791151085125796,
+            "duration": 8744,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "815e6aaff87062b9"
+              }
+            ]
+          },
+          {
+            "span_id": "80ec93e035b7eb87",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085148098,
+            "duration": 464,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "3ccfc1566037edfb"
+              }
+            ]
+          },
+          {
+            "span_id": "50781f5ed9838c31",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085148640,
+            "duration": 69,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "3ccfc1566037edfb"
+              }
+            ]
+          },
+          {
+            "span_id": "3ccfc1566037edfb",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151085143709,
+            "duration": 5012,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "0a552134f32301c2"
+              }
+            ]
+          },
+          {
+            "span_id": "b3d14bb22836b7ea",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151085162724,
+            "duration": 21445,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "55243fa151f373f9"
+              }
+            ]
+          },
+          {
+            "span_id": "ad3d92ea003cc0b0",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085184087,
+            "duration": 72,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "b3d14bb22836b7ea"
+              }
+            ]
+          },
+          {
+            "span_id": "956f3368d4b7f095",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151085266809,
+            "duration": 4030,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "9e5c9a3cc7c5200d"
+              }
+            ]
+          },
+          {
+            "span_id": "d4b5b45d0a3d8f03",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085183399,
+            "duration": 622,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "b3d14bb22836b7ea"
+              }
+            ]
+          },
+          {
+            "span_id": "3798fa1e930d8599",
+            "operation": "POST /api/v1/approvals/{id}/approve http receive",
+            "start_time": 1791151085241011,
+            "duration": 41,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "717219aa42ace7c7"
+              }
+            ]
+          },
+          {
+            "span_id": "260c64c1f29c2908",
+            "operation": "POST /api/v1/approvals/{id}/approve http send",
+            "start_time": 1791151085257195,
+            "duration": 60,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "717219aa42ace7c7"
+              }
+            ]
+          },
+          {
+            "span_id": "717219aa42ace7c7",
+            "operation": "POST /api/v1/approvals/{id}/approve",
+            "start_time": 1791151085238619,
+            "duration": 18645,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "a54560e7754de603"
+              }
+            ]
+          },
+          {
+            "span_id": "016d6a95bd51fd6f",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085270377,
+            "duration": 341,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "956f3368d4b7f095"
+              }
+            ]
+          },
+          {
+            "span_id": "43fb150ee5ddfc07",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085270770,
+            "duration": 58,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "956f3368d4b7f095"
+              }
+            ]
+          },
+          {
+            "span_id": "4f43f5b6b4d2c400",
+            "operation": "POST /api/v1/a2a/tasks http send",
+            "start_time": 1791151085337150,
+            "duration": 85,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "02684157e2e169cd"
+              }
+            ]
+          },
+          {
+            "span_id": "0c95a7abf9ffb276",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085280608,
+            "duration": 76,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "59ee9d9fbe218b79"
+              }
+            ]
+          },
+          {
+            "span_id": "b6f634f64ebd597f",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085291568,
+            "duration": 296,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "13891ff0d66acb3d"
+              }
+            ]
+          },
+          {
+            "span_id": "13891ff0d66acb3d",
+            "operation": "POST /api/v1/payments",
+            "start_time": 1791151085287632,
+            "duration": 4338,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "97a0cea47399d6c4"
+              }
+            ]
+          },
+          {
+            "span_id": "c53d880451ff43a6",
+            "operation": "POST /api/v1/payments http receive",
+            "start_time": 1791151085298766,
+            "duration": 20,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "33ec650a7b0452c0"
+              }
+            ]
+          },
+          {
+            "span_id": "bc1f235d3b9b8b37",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085310906,
+            "duration": 60,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "33ec650a7b0452c0"
+              }
+            ]
+          },
+          {
+            "span_id": "6511764f6872bf31",
+            "operation": "POST /api/v1/approvals/{id}/approve http send",
+            "start_time": 1791151085255948,
+            "duration": 1188,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "717219aa42ace7c7"
+              }
+            ]
+          },
+          {
+            "span_id": "f7a2ea08a6fe6348",
+            "operation": "POST /api/v1/payments http receive",
+            "start_time": 1791151085316813,
+            "duration": 23,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "54ea7c714a6c31d5"
+              }
+            ]
+          },
+          {
+            "span_id": "40fdd7a2eeff660a",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085280240,
+            "duration": 317,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "59ee9d9fbe218b79"
+              }
+            ]
+          },
+          {
+            "span_id": "59ee9d9fbe218b79",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151085276916,
+            "duration": 3777,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "cbcd9f4e6f94683c"
+              }
+            ]
+          },
+          {
+            "span_id": "7fe38e1ec96a8fab",
+            "operation": "POST /api/v1/payments http receive",
+            "start_time": 1791151085287864,
+            "duration": 23,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "13891ff0d66acb3d"
+              }
+            ]
+          },
+          {
+            "span_id": "859258d1807193b6",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085291913,
+            "duration": 49,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "13891ff0d66acb3d"
+              }
+            ]
+          },
+          {
+            "span_id": "98729ae42b506038",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085310431,
+            "duration": 416,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "33ec650a7b0452c0"
+              }
+            ]
+          },
+          {
+            "span_id": "33ec650a7b0452c0",
+            "operation": "POST /api/v1/payments",
+            "start_time": 1791151085298185,
+            "duration": 12789,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "542bc3d426f1e88f"
+              }
+            ]
+          },
+          {
+            "span_id": "54ea7c714a6c31d5",
+            "operation": "POST /api/v1/payments",
+            "start_time": 1791151085316632,
+            "duration": 4403,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "c7fff29e1ac09d40"
+              }
+            ]
+          },
+          {
+            "span_id": "48a5dcb371ae1dd6",
+            "operation": "POST /api/v1/a2a/tasks http receive",
+            "start_time": 1791151085327937,
+            "duration": 22,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "02684157e2e169cd"
+              }
+            ]
+          },
+          {
+            "span_id": "116f0ffbd7eeaaf8",
+            "operation": "POST /api/v1/a2a/tasks http send",
+            "start_time": 1791151085336601,
+            "duration": 469,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "02684157e2e169cd"
+              }
+            ]
+          },
+          {
+            "span_id": "7ac7968c60573465",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085320955,
+            "duration": 68,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "54ea7c714a6c31d5"
+              }
+            ]
+          },
+          {
+            "span_id": "35c96f128ffe1896",
+            "operation": "POST /api/v1/payments http send",
+            "start_time": 1791151085320532,
+            "duration": 364,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "54ea7c714a6c31d5"
+              }
+            ]
+          },
+          {
+            "span_id": "b8c940b29eaff0fa",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http receive",
+            "start_time": 1791151085366052,
+            "duration": 19,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "d67a9ebc2ee09a8b"
+              }
+            ]
+          },
+          {
+            "span_id": "02684157e2e169cd",
+            "operation": "POST /api/v1/a2a/tasks",
+            "start_time": 1791151085327671,
+            "duration": 9574,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "27c2b1a376abaa07"
+              }
+            ]
+          },
+          {
+            "span_id": "707bba2719b084fd",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085348741,
+            "duration": 279,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "6d04e49435adeda8"
+              }
+            ]
+          },
+          {
+            "span_id": "146026d3c026946c",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http receive",
+            "start_time": 1791151085344035,
+            "duration": 22,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "6d04e49435adeda8"
+              }
+            ]
+          },
+          {
+            "span_id": "63a695b427777640",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085349069,
+            "duration": 49,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "6d04e49435adeda8"
+              }
+            ]
+          },
+          {
+            "span_id": "05947d860429d27d",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085395995,
+            "duration": 56,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "93f8e911f10df371"
+              }
+            ]
+          },
+          {
+            "span_id": "6d04e49435adeda8",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete",
+            "start_time": 1791151085343791,
+            "duration": 5335,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "533bb1e8a0a24601"
+              }
+            ]
+          },
+          {
+            "span_id": "d94db00c2437e338",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085381807,
+            "duration": 80,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "d67a9ebc2ee09a8b"
+              }
+            ]
+          },
+          {
+            "span_id": "86c09f9323f4fc3e",
+            "operation": "GET /api/v1/a2a/tasks/{task_id} http send",
+            "start_time": 1791151085359052,
+            "duration": 296,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "0b88a3f69e6c490a"
+              }
+            ]
+          },
+          {
+            "span_id": "bd175d38d03bc2d5",
+            "operation": "GET /api/v1/accounts/{id} http send",
+            "start_time": 1791151085395599,
+            "duration": 343,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "93f8e911f10df371"
+              }
+            ]
+          },
+          {
+            "span_id": "0b88a3f69e6c490a",
+            "operation": "GET /api/v1/a2a/tasks/{task_id}",
+            "start_time": 1791151085356013,
+            "duration": 3519,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "82b3c967b94fa624"
+              }
+            ]
+          },
+          {
+            "span_id": "93f8e911f10df371",
+            "operation": "GET /api/v1/accounts/{id}",
+            "start_time": 1791151085392009,
+            "duration": 4051,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "26b05fa1f1ba0e7a"
+              }
+            ]
+          },
+          {
+            "span_id": "03f024033356176f",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete http send",
+            "start_time": 1791151085381224,
+            "duration": 507,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "d67a9ebc2ee09a8b"
+              }
+            ]
+          },
+          {
+            "span_id": "d67a9ebc2ee09a8b",
+            "operation": "POST /api/v1/a2a/tasks/{task_id}/complete",
+            "start_time": 1791151085365836,
+            "duration": 16063,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "a2fbad47a432a149"
+              }
+            ]
+          },
+          {
+            "span_id": "fddb427c9d72923b",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085406041,
+            "duration": 61,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "b0c522dc0c7a0c86"
+              }
+            ]
+          },
+          {
+            "span_id": "b0c522dc0c7a0c86",
+            "operation": "GET /api/v1/payments",
+            "start_time": 1791151085402453,
+            "duration": 3658,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "5a7d2dcc7f8d7366"
+              }
+            ]
+          },
+          {
+            "span_id": "726ecf7047fe4f88",
+            "operation": "GET /api/v1/a2a/tasks/{task_id} http send",
+            "start_time": 1791151085359416,
+            "duration": 100,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "0b88a3f69e6c490a"
+              }
+            ]
+          },
+          {
+            "span_id": "bfb34c0ee11c74ce",
+            "operation": "GET /api/v1/payments http send",
+            "start_time": 1791151085405719,
+            "duration": 272,
+            "references": [
+              {
+                "refType": "CHILD_OF",
+                "traceID": "0b3a4e50ab37dc087c9d54d7c6db3e58",
+                "spanID": "b0c522dc0c7a0c86"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

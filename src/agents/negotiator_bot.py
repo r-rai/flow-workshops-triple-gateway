@@ -1,3 +1,4 @@
+import os
 import httpx
 from typing import Dict, Any
 from src.core.security import create_jwt_token
