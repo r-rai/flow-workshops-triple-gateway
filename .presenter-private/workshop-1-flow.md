@@ -1,12 +1,12 @@
 # Modernizing APIs for AI Agents: From OpenAPI to MCP
 
-Private presenter flow — Workshop 1 — 45 minutes.
+Presenter flow — Workshop 1 — 45 minutes.
 
 ## Delivery
 
 Audience: experienced API architects and integration engineers. Deliver from the presenter screen, with audience predictions and decisions throughout. A short optional lab lets participants follow along; observers receive the complete learning experience without running infrastructure. Prepare infrastructure before the session.
 
-Use the participant repository for code, setup, implementation references, and optional exercises. Keep this narrative, speaker cues, reveal timing, and fallback instructions local. This folder is excluded through .git/info/exclude, which is not shared with participants. Local Git exclusion prevents ordinary staging; it is not access control or a backup.
+Presenter materials are versioned in this repository alongside code, setup, implementation references and optional exercises. The `.presenter-private` directory name and any local Git exclusion are not access controls; exclusion does not hide already tracked files. A separate audience repository is planned. Omit presenter cues and local evidence from that future distribution.
 
 ## Story
 
@@ -16,7 +16,7 @@ Opening script:
 
 > Maya has a simple request: “What’s my account balance, and what’s happening with my support case?” Flo Bank already has APIs for both. Your team has 45 minutes to make those capabilities available through MCP. What would you expose—and how would you prove the existing controls still work?
 
-The customer UI introduces the business scenario. Its existing tools do not call the Workshop 1 MCP endpoint. Make this distinction explicit when moving to the workshop client.
+The customer UI introduces the business scenario. Its existing tools do not call the Workshop 1 MCP endpoint. The MCP exercise uses Acme Retail Checking (`acc-101`) and the separate `cust-8801` dispute (`case-501`); these are not Maya’s records and the seed does not establish that they belong together. Make this distinction explicit when moving to the workshop client.
 
 ## Timed flow
 
@@ -29,7 +29,7 @@ The customer UI introduces the business scenario. Its existing tools do not call
 | 20–29 | Design Flo’s toolbox | Lead the optional mini-lab: select operations, improve a description, identify arguments and money units. Reveal the prepared curated contract. Initialize and list /mcp/curated, showing get_account and get_case. |
 | 29–36 | Prove the boundary | Read the account and case through the curated endpoint. Predict then demonstrate rejection of an actual excluded broad tool. Predict then demonstrate rejection of an account read using invalid downstream credentials. Explain the two mechanisms. |
 | 36–41 | Show evidence | Follow the MCP-to-REST route through Gate 3. Inspect success, excluded-tool rejection, downstream authentication error, and available gateway evidence. State the limits of what the demonstration proves. |
-| 41–45 | Answer Maya and bridge | Answer using returned data. Ask attendees for one generated detail, one curated decision, and one runtime control. Reserve two minutes for questions, then bridge to Workshop 2. |
+| 41–45 | Resolve the integration task and bridge | Report the separate fixture results; explain that answering Maya requires verified record ownership. Ask attendees for one generated detail, one curated decision, and one runtime control. Reserve two minutes for questions, then bridge to Workshop 2. |
 
 Closing bridge:
 
@@ -58,7 +58,7 @@ Observers can take notes against three prompts: which tools to keep/remove; how 
 ## Accuracy and fallback cues
 
 - Use actual discovered tool names and counts; older notes hard-code 13 tools.
-- Verify seeded fixture identities and case details before connecting them to Maya’s story.
+- Verify seeded fixture identities and case details. Use Maya only for the customer introduction; do not identify the MCP fixtures as her records.
 - If the account returns 1500000 INR minor units, explain it as ₹15,000.
 - OpenAPI and MCP are complementary; avoid claiming agents cannot call REST or MCP guarantees reliability/security.
 - The curated endpoint excludes operations; the broad endpoint remains a teaching checkpoint. Removing a tool from this catalog does not revoke it everywhere.
@@ -71,4 +71,4 @@ Observers can take notes against three prompts: which tools to keep/remove; how 
 
 ## Facilitator package
 
-The authored package is in [w1/README.md](w1/README.md): spoken script, 12-slide storyboard, exact demo runbook, observer prompts and optional lab, and labelled historical fallback extracts. The package uses separate Acme/customer fixtures for MCP rather than identifying them as Maya’s records. No shared participant files were changed. Rendering a slide deck and a timed live rehearsal remain delivery preparation tasks.
+The authored package is in [w1/README.md](w1/README.md): spoken script, 12-slide storyboard, exact demo runbook, observer prompts and optional lab, and labelled historical fallback extracts. The package uses separate Acme/customer fixtures for MCP rather than identifying them as Maya’s records. The [review notes](w1/review-notes.md) record the repository accuracy review and remaining delivery checks. Rendering a slide deck and a timed live rehearsal remain delivery preparation tasks.
