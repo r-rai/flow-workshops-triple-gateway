@@ -14,8 +14,11 @@ Complete the [full Python setup](../../docs/workshops/participant-infra-guide.md
 - [ ] Build/download W1 images: `./scripts/workshop pull w1`.
 - [ ] Run `./scripts/workshop preflight` before starting services to check port 9080, memory and pinned images.
 - [ ] Pre-warm the profile: `./scripts/workshop switch w1`.
-- [ ] Run `./scripts/workshop verify w1` to verify traversal.
+- [ ] Preserve previous evidence and any fictional lab data needed before reset.
 - [ ] Reset lab state before attendees begin: `./scripts/workshop reset w1 --yes`.
+- [ ] Run `./scripts/workshop verify w1` to verify traversal with the expected fresh seed.
+- [ ] Open `/docs`, `/openapi.json`, and the bank page with Developer Tools → Network. Follow the [live API walkthrough](../../docs/workshops/w1-api-walkthrough.md).
+- [ ] Confirm enterprise backend mode; W1 scripted chat needs no provider key. Restore any card freeze used during the demo.
 
 ---
 
@@ -23,7 +26,7 @@ Complete the [full Python setup](../../docs/workshops/participant-infra-guide.md
 
 | Timeline | Topic | Talking Points & Presenter Actions |
 |---|---|---|
-| **0–5 min** | Intro | Welcome attendees. Introduce fictional Flo Bank support scenario: an agent needs to assist customers with account queries, but exposing existing internal APIs raw to LLMs is dangerous. |
+| **0–5 min** | Intro | Welcome attendees, name the topic/outcomes, introduce the Flo Bank story, then tour Swagger and the bank page’s real account requests before asking which tools Flo needs. Support scenario: an agent needs to assist customers with account queries, but exposing existing internal APIs raw to LLMs is dangerous. |
 | **5–12 min** | OpenAPI vs MCP | Explain the difference: OpenAPI defines HTTP endpoints, verbs, and schemas. MCP provides runtime tool negotiation (`initialize`), schema discovery (`tools/list`), and execution envelopes (`tools/call`). |
 | **12–22 min** | Native Generation Demo | Show APISIX `openapi-to-mcp` plugin generating tools on the fly from `/openapi.json`. Record the current generated count (26 on 2026-10-05), highlighting the danger of exposing `execute_payment` and `reset_database`. |
 | **22–32 min** | Invocation and curation | Read the account, then use `client.py --curated init`, `--curated list` and `--curated call-account acc-101`. Show exactly two read tools and the fresh balance (`1,500,000 paise = ₹15,000`). Use the rehearsal for case read and excluded payment-list rejection. |
@@ -41,7 +44,7 @@ Complete the [full Python setup](../../docs/workshops/participant-infra-guide.md
 
 ### Step 3: Account Read
 - **Account ID:** `acc-101`
-- **Verified Balance:** `1500000` (minor units = 15,000.00 INR)
+- **Fresh-seed balance:** `1500000` (minor units = 15,000.00 INR). Record the actual result if using a previously modified ledger; technical verification expects the fresh seed.
 - **Currency:** `INR`
 
 ### Step 4: Gate 3 Enforcement

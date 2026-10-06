@@ -7,6 +7,14 @@ routes:
       nodes:
         "api:8000": 1
 
+  # Public API documentation; banking operations still enter Gate 3.
+  - id: w1_api_docs
+    uris: ["/docs", "/docs/oauth2-redirect", "/openapi.json"]
+    upstream:
+      type: roundrobin
+      nodes:
+        "api:8000": 1
+
   # Gate 2: Native OpenAPI-to-MCP generation (Broad Catalog)
   - id: w1_mcp_route
     uri: /mcp

@@ -356,6 +356,10 @@ async def chat(payload: ChatRequest, session: DemoSession = Depends(current_sess
 
 
 
+from src.demo.banking import create_router as banking_router
+
+demo_api.include_router(banking_router(current_session, get_gate3_url))
+
 from src.demo.governance import create_router, require_w2
 
 demo_api.include_router(create_router(current_session))

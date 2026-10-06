@@ -124,6 +124,15 @@ If `.env` exists, ensure this value matches your chosen workshop profile.
 Use `demo` for the standalone simulation or a workshop profile for its
 infrastructure; each command uses the main Compose file.
 
+For the W1 live API walkthrough, open **http://localhost:9080/docs** and
+**http://localhost:9080/openapi.json**. In enterprise mode, the bank page makes
+visible REST requests through `/demo-api/banking/...`, which forwards to the
+existing `/api/v1/...` APIs through Gate 3 with server-held credentials. Account
+and card reads use real banking data; card controls and disputes persist across
+reloads. Transaction history remains labeled sample activity. See the
+[browser walkthrough](docs/workshops/w1-api-walkthrough.md) for Network-tab
+examples, Swagger authentication, remote access, and verification.
+
 The demo supports two backend modes:
 - **Simulated (`DEMO_BACKEND_MODE=simulated`, default):** Uses in-memory session fixtures and deterministic responses. Card controls and disputes are isolated per session; signing out or restarting resets them. Sessions expire after 30 minutes.
 - **Enterprise (`DEMO_BACKEND_MODE=enterprise`):** Directly queries and mutates Core Banking data via APISIX Gate 3 (`:9080/api/v1`) using cryptographic customer JWT authentication (`aud="flobank-api"`), full distributed trace propagation into Jaeger, and real database updates for card state and support case disputes. Start via `docker compose --profile demo-enterprise up -d --build`.

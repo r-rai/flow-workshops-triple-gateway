@@ -30,10 +30,12 @@ downstream API authorization.
 
 Prepare the profile, seeded fictional data and Python environment using the
 [facilitator guide](facilitator-guide.md). Complete downloads and startup before
-the timed session. Run `./scripts/workshop verify w1` and save any previous
-evidence before using the documented reset procedure.
+the timed session. Save any previous evidence and needed fictional lab data,
+reset the banking seed, then run `./scripts/workshop verify w1`. The verification
+expects the fresh-seed balance; see the answer key for the command order.
 
-Have the broad and completed contracts open beside the terminal. W1 uses
+Have the live `/docs` and `/openapi.json` pages, bank page Network tab, and
+broad/completed checkpoints open beside the terminal. W1 uses
 APISIX's native `openapi-to-mcp` plugin: `/mcp` serves the broad contract and
 `/mcp/curated` serves the completed contract. Both translate tool calls back
 through Gate 3. These CLI exercises require no hosted-model inference; the
@@ -41,7 +43,16 @@ customer chat is a separate surface and is scripted by default in W1.
 
 ## Scene 1 — A support request meets an existing API (0–5 minutes)
 
-**Show:** the account-read operation and fictional account `acc-101`.
+Welcome attendees, name the workshop topic and its three outcomes (generate,
+curate, preserve authorization), then introduce the Flo Bank story. Before the
+audience question, give a brief tour of the existing setup using the
+[live API and browser walkthrough](w1-api-walkthrough.md).
+
+**Show:** `http://localhost:9080/docs`, expand the account-read operation, and
+point out the method, path, inputs, and response. Show the bank page's account
+requests in the Network tab to connect the contract to a real customer flow.
+The page reads `demo-checking` and `demo-savings`; the MCP exercise will read
+fictional account `acc-101`. Keep optional card/dispute mutations brief.
 
 **Say:**
 

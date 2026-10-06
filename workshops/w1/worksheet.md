@@ -34,6 +34,36 @@ the [full Python setup](../../docs/workshops/participant-infra-guide.md#step-23-
 instead. If Ubuntu/Debian reports that `ensurepip` is unavailable, install the
 `python3-venv` package matching your Python version and rerun environment creation.
 
+## Presenter walkthrough: live API documentation and browser requests
+
+Follow the [live API and browser walkthrough](../../docs/workshops/w1-api-walkthrough.md)
+for setup, authentication, request mappings, remote access, and verification.
+
+With W1 active, open `http://localhost:9080/docs` for Swagger UI and
+`http://localhost:9080/openapi.json` for the live contract used by the broad
+MCP generator. Swagger's **Try it out** calls still require the Gate 3 lab key
+(`gate3-secret-token` in the `X-API-Key` field); documentation access alone
+provides no access to banking operations. Swagger UI loads its assets from a CDN.
+
+Open the bank page at `http://localhost:9080`, sign in with
+`maya@flobank.demo` / `flo-demo`, and open Developer Tools → Network → Fetch/XHR.
+In enterprise mode (the workshop default), login and reload show separate
+`/demo-api/banking/accounts/demo-checking`, `/accounts/demo-savings`,
+`/cards/card-2048`, and `/cases` requests under the `/demo-api/banking` prefix.
+Card controls send `POST /demo-api/banking/cards/card-2048/state`; disputes send
+`POST /demo-api/banking/cases`. These session-authenticated browser routes forward
+to the existing `/api/v1/...` endpoints through APISIX Gate 3. The gateway key and
+customer bearer token stay on the server. Inspect request bodies and real JSON
+responses, then reload to demonstrate persisted card and case state.
+
+Scripted chat uses those browser routes for balance, card, and dispute prompts;
+with live chat, model tool calls run on the server and the browser refreshes the
+real banking state afterward. Transaction history and spending remain labeled
+sample activity. Standalone simulation mode keeps session-local actions.
+
+The gateway binds to host loopback. If presenting from another machine, forward
+port 9080 over SSH and use `localhost:9080` in your browser.
+
 ## Step 1: Start Workshop 1 Profile & Initialize MCP (Minutes 0–12)
 
 Before the session, build/download the W1 images. From the repository root,

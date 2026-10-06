@@ -10,6 +10,7 @@ const currency = (paise) =>
 let sending = false;
 let generation = 0;
 let toastTimer;
+let currentDashboard;
 
 async function api(path, body) {
   const response = await fetch(`/demo-api/${path}`, {
@@ -29,6 +30,59 @@ async function api(path, body) {
     throw error;
   }
   return data;
+}
+
+// The browser sees each real REST operation; the session proxy keeps Gate 3
+// credentials server-side and forwards calls through the API gateway.
+async function bankingDashboard(data) {
+  if (data.backend_mode !== "enterprise") return data;
+  const [checking, savings, card, cases] = await Promise.all([
+    api("banking/accounts/demo-checking"),
+    api("banking/accounts/demo-savings"),
+    api("banking/cards/card-2048"),
+    api("banking/cases"),
+  ]);
+  return {
+    ...data,
+    accounts: [checking, savings].map((account, index) => ({
+      ...data.accounts[index], ...account,
+    })),
+    card: {...data.card, locked: card.locked},
+    cases: cases.map((item) => {
+      const tx = data.transactions.find(tx => item.description?.includes(`tx: ${tx.id}`));
+      return {...item, transaction_id: tx?.id, merchant: tx?.merchant || "Dispute"};
+    }),
+  };
+}
+
+async function bankingReply(text) {
+  const words = new Set(text.toLowerCase().match(/[a-z]+/g) || []);
+  const has = (...terms) => terms.some(term => words.has(term));
+  if (has("transfer", "send", "pay", "payment")) return null;
+  if (has("unfreeze", "unlock", "freeze", "lock")) {
+    const locked = !has("unfreeze", "unlock");
+    const card = await api("banking/cards/card-2048/state", {locked});
+    return `Your card ending 2048 is now ${card.locked ? "frozen" : "active"}. The change is saved in core banking.`;
+  }
+  if (has("status", "cases") && !has("card")) {
+    const cases = await api("banking/cases");
+    return cases.length ? cases.map(item => `${item.id}: ${item.status}`).join("\n") : "You have no disputes yet.";
+  }
+  if (has("dispute", "unrecognized", "unrecognised", "unauthorized", "unauthorised")) {
+    const transaction_id = text.toLowerCase().match(/\btx-\d+\b/)?.[0];
+    if (!transaction_id) return "Choose a debit transaction from recent activity to dispute.";
+    const item = await api("banking/cases", {transaction_id});
+    return `Dispute ${item.id} is ${item.status}. The case is saved in core banking; no refund has been issued.`;
+  }
+  if (has("balance", "account", "accounts", "savings")) {
+    const data = await bankingDashboard(currentDashboard);
+    return data.accounts.map(account => `${account.name}: ${currency(account.balance)}`).join("\n");
+  }
+  if (has("card")) {
+    const card = await api("banking/cards/card-2048");
+    return `Your card ending 2048 is ${card.locked ? "frozen" : "active"}.`;
+  }
+  return null;
 }
 
 function showToast(message) {
@@ -70,6 +124,10 @@ function addMessage(text, role = "bot", isError = false) {
 }
 
 function renderDashboard(data) {
+  currentDashboard = data;
+  $(".workspace-note").textContent = data.backend_mode === "enterprise"
+    ? "You’re exploring fictional accounts. Card controls and disputes are saved in core banking. Transaction activity is sample data."
+    : "You’re exploring fictional accounts. Card controls and disputes apply to this demo session only.";
   $("#governance-link").hidden = data.workshop_profile !== "w2";
   $("#incident-link").hidden = data.workshop_profile !== "w4";
   $("#checking-balance").textContent = currency(data.accounts[0].balance);
@@ -176,7 +234,7 @@ function showDashboard(data) {
   window.scrollTo(0, 0);
 }
 
-async function sendMessage(text) {
+async function sendMessage(text, directAction = false) {
   if (!text.trim() || sending) return;
   if (text.trim().length > 2000) {
     showToast("Keep your message under 2,000 characters.");
@@ -189,7 +247,15 @@ async function sendMessage(text) {
   addMessage(text.trim(), "user");
   const pending = addMessage("Flo is thinking…");
   try {
-    const result = await api("chat", { message: text.trim() });
+    let reply = null;
+    if (currentDashboard.backend_mode === "enterprise" &&
+        (directAction || currentDashboard.chat_mode === "scripted")) {
+      reply = await bankingReply(text.trim());
+    }
+    const result = reply === null
+      ? await api("chat", {message: text.trim()})
+      : {reply, dashboard: currentDashboard};
+    result.dashboard = await bankingDashboard(result.dashboard);
     if (generation !== requestGeneration) return;
     pending.remove();
     addMessage(result.reply);
@@ -227,7 +293,9 @@ $("#login-form").addEventListener("submit", async (event) => {
       password: $("#password").value,
     });
     generation++;
-    showDashboard(data);
+    const loginGeneration = generation;
+    const dashboard = await bankingDashboard(data);
+    if (generation === loginGeneration) showDashboard(dashboard);
   } catch (error) {
     $("#login-error").textContent = error.message;
     $("#login-error").hidden = false;
@@ -270,7 +338,7 @@ document.addEventListener("click", (event) => {
     const message = prompt.dataset.prompt;
     // Buttons open the same chat flow as typed messages.
     $("#chat-section").scrollIntoView({ block: "nearest", behavior: "auto" });
-    sendMessage(message);
+    sendMessage(message, true);
     return;
   }
   const navigation = event.target.closest("[data-section]");
@@ -295,7 +363,9 @@ document.addEventListener("click", (event) => {
   const restorationGeneration = generation;
   try {
     const data = await api("dashboard");
-    if (generation === restorationGeneration) showDashboard(data);
+    if (generation !== restorationGeneration) return;
+    const dashboard = await bankingDashboard(data);
+    if (generation === restorationGeneration) showDashboard(dashboard);
   } catch (error) {
     if (generation !== restorationGeneration) return;
     showLogin();

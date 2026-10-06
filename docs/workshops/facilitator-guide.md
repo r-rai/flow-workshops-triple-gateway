@@ -29,7 +29,14 @@ docker compose --profile demo-enterprise up -d --build
 ```
 
 In a running workshop profile (`w1`–`w4`), the customer UI is also
-available through APISIX at **http://localhost:9080**.
+available through APISIX at **http://localhost:9080**. In enterprise mode,
+account/card/case requests are visible in the browser at `/demo-api/banking/...`
+and forwarded through Gate 3 to the existing `/api/v1/...` APIs. Card controls
+and disputes persist in the banking database; transaction history remains sample
+activity. W1 also exposes **http://localhost:9080/docs** and
+**http://localhost:9080/openapi.json**. Use the
+[W1 live API walkthrough](w1-api-walkthrough.md) for the opening setup tour,
+Swagger authentication, Network-tab demonstration, and SSH forwarding.
 
 Use `docker compose --profile demo down` to stop the standalone simulation. Use the
 existing launcher below for workshop readiness, verification, and switching.
