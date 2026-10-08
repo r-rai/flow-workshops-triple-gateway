@@ -1,0 +1,78 @@
+[
+  {
+    "workshop": 1,
+    "slides": 17,
+    "duration_minutes": 45,
+    "pptx": "flo-bank-workshop-1.pptx",
+    "pdf": "flo-bank-workshop-1.pdf",
+    "checks": "passed",
+    "min_font_size": 9,
+    "validation": [
+      "PPTX reopened",
+      "ZIP integrity",
+      "PDF page count and text bounds",
+      "Slide shape bounds",
+      "Text fit",
+      "Presenter notes",
+      "Source paths"
+    ],
+    "rendering_note": "PDF uses the same layout, independently rendered; no PowerPoint/LibreOffice renderer available."
+  },
+  {
+    "workshop": 2,
+    "slides": 17,
+    "duration_minutes": 45,
+    "pptx": "flo-bank-workshop-2.pptx",
+    "pdf": "flo-bank-workshop-2.pdf",
+    "checks": "passed",
+    "min_font_size": 9,
+    "validation": [
+      "PPTX reopened",
+      "ZIP integrity",
+      "PDF page count and text bounds",
+      "Slide shape bounds",
+      "Text fit",
+      "Presenter notes",
+      "Source paths"
+    ],
+    "rendering_note": "PDF uses the same layout, independently rendered; no PowerPoint/LibreOffice renderer available."
+  },
+  {
+    "workshop": 3,
+    "slides": 19,
+    "duration_minutes": 45,
+    "pptx": "flo-bank-workshop-3.pptx",
+    "pdf": "flo-bank-workshop-3.pdf",
+    "checks": "passed",
+    "min_font_size": 9,
+    "validation": [
+      "PPTX reopened",
+      "ZIP integrity",
+      "PDF page count and text bounds",
+      "Slide shape bounds",
+      "Text fit",
+      "Presenter notes",
+      "Source paths"
+    ],
+    "rendering_note": "PDF uses the same layout, independently rendered; no PowerPoint/LibreOffice renderer available."
+  },
+  {
+    "workshop": 4,
+    "slides": 29,
+    "duration_minutes": 135,
+    "pptx": "flo-bank-workshop-4.pptx",
+    "pdf": "flo-bank-workshop-4.pdf",
+    "checks": "passed",
+    "min_font_size": 9,
+    "validation": [
+      "PPTX reopened",
+      "ZIP integrity",
+      "PDF page count and text bounds",
+      "Slide shape bounds",
+      "Text fit",
+      "Presenter notes",
+      "Source paths"
+    ],
+    "rendering_note": "PDF uses the same layout, independently rendered; no PowerPoint/LibreOffice renderer available."
+  }
+]
