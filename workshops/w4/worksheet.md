@@ -33,6 +33,13 @@ optional isolated incident replay. Then check the running W4 stack:
 ./scripts/workshop verify w4
 ```
 
+Verification obtains a five-minute, read-only JWT and the lab API key from the
+running API container. It uses that container's signing configuration and API
+audience, including existing `novabank-api` configurations. You do not need to
+export JWT settings or change your audience to run this check. Credentials are
+captured internally and are not printed. No image rebuild is needed after pulling
+an update to this verification script.
+
 Open the Incident Room and check readiness before running a scenario. Starting
 `w4` alone does not enable the isolated vulnerable replay.
 
