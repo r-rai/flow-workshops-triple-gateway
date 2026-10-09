@@ -351,6 +351,7 @@ services:
       - JWT_ISSUER=${JWT_ISSUER:-https://identity.flobank.internal/realms/flobank}
       - API_AUDIENCE=${API_AUDIENCE:-flobank-api}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - MCP_AUDIENCE=${MCP_AUDIENCE:-flobank-mcp}
     networks:
       - workflow
       - capability
