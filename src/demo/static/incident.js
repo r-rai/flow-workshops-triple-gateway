@@ -44,9 +44,12 @@ function setChapter(value, record=true) {
   }
 }
 function setView() {
-  const view=$('view').value; localStorage.setItem('w4-view',view);
+  const view=['participant','presenter','reviewer'].includes($('view').value)?$('view').value:'participant';
+  $('view').value=view; localStorage.setItem('w4-view',view);
   $('presenter').hidden=view!=='presenter'; $('reviewer-form').hidden=view!=='reviewer';
   document.body.classList.toggle('presenter',view==='presenter');
+  const url=new URL(location.href); url.searchParams.set('view',view);
+  history.replaceState(null,'',url);
 }
 function render(run) {
   current=run; localStorage.setItem('w4-run',run.run_id);

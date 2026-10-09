@@ -43,6 +43,18 @@ an update to this verification script.
 Open the Incident Room and check readiness before running a scenario. Starting
 `w4` alone does not enable the isolated vulnerable replay.
 
+Use **View → Presenter** to show Chapter cues, then select **8–20 Follow the money**
+to reveal the ticket and recorded handoff. The View selector updates the visible
+controls and URL immediately; refreshing preserves your selected view. Selecting
+Independent reviewer shows the sign-in form and does not grant approval authority.
+
+After pulling an Incident Room UI update, rebuild the API container and refresh
+the browser so it serves the updated assets (existing data volumes are preserved):
+
+```bash
+docker compose --profile w4 up -d --build --no-deps api
+```
+
 ## Pair exercise: local tool policy
 
 Only your local policy file changes. The initial checkpoint adds `vendor-alpha` to the prohibited list, so the legitimate ₹250 request is denied. The protected transfer ceiling and attacker block remain enforced.
