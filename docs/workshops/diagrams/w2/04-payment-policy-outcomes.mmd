@@ -1,0 +1,16 @@
+flowchart TD
+    R["Payment request"] --> MCP["Gate 2 / MCP adapter"]
+    MCP --> OPA{"OPA evaluation"}
+    OPA -->|"Prohibited<br/>beneficiary"| D["Deny<br/>No payment"]
+    OPA -->|"Viewer: no matching permission"| D
+    OPA -->|"Above INR 10,000"| D
+    OPA -->|"OPA unavailable"| FC["Fail closed<br/>No payment"]
+    OPA -->|"Support agent: up to INR 1,000"| A["Allow"]
+    A --> G3["Gate 3<br/>API authorization"]
+    G3 --> BANK["Core Banking<br/>Independent business checks"]
+    BANK --> PAY["Execute if banking checks pass<br/>INR 250 example: debit + one payment"]
+    OPA -->|"Support agent: above INR 1,000 through INR 10,000"| REVIEW["Approval required"]
+    REVIEW --> PG3["Gate 3<br/>Authorize proposal persistence"]
+    PG3 --> PERSIST["Core Banking / PostgreSQL<br/>Persist pending proposal"]
+    PERSIST --> WAIT["No debit or payment<br/>W2 stops here"]
+    N["Amount bands assume a permitted beneficiary.<br/>Prohibited-beneficiary denial takes precedence."]

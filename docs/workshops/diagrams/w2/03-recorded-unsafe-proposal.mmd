@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor Presenter
+    participant Flo as Studio backend
+    participant MCP as Gate 2 / MCP adapter
+    participant OPA
+    participant Bank as Gate 3 / Core Banking
+    Presenter->>Flo: Replay unsafe proposal
+    Flo->>MCP: Read case-502
+    MCP->>OPA: Evaluate case-read permission
+    OPA-->>MCP: Allow
+    MCP->>Bank: Authorized case read
+    Bank-->>MCP: Case data
+    MCP-->>Flo: Case text
+    Note over Flo: Fixed proposal — no Gate 1 or LLM call
+    Flo->>MCP: create_payment: INR 9,000 to fraud-account-66
+    MCP->>OPA: Evaluate identity and arguments
+    OPA-->>MCP: Deny: PROHIBITED_BENEFICIARY
+    MCP-->>Flo: Execution denied
+    Note over MCP,Bank: Denied payment is not forwarded for execution
+    Flo-->>Presenter: Expected INR 0 balance change and 0 new payments

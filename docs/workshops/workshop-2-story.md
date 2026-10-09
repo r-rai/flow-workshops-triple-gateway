@@ -7,6 +7,10 @@ Use the [W2 worksheet](../../workshops/w2/worksheet.md) for the exact requests a
 expected responses, the [answer key](../../workshops/w2/answer-key.md) for policy
 details, and the [delivery plan](delivery-plan.md) for the series outcomes.
 
+Use the [architecture and use-case diagrams](diagrams/w2/README.md) for the
+system overview, live model review, recorded unsafe proposal and payment policy
+outcomes. Each diagram includes an editable Mermaid source and SVG/PNG exports.
+
 ## The business story
 
 In [Workshop 1](workshop-1-story.md), Flo Bank gave its support agent a curated

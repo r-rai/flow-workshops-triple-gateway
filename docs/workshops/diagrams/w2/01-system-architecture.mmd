@@ -1,0 +1,23 @@
+flowchart LR
+    B["Browser<br/>Governance Studio"] --> F["Flo / Studio backend"]
+    subgraph APISIX["APISIX — one gateway, three logical boundaries"]
+        G1["Gate 1<br/>AI route"]
+        G2["Gate 2<br/>MCP route"]
+        G3["Gate 3<br/>Banking API route"]
+    end
+    subgraph Adapter["Adapter service"]
+        AI["Inference adapter<br/>Token budget and output limits"]
+        MCP["MCP adapter<br/>Signed identity and tool arguments"]
+    end
+    F <-->|"Model requests / responses"| G1
+    G1 <--> AI
+    AI <-->|Inference| LLM["Hosted LLM provider"]
+    F <-->|"MCP tool calls / results"| G2
+    G2 <--> MCP
+    MCP <-->|"Policy query / decision"| OPA["OPA<br/>Rego policies"]
+    MCP <-->|"Banking requests / results"| G3
+    G3 <--> BANK["Core Banking<br/>Identity, approval and ledger rules"]
+    BANK <--> DB[("PostgreSQL<br/>Banking records")]
+    AI -.->|Telemetry| J["Jaeger<br/>Trace inspection"]
+    MCP -.->|Telemetry| J
+    BANK -.->|Telemetry| J

@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor Presenter
+    participant Flo as Flo / Studio backend
+    participant AI as Gate 1 / AI adapter
+    participant LLM as Hosted LLM
+    participant MCP as Gate 2 / MCP adapter
+    participant OPA
+    participant Bank as Gate 3 / Core Banking
+    Presenter->>Flo: Ask Flo to review the case
+    Flo->>MCP: Read case-502
+    MCP->>OPA: Evaluate case-read permission
+    OPA-->>MCP: Allow
+    MCP->>Bank: Authorized case read
+    Bank-->>MCP: Case data
+    MCP-->>Flo: Untrusted case text
+    Flo->>AI: Instructions, minimal case context, tool schema
+    AI->>LLM: Bounded inference request
+    LLM-->>AI: Refusal or payment proposal
+    AI-->>Flo: Model response
+    alt No tool proposed
+        Flo-->>Presenter: No tool proposed
+    else Valid payment proposal
+        Flo->>MCP: Submit validated payment arguments
+        MCP->>OPA: Evaluate signed role, amount, beneficiary
+        OPA-->>MCP: Policy decision
+        alt Allow
+            MCP->>Bank: Authorized payment request
+            Bank-->>MCP: Banking result
+        else Approval required
+            MCP->>Bank: Persist pending proposal
+            Bank-->>MCP: Proposal ID and pending status
+        else Deny
+            Note over MCP,Bank: No payment execution request forwarded
+        end
+        MCP-->>Flo: Actual execution, approval or denial result
+        Flo-->>Presenter: Show evidence
+    end
+    Note over AI,LLM: Gate 1 has no dedicated<br/>prompt-injection detector<br/>in this lab
