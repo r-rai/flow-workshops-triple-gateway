@@ -1,0 +1,84 @@
+sequenceDiagram
+    actor Ops as Participant / reviewer
+    participant CLI as Workshop CLI
+    participant K as Kafka
+    participant C as Kafka consumer
+    participant T as Temporal
+    participant W as Worker activities
+    participant AI as Gate 1 / inference adapter
+    participant MCP as Gate 2 / MCP adapter
+    participant OPA as OPA
+    participant B as Gate 3 / Core Banking
+
+    Ops->>CLI: emit case-501
+    CLI->>K: Publish to flobank.disputes
+    K->>C: Deliver dispute event
+    C->>T: Start dispute-case-case-501
+    T-->>C: Start accepted
+    C->>K: Commit offset + 1
+    Note over K,T: Commit after durable start acceptance, not after settlement
+
+    T->>W: Schedule read_dispute_ticket
+    W->>B: GET /cases/case-501 with API-audience JWT
+    B-->>W: Case data
+    W-->>T: Ticket-read result recorded
+    T->>W: Schedule diagnose_and_propose_resolution
+    Note over W: Compiled LangGraph runs inside one activity
+
+    loop Bounded model / read-tool loop
+        W->>AI: Chat request with read-tool schemas
+        Note over AI: Replay fixtures or live provider inference
+        AI-->>W: Tool call or final proposal
+        opt Model selects an allowed read
+            W->>MCP: get_case or get_account with MCP-audience JWT
+            MCP->>OPA: Evaluate identity, tool, arguments
+            OPA-->>MCP: Allow or deny
+            alt Allowed
+                MCP->>B: Exchange MCP token for API-scoped token
+                B-->>MCP: API token
+                MCP->>B: Authorized banking GET
+                B-->>MCP: Case or account data
+                MCP-->>W: Successful tool result
+            else Denied or policy unavailable
+                MCP-->>W: Tool error<br/>no banking read dispatched
+            end
+        end
+    end
+
+    W->>W: Validate proposal and verified read evidence
+    W-->>T: Record investigation result
+    alt Investigation failed
+        Note over T,W: Business result: INVESTIGATION_FAILED<br/>Temporal execution completes<br/>No settlement activity scheduled
+    else Valid replay proposal requiring review
+        Note over T,W: Business phase: WAITING_FOR_APPROVAL<br/>75000 paise to acc-101<br/>Approval timeout: 24 hours<br/>Temporal status: Running
+        Ops->>CLI: query case-501
+        CLI->>T: get_status
+        T->>W: Dispatch workflow query
+        W-->>T: Phase, proposal, approval = null
+        T-->>CLI: Query result
+        CLI-->>Ops: Show pending proposal
+        Note over Ops,T: Worker stop/start and duplicate delivery shown in recovery sequence
+        Ops->>CLI: approve or reject case-501
+        CLI->>T: human_approval decision signal
+        T->>W: Deliver workflow task with recorded decision
+        W-->>T: Schedule execute_settlement_and_notify
+        T->>W: Dispatch settlement activity
+        alt Approved
+            W->>B: POST /payments<br/>key settle-dispute-case-501
+            B->>B: Apply rules<br/>persist payment and idempotency record
+            B-->>W: New payment or existing result on retry
+            W->>B: PATCH case-501 status = resolved
+            B-->>W: Case-update response
+            W-->>T: Settlement activity result
+        else Rejected
+            W->>B: PATCH case-501 status = closed
+            B-->>W: Case-update response
+            Note over W,B: No payment POST
+            W-->>T: Rejection activity result
+        end
+        Note over T,W: Final business phase: COMPLETED<br/>Temporal execution completes
+        T-->>CLI: Completed workflow result
+        CLI-->>Ops: Show result
+        Ops->>B: Read case and payments via evidence-check script
+        B-->>Ops: Resolved + one payment, or closed + zero payments
+    end

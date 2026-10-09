@@ -4,6 +4,9 @@ Before running Python commands or the Bash launcher, complete the [workshop Pyth
 
 Presenter narrative: [The Resolver That Remembered](../../docs/workshops/workshop-3-story.md).
 
+Visual reference: [W3 architecture, resolution, and crash-recovery diagrams](../../docs/workshops/diagrams/w3/README.md)
+(editable Mermaid plus SVG/PNG).
+
 **Duration**: 45 Minutes  
 **Profile**: `w3`  
 **Focus**: Durable workflow execution, event-driven AI with Apache Kafka, Temporal durable execution, and zero-duplicate financial side effects across system crashes.

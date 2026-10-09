@@ -3,6 +3,9 @@
 **Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI**\
 **Duration:** 45 minutes · **Profile:** `w3` · **Setting:** fictional Flo Bank
 
+Visual reference: [architecture and sequence diagrams](diagrams/w3/README.md)
+with editable Mermaid sources and rendered SVG/PNG images.
+
 Based on [Topic 3 in the workshop brief](workshot.txt), with the running lab in the
 [W3 worksheet](../../workshops/w3/worksheet.md) and the architectural boundaries in
 the [delivery plan](delivery-plan.md#workshop-3--architecting-the-agentic-enterprise-middleware-durable-state-and-event-driven-ai).

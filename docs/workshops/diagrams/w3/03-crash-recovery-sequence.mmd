@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor Ops as Participant
+    participant K as Kafka
+    participant W as Worker container
+    participant T as Temporal + persistent history
+    participant UI as Temporal UI
+
+    Note over W,T: Existing workflow dispute-case-case-501<br/>WAITING_FOR_APPROVAL with saved 75000-paise proposal
+    Ops->>W: docker compose stop worker
+    Note over W: Consumer and task executor are stopped
+    Ops->>K: Emit the same case-501 event again
+    Note over K: Duplicate event remains pending while consumer is stopped
+    Ops->>UI: Inspect recorded workflow history
+    UI->>T: Read persisted events
+    T-->>UI: Recorded proposal and pending workflow
+    Note over UI,T: History works without worker<br/>workflow queries need worker
+    Ops->>W: docker compose start worker
+    W->>T: Resume polling dispute-resolution-queue
+    Note over W,T: Replay restores recorded progress<br/>Completed investigation result is reused<br/>Inference does not need to run again
+    K->>W: Deliver duplicate event
+    W->>T: Start same workflow ID
+    T-->>W: WorkflowAlreadyStartedError
+    Note over W: Confirm existing workflow<br/>create no new run
+    W->>K: Commit duplicate event offset + 1
+    Ops->>T: CLI get_status query
+    T->>W: Dispatch query
+    W-->>T: Same pending proposal and phase
+    T-->>Ops: WAITING_FOR_APPROVAL<br/>no settlement result
+    Note over Ops,T: Continue with human approval in the resolution sequence
+
+    Note over W,T: Manual reset is a separate recovery path<br/>Completed INVESTIGATION_FAILED run<br/>keeps Workflow ID but gets a new Run ID<br/>Earlier run history remains available

@@ -1,0 +1,57 @@
+flowchart TB
+    CLI["Workshop CLI<br/>Emit, query, approve"]
+    K["Kafka<br/>flobank.disputes<br/>At-least-once delivery"]
+
+    subgraph Durable["Durable workflow state"]
+        T["Temporal service<br/>Workflow ID: dispute-case-case-501<br/>History, tasks, approval signal"]
+        TD[("Temporal SQLite<br/>Persistent volume")]
+        T <--> TD
+    end
+
+    subgraph Worker["Worker container — replaceable execution process"]
+        C["Kafka consumer<br/>Commit after start accepted<br/>or existing workflow confirmed"]
+        E["Temporal task executor<br/>Ticket read and activity results"]
+        A["LangGraph investigation activity<br/>Bounded model/tool loop<br/>Validate proposal and read evidence"]
+        S["Settlement activity<br/>Runs after workflow approval gate"]
+        E --> A
+        E --> S
+    end
+
+    subgraph Gateway["APISIX — one gateway, three logical routes"]
+        G1["Gate 1<br/>AI inference"]
+        G2["Gate 2<br/>MCP tools"]
+        G3["Gate 3<br/>Banking API"]
+    end
+
+    subgraph Adapter["Adapter service"]
+        AI["Inference adapter<br/>Live provider or replay fixtures"]
+        MCP["MCP adapter<br/>JWT issuer / MCP audience<br/>Policy enforcement and token exchange"]
+    end
+
+    CLI -->|"Dispute event"| K
+    K -->|"Event or redelivery"| C
+    C -->|"Start stable workflow ID"| T
+    CLI -->|"Query / human_approval signal"| T
+    T <-->|"Tasks / recorded results"| E
+    E -->|"Initial ticket GET"| G3
+    A <-->|"Model requests / responses"| G1
+    G1 <--> AI
+    AI <-->|"Live inference"| LLM["Hosted LLM provider"]
+    A <-->|"get_case / get_account"| G2
+    G2 <--> MCP
+    MCP <-->|"Decision"| OPA["OPA<br/>Tool policy"]
+    MCP <-->|"Token exchange and allowed reads"| G3
+    S -->|"Settlement + case update<br/>Key: settle-dispute-case-501"| G3
+    G3 <--> BANK["Core Banking<br/>JWT issuer / API audience<br/>Rules and payment idempotency"]
+    BANK <--> DB[("Banking records<br/>SQLite by default<br/>Configured DATABASE_URL")]
+
+    Browser["Participant browser"] -->|"localhost:8233"| UI["Temporal UI<br/>History and workflow queries<br/>Write actions disabled"]
+    UI -->|"temporal:7233"| T
+    BANK -.->|"Exported spans"| J["Jaeger<br/>localhost:16686"]
+
+    classDef durable fill:#e8f1ff,stroke:#3869a6,color:#173755;
+    classDef gate fill:#e9f7ef,stroke:#408360,color:#20452f;
+    classDef business fill:#fff3de,stroke:#ac793b,color:#573818;
+    class T,TD,K durable;
+    class G1,G2,G3 gate;
+    class BANK,DB business;
