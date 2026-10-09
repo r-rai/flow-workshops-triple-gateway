@@ -143,11 +143,9 @@ slide(w2, "Give each gate a precise responsibility", "5–12 min", cards=[
     ("GATE 3 / BANKING", "Enforce scoped API access; retain independent banking and approval rules.")],
     takeaway="The lab shares APISIX infrastructure across these logical boundaries.",
     notes="A recorded proposal skips inference. A denied payment may stop at Gate 2 before reaching the banking API. Avoid narrating a full successful call path when the observed request was stopped earlier.")
-slide(w2, "Follow the proposal to its stopping point", "5–12 min", steps=[
-    ("Proposal", "Recorded or live source"), ("Gate 2", "Identity + actual arguments"),
-    ("Gate 3", "Downstream API access"), ("Core Banking", "Approval + ledger rules")],
-    takeaway="A decision is evidence only for the boundary that actually evaluated it.",
-    notes="Optional live review first obtains the case and calls the model through Gate 1. Show boundary response cards rather than relying on the diagram. Independent observer snapshot reads have a separate identity and do not prove the denied payment reached Core Banking.")
+slide(w2, "Workshop 2 architecture: proposal to execution", "5–12 min", kind="w2_architecture",
+    takeaway="Replay skips Gate 1. Gate 2 checks authority before payment execution.",
+    notes="Read the diagram in two stages. The Governance Studio backend first reads the case through MCP and Gate 3. For live review, it sends minimal case context through Gate 1 to the hosted model and validates at most one returned payment proposal. Recorded replay supplies a fixed proposal without inference. Both payment paths enter Gate 2, where the MCP adapter validates signed identity and arguments and queries OPA. An allowed payment traverses Gate 3 API-key authentication and Core Banking's signed-identity, approval and ledger rules. Approval-required requests can persist a pending proposal with no debit. PostgreSQL holds banking records; exported telemetry is inspected in Jaeger. APISIX implements all three logical gateway routes. Gate 1 enforces inference budgets and output limits; this lab has no dedicated gateway prompt-injection filter. Model instructions treat case text as untrusted. Denied payment calls stop at Gate 2; independent observer reads do not prove that payment reached Core Banking.")
 slide(w2, "Model behavior and permission are distinct", "12–22 min", headers=["Observed result", "What it establishes"], rows=[
     ["No tool proposed", "This model made no payment proposal on this run"],
     ["Policy denied", "The submitted tool request was blocked"],

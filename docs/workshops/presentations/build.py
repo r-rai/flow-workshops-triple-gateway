@@ -159,7 +159,39 @@ def render(p, d, s, page):
         p.text(s["lead"], 43, 145, 871, 58, size=18, minimum=16, color=MUTED)
         top = 215
     bottom = 444
-    if s["cards"]:
+    if s["kind"] == "w2_architecture":
+        def node(x, y, w, h, title, body, color=WHITE):
+            p.rect(x, y, w, h, color, radius=True)
+            p.text(title, x+10, y+9, w-20, 25, size=14, minimum=12, bold=True, color=TEAL)
+            p.text(body, x+10, y+36, w-20, h-40, size=12, minimum=10, leading=1.15)
+
+        def arrow(x, y, w=30, direction="→"):
+            p.text(direction, x, y, w, 28, size=20, minimum=16, color=TEAL)
+
+        node(42, 158, 185, 82, "Flo / Studio backend", "Read case via MCP first;\nvalidate model proposal")
+        arrow(234, 180)
+        node(267, 158, 190, 82, "Gate 1 / AI adapter", "Inference token budget\nand output limits")
+        arrow(465, 180)
+        node(499, 158, 185, 82, "Hosted LLM", "Live review: returns a\nproposal or refusal")
+        p.text("Proposal returns to Flo", 699, 168, 215, 26, size=12, minimum=11, color=MUTED)
+        p.text("then enters MCP below ↓", 699, 199, 215, 28, size=12, minimum=11, color=MUTED)
+
+        node(42, 270, 185, 87, "Payment proposal", "Live: validated model call\nReplay: fixed request", "E0ECE6")
+        arrow(234, 295)
+        node(267, 270, 190, 87, "Gate 2 / MCP adapter", "Signed identity + arguments\nOPA decision; fail closed")
+        arrow(465, 295)
+        node(499, 270, 185, 87, "Gate 3 / API gateway", "API-key authentication\nForward authorized calls")
+        arrow(692, 295)
+        node(727, 270, 190, 87, "Core Banking", "JWT + business rules\nApprovals and ledger")
+
+        arrow(349, 357, direction="↕")
+        node(267, 387, 190, 58, "OPA", "Role / amount / beneficiary")
+        arrow(808, 357, direction="↕")
+        node(727, 387, 190, 58, "PostgreSQL", "Banking records")
+        node(499, 387, 185, 58, "Jaeger", "Exported distributed traces")
+        p.text("APISIX hosts Gates 1–3.\nDenied payments stop at Gate 2.\nPending approval: no debit.",
+               42, 382, 205, 65, size=12, minimum=10, color=MUTED, leading=1.2)
+    elif s["cards"]:
         cards = s["cards"]
         cw = (876 - 20 * (len(cards)-1)) / len(cards)
         for i, (heading, body) in enumerate(cards):

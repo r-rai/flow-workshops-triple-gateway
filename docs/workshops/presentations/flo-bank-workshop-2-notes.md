@@ -46,11 +46,11 @@ A recorded proposal skips inference. A denied payment may stop at Gate 2 before 
 
 Sources: [workshop-2-story.md](../../../docs/workshops/workshop-2-story.md), [worksheet.md](../../../workshops/w2/worksheet.md), [answer-key.md](../../../workshops/w2/answer-key.md), [delivery-plan.md](../../../docs/workshops/delivery-plan.md)
 
-## 06. Follow the proposal to its stopping point
+## 06. Workshop 2 architecture: proposal to execution
 
 **Timing:** 5–12 min
 
-Optional live review first obtains the case and calls the model through Gate 1. Show boundary response cards rather than relying on the diagram. Independent observer snapshot reads have a separate identity and do not prove the denied payment reached Core Banking.
+Read the diagram in two stages. The Governance Studio backend first reads the case through MCP and Gate 3. For live review, it sends minimal case context through Gate 1 to the hosted model and validates at most one returned payment proposal. Recorded replay supplies a fixed proposal without inference. Both payment paths enter Gate 2, where the MCP adapter validates signed identity and arguments and queries OPA. An allowed payment traverses Gate 3 API-key authentication and Core Banking's signed-identity, approval and ledger rules. Approval-required requests can persist a pending proposal with no debit. PostgreSQL holds banking records; exported telemetry is inspected in Jaeger. APISIX implements all three logical gateway routes. Gate 1 enforces inference budgets and output limits; this lab has no dedicated gateway prompt-injection filter. Model instructions treat case text as untrusted. Denied payment calls stop at Gate 2; independent observer reads do not prove that payment reached Core Banking.
 
 Sources: [workshop-2-story.md](../../../docs/workshops/workshop-2-story.md), [worksheet.md](../../../workshops/w2/worksheet.md), [answer-key.md](../../../workshops/w2/answer-key.md), [delivery-plan.md](../../../docs/workshops/delivery-plan.md)
 
