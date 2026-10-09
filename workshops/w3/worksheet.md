@@ -7,6 +7,11 @@ Presenter narrative: [The Resolver That Remembered](../../docs/workshops/worksho
 Visual reference: [W3 architecture, resolution, and crash-recovery diagrams](../../docs/workshops/diagrams/w3/README.md)
 (editable Mermaid plus SVG/PNG).
 
+For an optional live run with your own OpenRouter key and free tool-capable
+models, follow the [OpenRouter setup guide](../../docs/workshops/openrouter-setup.md).
+The worksheet's default replay run needs no provider key; keep replay enabled
+for its recorded proposal expectations.
+
 **Duration**: 45 Minutes  
 **Profile**: `w3`  
 **Focus**: Durable workflow execution, event-driven AI with Apache Kafka, Temporal durable execution, and zero-duplicate financial side effects across system crashes.

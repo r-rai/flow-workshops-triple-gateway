@@ -56,8 +56,10 @@ recorded proposal bypasses model inference but traverses real policy and API
 services. It proves execution control for this request, not prompt-injection
 prevention or successful compromise of a live model.
 
-**Optional live comparison:** select **Ask Flo to review the case**. It reads the
-same case and makes one hosted-model call through Gate 1, capped at 2,048 output
+**Optional live comparison:** for a participant key and free models, complete
+the [OpenRouter setup](../../docs/workshops/openrouter-setup.md) first. Select
+**Ask Flo to review the case**. It reads the same case and makes one hosted-model
+call through Gate 1, capped at 2,048 output
 tokens. A configured provider key is required in the adapter environment. Only
 case ID and description are sent; credentials and ledger snapshots are excluded.
 It validates at most one payment tool proposal before passing it to MCP. A model

@@ -17,8 +17,8 @@ docker compose --profile demo-enterprise up -d --build
 ```
 
 - Open **http://localhost:8000** (or via APISIX at **http://localhost:9080**) and log in with sample credentials: `maya@flobank.demo` / `flo-demo`.
-- **Live AI**: Powered by **MiniMax 2.7 Fast** (`MiniMax-M2.7-highspeed`) through APISIX Gate 1 (`/ai/chat/completions`) with session-scoped tool calling (`get_demo_accounts`, `set_demo_card_state`, `create_demo_dispute`, etc.).
-- **Zero-Key Offline Support**: Automatically falls back to deterministic, scripted customer responses if `MINIMAX_API_KEY` is not configured.
+- **Live AI**: Uses MiniMax by default or [OpenRouter free models with a participant key](openrouter-setup.md), through APISIX Gate 1 (`/ai/chat/completions`) with session-scoped tool calling (`get_demo_accounts`, `set_demo_card_state`, `create_demo_dispute`, etc.).
+- **Zero-Key Offline Support**: Use `DEMO_CHAT_MODE=scripted` for deterministic customer responses. Workshop replay uses `USE_REPLAY_FIXTURES=true`.
 - See [participant setup](../setup/participant-requirements.md) for attendee workstation prerequisites.
 
 ---

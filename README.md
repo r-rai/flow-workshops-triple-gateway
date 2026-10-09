@@ -48,6 +48,7 @@ Background and architecture:
     Decisions](docs/architecture/04-architecture-decisions.md)
 -   [Workshop Mapping](docs/workshops/README.md)
 -   [Participant Requirements](docs/setup/participant-requirements.md)
+-   [OpenRouter Setup: Participant Keys and Free Models](docs/workshops/openrouter-setup.md)
 -   [Technical POC](docs/poc/README.md)
 
 ## Customer dashboard and chatbot demo
@@ -147,6 +148,11 @@ In enterprise mode, Flo's tools query and mutate real Core Banking database enti
 For offline environments or tests without a key, explicit scripted mode
 (`DEMO_CHAT_MODE=scripted`) is supported. See the
 [implementation plan](docs/implementation/demo-real-llm-plan.md).
+
+Participants can also use their own OpenRouter key with free tool-capable
+models. Follow the [OpenRouter setup guide](docs/workshops/openrouter-setup.md)
+to configure the existing Gate 1 adapter, recreate services, and verify live
+inference. Free-model quotas apply, so keep replay available for the workshop.
 
 Flo Bank is the unified brand across the UI, APIs, and workshop infrastructure.
 All infrastructure identifiers (Docker images `flobank/*`, networks `flobank-*`, volumes `flobank_*`,

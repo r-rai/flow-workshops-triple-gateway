@@ -55,9 +55,16 @@ Create your local `.env` configuration file from the sample:
 cp .env.example .env
 ```
 
-*(Optional)* If you wish to use live LLM inference instead of deterministic fixtures, open `.env` and add your provider key:
+*(Optional)* For live inference with your own OpenRouter key and free models,
+follow the [OpenRouter participant setup guide](openrouter-setup.md). It covers
+model selection, environment settings, service recreation, verification, and
+free-tier quotas. Replay exercises require no provider key.
+
+For MiniMax, open `.env`, add your provider key, and set
+`USE_REPLAY_FIXTURES=false` for live inference:
 ```dotenv
 MINIMAX_API_KEY="your-minimax-api-key"
+USE_REPLAY_FIXTURES=false
 ```
 
 ### Step 2.3: Set Up Python Virtual Environment (For Workshop Clients, Verification & Tests)

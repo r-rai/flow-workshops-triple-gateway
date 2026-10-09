@@ -36,6 +36,10 @@ Try a balance query, recent transactions, card freeze/unfreeze, and
 via APISIX Gate 1 (`demo-gateway`); in offline environments, it falls back to
 deterministic scripted replies.
 
+For optional live inference with your own OpenRouter key and free models,
+follow the [OpenRouter participant setup](../workshops/openrouter-setup.md).
+It includes model selection, free-tier limits, and a live verification step.
+
 The demo supports two backend modes:
 - **Simulated (`demo`)**: Fictional fixtures, in-memory session isolation.
 - **Enterprise (`demo-enterprise`)**: Real-time integration with APISIX Gate 3 (`:9080/api/v1`) using scoped customer JWTs and SQLite/PostgreSQL persistence.
