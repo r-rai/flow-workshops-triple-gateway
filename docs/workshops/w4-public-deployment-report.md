@@ -2,20 +2,21 @@
 
 **Deployment Date:** 2026-10-09  
 **Target Environment:** VPS (`vmi3355051` / `13.140.146.58`)  
-**Status:** **LIVE & VERIFIED**  
+**Status:** **LIVE, HARDENED & VERIFIED (Final Pass)**  
 
 ---
 
 ## 1. Executive Summary & Access Information
 
-A secure, mobile-friendly, observation-only participant environment for **FLO Workshop 4: “The Day the Agent Broke the Bank”** has been successfully deployed and verified.
+A secure, mobile-friendly, observation-only participant environment for **FLO Workshop 4: “The Day the Agent Broke the Bank”** has been successfully deployed, hardened, and verified for the 12–14 hour workshop window.
 
 Participants can join the Incident Room directly from their smartphones via QR code or direct URL to inspect 11 curated, recorded execution runs without executing attacks, payments, approvals, or mutations.
 
 * **Public URL:** [https://w4.ravirai.in/workshop-4](https://w4.ravirai.in/workshop-4)
 * **Root Short Redirect:** [https://w4.ravirai.in/](https://w4.ravirai.in/) (307 redirect to `/workshop-4`)
-* **Event Access Code:** `FLO-W4-2026`
-* **Access Mode:** Observation Only (`viewer` role, 3-hour session lifetime)
+* **Event Access Code:** Rotated and delivered privately (stored on host in `/home/sysadmin/.flo-w4/access_code.txt`, `chmod 600`). The previously disclosed code (`FLO-W4-2026`) has been revoked and removed from all client HTML/JS.
+* **Access Mode:** Observation Only (`viewer` role, 3-hour session lifetime, non-fatal local notes storage)
+* **Capacity & Lifetime:** Configurable caps for active sessions (`W4_MAX_ACTIVE_SESSIONS=250`), total admissions (`W4_MAX_TOTAL_ADMISSIONS=500`), and configurable event cutoff (`W4_EVENT_CUTOFF_UTC`).
 * **Mobile QR Code:** Saved in repository at [`docs/workshops/w4-qr-code.png`](w4-qr-code.png)
 
 ```text
@@ -60,12 +61,14 @@ Container "flo-w4-incident-room:8000" (FastAPI / Uvicorn)
 ### Key Security Invariants Enforced
 1. **Zero Host Port Exposure:**
    The `flo-w4-incident-room` container has **no published ports** (`ports: []`). It connects strictly to the internal Docker bridge network `apps` where Caddy reaches it directly. No port is listening on host IPv4 or IPv6.
-2. **Read-Only Curated Evidence:**
+2. **Read-Only Curated Evidence & Explicit Sanitization:**
    * Evidence database (`data/w4-public-evidence.sqlite`) was generated offline by `scripts/w4_public_evidence.py` from verified rehearsal run `incident-2026-10-05T170259Z.json`.
    * Filesystem permission is `0444`.
    * Docker mount is strictly `:ro`.
    * SQLite URI mode is `mode=ro`.
-   * Database SHA-256 hash is verified against the manifest (`2e2cfa3f6603b1e0198c1fd7a63ed7130ce88cee7b94213164efc7e9baefe406`).
+   * Database SHA-256 hash is verified against the manifest (`97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`).
+   * The 399,864 synthetic "x" characters in the budget-denial recording were replaced with the clean explicit summary: `“Synthetic budget-exhaustion input: 399,864 filler characters; omitted for readability.”` while preserving the exact token limit, max_tokens, and HTTP 429 response.
+   * Redacted credentials and bearer tokens use standardized `[credential redacted]` markers.
 3. **Hard Fail-Closed Enforcement on Startup:**
    The service immediately aborts boot if:
    * `W4_OBSERVATION_ONLY != "true"`
@@ -81,12 +84,15 @@ Container "flo-w4-incident-room:8000" (FastAPI / Uvicorn)
    * POST `/demo-api/workshop-4/runs/{id}/reconcile` (denied)
 5. **Absent Attack Surface (HTTP 404):**
    No customer banking, chat, admin, Temporal, Kafka, APISIX, or OPA endpoints are mounted or accessible (`/demo-api/chat`, `/demo-api/dashboard`, `/demo-api/banking`, `/api/v1/*`, `/oauth/*`, `/mcp`, `/docs`, `/openapi.json`).
-6. **Rate-Limited Authentication:**
+6. **Hardened Authentication, NAT Tolerance & Session Caps:**
    * Access code verified via `secrets.compare_digest`.
-   * Client IP rate limited to 5 failed attempts per 60 seconds (HTTP 429).
+   * Client IP rate limiting tuned to 30 failed attempts per 60 seconds (HTTP 429) with automatic strike reset on successful login to prevent NAT/classroom Wi-Fi false lockouts.
+   * Session caps enforced in SQLite: `W4_MAX_ACTIVE_SESSIONS=250` and `W4_MAX_TOTAL_ADMISSIONS=500`.
+   * Configurable UTC event cutoff (`W4_EVENT_CUTOFF_UTC`): rejects new admissions and immediately expires active sessions once reached.
    * Generates 32-byte cryptographically random token (`secrets.token_urlsafe(32)`).
    * Raw token is never stored in DB (only SHA-256 hash).
    * Cookie is `HttpOnly`, `SameSite=Strict`, `Secure=True`, scoped to root `/`.
+   * Reverse proxy headers strictly trusted only from Caddy on `apps` network (`172.21.0.0/16,127.0.0.1`).
 7. **Complete Independence of Laptop Presenter Demo:**
    * The public deployment lives in a separate Compose project (`flo-w4-public`) and separate file (`compose.w4-public.yml`).
    * The local laptop presenter instance and existing VPS test containers (`flobank-workshops-...`) were not modified, stopped, or disrupted.
@@ -108,8 +114,8 @@ Container "flo-w4-incident-room:8000" (FastAPI / Uvicorn)
 ## 4. Verification Results
 
 ### A. Python Regression & Public Test Suite
-* Command: `PYTHONPATH=. .venv/bin/pytest tests/test_w4_public.py tests/test_w4_public_evidence.py -q`
-  * **Result: 8/8 passed.** Verified fail-closed startup, auth requirement, session lifecycle, all 5 mutation blocks returning 403, customer routes returning 404, and evidence projection/sanitization.
+* Command: `python3 -m pytest tests/test_w4_public.py tests/test_w4_public_evidence.py -q`
+  * **Result: 10/10 passed.** Verified fail-closed startup, auth requirement, session lifecycle, session caps, event cutoff enforcement, all 5 mutation blocks returning 403, customer routes returning 404, credential redactions, and sanitized budget filler projection.
 * Command: `PYTHONPATH=. .venv/bin/pytest tests/test_w4_incident.py tests/test_w4_verification.py -q`
   * **Result: 35/35 passed.** Confirmed 0 regressions on existing workshop suites.
 
@@ -120,16 +126,16 @@ The following live verification script was executed against the public Cloudflar
    Status: 200 OK
 2. Unauthenticated access to /demo-api/workshop-4/runs:
    Status: 401 Unauthorized
-3. Invalid access code login:
-   Status: 401 Unauthorized
-4. Valid access code login (FLO-W4-2026):
+3. Revoked / invalid access code login (FLO-W4-2026):
+   Status: 401 Unauthorized {"detail":"Invalid event access code."}
+4. Rotated access code login (private code):
    Status: 200 OK {"status":"authenticated","role":"viewer","expires_in":10800}
-5. Authenticated readiness check:
-   Status: 200 OK (Recording available: True, Run count: 11)
-6. Authenticated runs check:
+5. Authenticated runs check:
    Status: 200 OK (11 runs returned)
-7. Authenticated run evidence for run-b27f461502750964fef9442e:
-   Status: 200 OK
+6. Authenticated run evidence for budget denial (run-1cd7243f1f8f8b6fdb7c927f):
+   Status: 200 OK (Verified 399k filler replaced with clean explicit summary; status 429)
+7. Authenticated run evidence for legitimate delegation (run-80da28d28e79d48b8799529a):
+   Status: 200 OK (Verified exact ₹1,500 settlement, A2A task binding, independent approval)
 8. Denied mutating routes (All returned HTTP 403 Forbidden):
    POST /demo-api/workshop-4/runs -> 403
    POST /demo-api/workshop-4/reviewer-session -> 403
@@ -155,7 +161,7 @@ The following live verification script was executed against the public Cloudflar
 
 ### C. Live Playwright Mobile Viewport Test Suite
 Executed headless Chromium over real mobile viewports via `tests/w4_public_browser.cjs`:
-* **iPhone SE (320px × 667px):** Passed. Zero horizontal overflow, signin form, workspace, and run switcher responsive.
+* **iPhone SE (320px × 667px):** Passed. Zero horizontal overflow, signin form, step execution cards, scenario explainer, clear notes, and run switcher responsive.
 * **Android Standard (360px × 780px):** Passed.
 * **iPhone 14 (390px × 844px):** Passed.
 * **Android Large Pixel (412px × 915px):** Passed.
@@ -164,13 +170,14 @@ Executed headless Chromium over real mobile viewports via `tests/w4_public_brows
 ### D. Evidence Database Immutability Check
 ```bash
 sha256sum data/w4-public-evidence.sqlite
-# 2e2cfa3f6603b1e0198c1fd7a63ed7130ce88cee7b94213164efc7e9baefe406
+# 97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85
 ```
-Hash before tests: `2e2cfa3f6603b1e0198c1fd7a63ed7130ce88cee7b94213164efc7e9baefe406`  
-Hash after entire test barrage: `2e2cfa3f6603b1e0198c1fd7a63ed7130ce88cee7b94213164efc7e9baefe406` (Identical).
+Hash before tests: `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`  
+Hash after entire test barrage: `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85` (Identical).
 
 ### E. Baseline VPS Service Health
 All preexisting containers (`caddy`, `portainer`, `uptime-kuma`, `dozzle`, `flobank-workshops-...`) verified running healthy with zero disruption.
+
 
 ---
 

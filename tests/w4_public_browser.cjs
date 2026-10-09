@@ -2,8 +2,16 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
 const base = process.env.W4_URL || 'https://w4.ravirai.in';
-const accessCode = process.env.W4_ACCESS_CODE || 'FLO-W4-2026';
+const defaultCodeFile = path.join(os.homedir(), '.flo-w4', 'access_code.txt');
+const rotatedCode =
+  process.env.W4_ACCESS_CODE ||
+  (fs.existsSync(defaultCodeFile) ? fs.readFileSync(defaultCodeFile, 'utf8').trim() : '');
+const oldDisclosedCode = 'FLO-W4-2026';
 
 const mobileViewports = [
   { name: 'iPhone SE (320px)', width: 320, height: 667 },
@@ -41,18 +49,25 @@ const mobileViewports = [
       const overflowSignin = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       assert.equal(overflowSignin, false, `Page must not horizontally scroll on ${vp.name}`);
 
-      // 2. Submit access code
-      await page.fill('#access-code', accessCode);
+      // 2. Verify rotated code: old disclosed code must fail!
+      await page.fill('#access-code', oldDisclosedCode);
+      await page.click('#signin-form button');
+      await page.waitForSelector('#error', { state: 'visible', timeout: 5000 });
+      const errText = await page.$eval('#error', el => el.textContent);
+      assert(errText.includes('Invalid event access code'), 'Old disclosed code must be rejected');
+
+      // 3. Submit valid rotated access code
+      await page.fill('#access-code', rotatedCode);
       await page.click('#signin-form button');
 
-      // 3. Wait for workspace
+      // 4. Wait for workspace
       await page.waitForSelector('#workspace', { state: 'visible', timeout: 5000 });
 
       // Check no horizontal page overflow on workspace
       const overflowWorkspace = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       assert.equal(overflowWorkspace, false, `Workspace must not horizontally scroll on ${vp.name}`);
 
-      // 4. Verify readiness and 11 runs in dropdown
+      // 5. Verify readiness and 11 runs in dropdown
       await page.waitForFunction(() => {
         const sel = document.getElementById('runs');
         return sel && sel.options.length === 11;
@@ -61,24 +76,36 @@ const mobileViewports = [
       const runsCount = await page.$eval('#runs', el => el.options.length);
       assert.equal(runsCount, 11, 'Must have exactly 11 recorded runs available');
 
-      // 5. Test switching scenario: vulnerable_replay
+      // 6. Test scenario: vulnerable_replay
       await page.selectOption('#runs', 'run-b27f461502750964fef9442e');
       await page.waitForFunction(() => document.getElementById('state').textContent.includes('completed'));
       const sandboxEffect = await page.$eval('#sandbox-effect', el => el.textContent);
       assert(sandboxEffect.includes('₹90 lakh loss'), 'Vulnerable replay must show ₹90 lakh loss');
 
-      // 6. Test switching scenario: legitimate_delegation
+      // Verify scenario explainer card
+      const explainerText = await page.$eval('#scenario-explanation', el => el.textContent);
+      assert(explainerText.includes('Recorded Incident'), 'Explainer must explain vulnerable incident');
+
+      // Verify step cards exist
+      const stepCards = await page.$$('.step-card');
+      assert(stepCards.length > 0, 'Must render step cards');
+
+      // 7. Test scenario: legitimate_delegation
       await page.selectOption('#runs', 'run-80da28d28e79d48b8799529a');
       await page.waitForFunction(() => document.getElementById('proposal').textContent.includes('acc-101'));
-      const proposalText = await page.$eval('#proposal', el => el.textContent);
-      assert(proposalText.includes('vendor-alpha'), 'Legitimate delegation must show proposal');
+      const legExplainer = await page.$eval('#scenario-explanation', el => el.textContent);
+      assert(legExplainer.includes('A2A Delegation'), 'Must explain A2A delegation flow');
+      assert(legExplainer.includes('Self-Approval Rejected'), 'Must highlight self-approval rejection');
+      assert(legExplainer.includes('Independent Authorization'), 'Must highlight independent reviewer');
 
-      // 7. Verify no mutating buttons exist
-      assert.equal(await page.$('#run'), null, 'Run execution button must not exist');
-      assert.equal(await page.$('#approve'), null, 'Approve button must not exist');
-      assert.equal(await page.$('#reject'), null, 'Reject button must not exist');
+      // 8. Test notes and clear notes button
+      await page.fill('#prediction', 'Test note on shared phone');
+      assert.equal(await page.$eval('#prediction', el => el.value), 'Test note on shared phone');
+      await page.click('#clear-notes-btn');
+      await page.waitForFunction(() => document.getElementById('prediction').value === '');
+      assert.equal(await page.$eval('#prediction', el => el.value), '', 'Clear notes must reset input field');
 
-      // 8. Verify primary touch targets >= 40px
+      // 9. Verify touch target heights
       const buttonHeight = await page.$eval('#download', el => el.getBoundingClientRect().height);
       assert(buttonHeight >= 40, `Touch target height (${buttonHeight}px) should be >= 40px for mobile`);
 

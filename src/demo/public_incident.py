@@ -79,21 +79,44 @@ def validate_environment():
 
 validate_environment()
 
-# In-memory IP rate limiter for login attempts (5 failures in 60s)
+MAX_FAILED_LOGINS_PER_MIN = int(os.getenv("W4_MAX_FAILED_LOGINS_PER_MIN", "30"))
 _failed_logins: dict[str, list[float]] = collections.defaultdict(list)
 
 def check_login_rate_limit(client_ip: str):
     now = time.time()
     attempts = [t for t in _failed_logins[client_ip] if now - t < 60]
     _failed_logins[client_ip] = attempts
-    if len(attempts) >= 5:
+    if len(attempts) >= MAX_FAILED_LOGINS_PER_MIN:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Too many failed access attempts. Please wait 60 seconds.",
+            detail="Too many failed access attempts from this network. Please wait 60 seconds.",
         )
 
 def record_failed_login(client_ip: str):
     _failed_logins[client_ip].append(time.time())
+
+def reset_failed_logins(client_ip: str):
+    _failed_logins.pop(client_ip, None)
+
+def get_cutoff_timestamp() -> float | None:
+    raw = os.getenv("W4_EVENT_CUTOFF_UTC")
+    if not raw:
+        return None
+    raw = raw.strip()
+    try:
+        return float(raw)
+    except ValueError:
+        pass
+    try:
+        from datetime import datetime
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return dt.timestamp()
+    except Exception as e:
+        logger.warning(f"Invalid W4_EVENT_CUTOFF_UTC format: {raw} ({e})")
+        return None
+
+MAX_ACTIVE_SESSIONS = int(os.getenv("W4_MAX_ACTIVE_SESSIONS", "250"))
+MAX_TOTAL_ADMISSIONS = int(os.getenv("W4_MAX_TOTAL_ADMISSIONS", "500"))
 
 # Session database helper
 def get_session_db_path() -> Path:
@@ -114,6 +137,15 @@ def init_session_db():
         )
     """
     )
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS metrics (
+            key TEXT PRIMARY KEY,
+            value INTEGER NOT NULL
+        )
+    """
+    )
+    conn.execute("INSERT OR IGNORE INTO metrics VALUES ('admissions_count', 0)")
     conn.commit()
     conn.close()
 
@@ -123,16 +155,47 @@ def hash_token(token: str) -> str:
     return hashlib.sha256((token or "").encode("utf-8")).hexdigest()
 
 def create_session() -> tuple[str, float]:
-    token = secrets.token_urlsafe(32)
-    h = hash_token(token)
+    cutoff = get_cutoff_timestamp()
     now = time.time()
-    expires_at = now + 10800  # 3 hours TTL
+    if cutoff and now >= cutoff:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The workshop event has concluded. Observation room admissions are closed.",
+        )
+
     conn = sqlite3.connect(get_session_db_path())
     conn.execute("DELETE FROM sessions WHERE expires_at < ?", (now,))
+
+    # Check total admissions cap
+    row = conn.execute("SELECT value FROM metrics WHERE key='admissions_count'").fetchone()
+    total_adm = row[0] if row else 0
+    if total_adm >= MAX_TOTAL_ADMISSIONS:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Total workshop admission limit reached for this session.",
+        )
+
+    # Check active concurrent sessions cap
+    active_count = conn.execute("SELECT count(*) FROM sessions WHERE expires_at > ?", (now,)).fetchone()[0]
+    if active_count >= MAX_ACTIVE_SESSIONS:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Workshop participant capacity reached (maximum concurrent active sessions). Please try again shortly.",
+        )
+
+    token = secrets.token_urlsafe(32)
+    h = hash_token(token)
+    expires_at = now + 10800  # 3 hours TTL
+    if cutoff and expires_at > cutoff:
+        expires_at = cutoff
+
     conn.execute(
         "INSERT INTO sessions (hash_id, role, created_at, expires_at) VALUES (?, ?, ?, ?)",
         (h, "viewer", now, expires_at),
     )
+    conn.execute("UPDATE metrics SET value = value + 1 WHERE key='admissions_count'")
     conn.commit()
     conn.close()
     return token, expires_at
@@ -140,8 +203,11 @@ def create_session() -> tuple[str, float]:
 def verify_session(token: str | None) -> dict | None:
     if not token:
         return None
-    h = hash_token(token)
+    cutoff = get_cutoff_timestamp()
     now = time.time()
+    if cutoff and now >= cutoff:
+        return None
+    h = hash_token(token)
     conn = sqlite3.connect(get_session_db_path())
     row = conn.execute(
         "SELECT role, expires_at FROM sessions WHERE hash_id = ?", (h,)
@@ -179,6 +245,12 @@ app = FastAPI(
 
 # Viewer Dependency
 async def require_viewer(request: Request) -> dict:
+    cutoff = get_cutoff_timestamp()
+    if cutoff and time.time() >= cutoff:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="The workshop event has concluded. Observation room sessions are closed.",
+        )
     token = request.cookies.get("flo_demo_session")
     sess = verify_session(token)
     if not sess:
@@ -246,6 +318,7 @@ async def login(payload: LoginPayload, request: Request, response: Response):
             detail="Invalid event access code.",
         )
 
+    reset_failed_logins(client_ip)
     token, expires_at = create_session()
     is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     # Secure cookie scoped to root

@@ -71,9 +71,13 @@ def sanitize(value):
     if isinstance(value, list):
         return [sanitize(v) for v in value]
     if isinstance(value, str):
+        # Replace synthetic 400k filler characters in budget-denial recording
+        if "Review incident xxxx" in value or (value.startswith("Review incident ") and value.count("x") > 10000):
+            filler_count = value.count("x")
+            value = f"Review incident [Synthetic budget-exhaustion input: {filler_count:,} filler characters; omitted for readability]"
         return re.sub(
             r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",
-            "[redacted credential]",
+            "[credential redacted]",
             value,
         )
     return value

@@ -74,8 +74,79 @@
       gap: 0.35rem;
       margin-top: 0.5rem;
     }
+    .step-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .step-card.allowed {
+      border-left: 4px solid #22c55e;
+    }
+    .step-card.denied {
+      border-left: 4px solid #ef4444;
+    }
+    .step-card.unresolved {
+      border-left: 4px solid #eab308;
+    }
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+    }
+    .step-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+    }
+    .step-tag.allowed { background: #14532d; color: #86efac; }
+    .step-tag.denied { background: #7f1d1d; color: #fca5a5; }
+    .step-tag.unresolved { background: #713f12; color: #fde047; }
+    .step-identity {
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+    .step-route {
+      font-family: monospace;
+      font-size: 0.88rem;
+      margin: 0.3rem 0;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .step-details {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      margin-top: 0.3rem;
+      background: #1e293b;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+    }
+    .scenario-explainer {
+      background: #172554;
+      border: 1px solid #1e40af;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .scenario-explainer h3 {
+      margin: 0 0 0.5rem;
+      color: #93c5fd;
+      font-size: 1rem;
+    }
+    .scenario-explainer p {
+      margin: 0.3rem 0;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      line-height: 1.4;
+    }
   </style>
-  <script src="/demo-assets/incident_public.js?v=20261009-obs" defer></script>
+  <script src="/demo-assets/incident_public.js?v=20261009-v2" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -102,14 +173,14 @@
     <section id="signin" class="panel signin">
       <div>
         <h2>Join Flo Bank’s response team</h2>
-        <p>Enter the event access code displayed on the presenter screen to inspect curated execution evidence.</p>
+        <p>Enter the event access code displayed on the presenter screen to inspect curated execution evidence on your phone.</p>
       </div>
       <form id="signin-form">
         <label>
           Event access code
-          <input id="access-code" type="text" placeholder="e.g. FLO-W4-2026" required autocomplete="off" autocapitalize="characters" style="text-transform: uppercase;">
+          <input id="access-code" type="text" placeholder="Enter workshop access code" required autocomplete="off" autocapitalize="characters" style="text-transform: uppercase;">
         </label>
-        <button class="primary" type="submit">Enter Incident Room ↗</button>
+        <button class="primary" type="submit" style="min-height:44px;">Enter Incident Room ↗</button>
       </form>
     </section>
 
@@ -118,7 +189,7 @@
     <!-- Workspace Panel -->
     <div id="workspace" hidden>
       <section class="panel command">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; width:100%;">
           <span id="readiness" role="status">Loading recorded evidence…</span>
           <button id="refresh" class="secondary" style="min-height:44px;">Refresh evidence</button>
         </div>
@@ -141,7 +212,7 @@
           <h2 id="chapter-question">What did we authorize?</h2>
           <p id="chapter-context">Explore identity, model, tool policy, or approval boundaries across the 11 recorded execution runs.</p>
 
-          <!-- Run selector moved to top of investigation -->
+          <!-- Run selector at top of investigation -->
           <div class="mobile-run-selector">
             <label for="runs">SELECT RECORDED RUN TO INVESTIGATE</label>
             <select id="runs">
@@ -149,11 +220,30 @@
             </select>
           </div>
 
-          <label>
+          <!-- Scenario Walkthrough & Stopping Point Card -->
+          <div id="scenario-explanation" class="scenario-explainer">
+            <h3 id="scenario-explainer-title">Scenario Analysis</h3>
+            <div id="scenario-explainer-body"></div>
+          </div>
+
+          <label style="margin-top:1.25rem;">
             Prediction / Notes
             <input id="prediction" placeholder="Predict the boundary and the result" maxlength="500">
           </label>
-          <p class="caption">Your predictions and notes stay securely in your phone's browser.</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <p class="caption" style="margin:0;">Notes stay in your phone's browser.</p>
+            <button id="clear-notes-btn" class="secondary" type="button" style="min-height:36px; font-size:0.75rem; padding:0.25rem 0.5rem;">Clear local notes</button>
+          </div>
+
+          <!-- Step-by-Step Execution Flow -->
+          <div style="margin-top:1.5rem;">
+            <div class="panel-heading">
+              <h2>Recorded Execution Flow</h2>
+              <span id="step-count-pill" class="pill">0 steps</span>
+            </div>
+            <p class="caption">Trajectory: Caller → Boundary → Method &amp; Path → Key Arguments → Gate Decision → HTTP Response.</p>
+            <div id="execution-steps" style="margin-top:0.75rem;"></div>
+          </div>
 
           <div class="panel-heading" style="margin-top:1.5rem;">
             <h2>Incident timeline</h2>
@@ -238,7 +328,7 @@
       <footer>
         <span>Flo Bank · Valid credentials are only the beginning</span>
         <button id="signout" style="min-height:44px;">End session</button>
-        <span>Observation mode</span>
+        <span>Recorded rehearsal evidence · immutable baseline</span>
       </footer>
     </div>
   </main>

@@ -30,7 +30,7 @@ def test_validate_run_sanitizes_and_projects():
     # access_token stripped
     assert "access_token" not in cleaned["events"][0]["arguments"]
     # JWT replaced
-    assert cleaned["events"][0]["response"]["token"] == "[redacted credential]"
+    assert cleaned["events"][0]["response"]["token"] == "[credential redacted]"
 
 
 def test_build_evidence_db_integration():

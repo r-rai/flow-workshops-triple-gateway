@@ -9,7 +9,7 @@ You are accessing an observation-only view of 11 curated, recorded execution run
 
 ### Access Details
 * **Public URL:** `https://w4.ravirai.in/workshop-4`
-* **Access Code:** Check the presenter slide (e.g. `FLO-W4-2026`)
+* **Access Code:** Check the presenter slide for the event access code
 * **Role:** Participant Observer (`viewer`)
 
 ---

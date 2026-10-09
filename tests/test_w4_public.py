@@ -168,3 +168,27 @@ def test_security_headers_present(client):
     assert r.headers.get("x-frame-options") == "DENY"
     assert r.headers.get("referrer-policy") == "no-referrer"
     assert "frame-ancestors 'none'" in r.headers.get("content-security-policy", "")
+
+
+def test_event_cutoff_rejection(client):
+    # Set cutoff in the past
+    os.environ["W4_EVENT_CUTOFF_UTC"] = "2020-01-01T00:00:00Z"
+    try:
+        r = client.post("/demo-api/login", json={"access_code": ACCESS_CODE})
+        assert r.status_code == 403
+        assert "concluded" in r.json()["detail"].lower()
+    finally:
+        del os.environ["W4_EVENT_CUTOFF_UTC"]
+
+
+def test_budget_denial_filler_cleaned(client):
+    # Log in and verify budget denial has no 400k x's
+    client.post("/demo-api/login", json={"access_code": ACCESS_CODE})
+    r = client.get("/demo-api/workshop-4/runs")
+    assert r.status_code == 200
+    runs = r.json()
+    bd = next(x for x in runs if x["scenario"] == "budget_denial")
+    raw_str = str(bd)
+    assert raw_str.count("x") < 50
+    assert "399,864 filler characters" in raw_str
+
