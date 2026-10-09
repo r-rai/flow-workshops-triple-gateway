@@ -256,8 +256,8 @@ Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) and searc
 ## 6. Workshop 3: Architecting the Agentic Enterprise: Middleware, Durable State, and Event-Driven AI (`w3`)
 
 - **Duration**: 45 minutes
-- **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `kafka`, `worker`
-- **Configured Memory Cap**: ~3,072 MiB
+- **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `temporal-ui`, `kafka`, `worker`
+- **Configured Memory Cap**: ~3,200 MiB
 - **Concept & Description**: The generative AI landscape is rapidly shifting from stateless, synchronous chat applications to autonomous, long-running, multi-agent workflows. However, integrating non-deterministic AI agents into deterministic enterprise infrastructure presents massive architectural challenges regarding state, reliability, and governance.
 - **Practical Walkthrough**: Treats agents as resilient, event-driven microservices. Through a live architectural demonstration of an "Autonomous System Resolver", attendees see the exact plumbing required to take agents to production: exposing legacy systems to LLMs securely via MCP and API gateways, triggering agentic cognition via Kafka event streams, and illustrating durable approval waits using Temporal and LangGraph with live **MiniMax 2.7 Fast** inference or deterministic replay fixtures. The lab timeout is 24 hours; multi-week availability is not measured. Finally, demonstrates how to enforce safety through strict human-in-the-loop (HITL) execution pauses before high-stakes API commits.
 
@@ -277,6 +277,15 @@ docker compose --profile w3 up -d --build
 ```
 
 ### Step 3: Trigger Autonomous Resolver via Kafka
+
+Open Temporal UI at **http://localhost:8233**, select the `default` namespace,
+and follow `dispute-case-case-501` as you run the exercise. Its History shows
+activity results, retries, approval signals, and completion. Use the `get_status`
+query to see the business phase; an approval wait has Temporal status Running.
+The UI disables write actions; send approval through the workshop CLI.
+See the [UI walkthrough](../../workshops/w3/worksheet.md#follow-the-resolver-in-temporal-ui)
+for existing-lab startup and troubleshooting. Set `TEMPORAL_UI_PORT` in `.env`
+to change the default host port.
 
 Use `USE_REPLAY_FIXTURES=true` in `.env` before starting W3 for the expected
 ₹750 compensation. Follow the [W3 readiness notes](../../workshops/w3/worksheet.md#step-1-environment-readiness)
@@ -334,8 +343,8 @@ PYTHONPATH=. .venv/bin/python workshops/w3/rehearsal_w3.py
 ## 7. Workshop 4: The Day the Agent Broke the Bank: Implementing Triple-Gate Architecture & A2A Security (`w4`)
 
 - **Duration**: 135 minutes (2h 15m)
-- **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `kafka`, `worker`
-- **Configured Memory Cap**: ~3,072 MiB
+- **Topology**: `apisix`, `api`, `adapter`, `opa`, `postgres`, `jaeger`, `temporal`, `temporal-ui`, `kafka`, `worker`
+- **Configured Memory Cap**: ~3,200 MiB
 - **Exercise**: Use the [W4 worksheet](../../workshops/w4/worksheet.md) for the Incident Room, local policy/identity repairs, independent review and task/payment evidence. The recorded ₹90 lakh incident runs in an isolated presenter ledger; it is not a live model compromise or production certification.
 
 ### Step 1: Configure and Start Workshop 4

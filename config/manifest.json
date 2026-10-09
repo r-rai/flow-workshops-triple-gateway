@@ -11,6 +11,11 @@
     "w4"
   ],
   "pinned_images": {
+    "temporal-ui": {
+      "image": "temporalio/ui:2.55.0",
+      "digest": "sha256:3899d5cf749b5555c9f798d46f2423b1d6190ea391ca713db5d1bba961759e58",
+      "memory_limit": "128m"
+    },
     "apisix": {
       "image": "apache/apisix:3.19.0-debian",
       "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",

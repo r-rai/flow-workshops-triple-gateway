@@ -27,7 +27,9 @@ def test_preflight_cli_positive_default():
     """Verify that actual ./scripts/workshop preflight succeeds against default config/manifest.json."""
     res = run_workshop_preflight()
     assert res.returncode == 0, f"Preflight failed:\nstdout:\n{res.stdout}\nstderr:\n{res.stderr}"
-    assert "All 5 pinned digests verified" in res.stdout
+    with open(os.path.join(REPO_ROOT, "config", "manifest.json")) as f:
+        pinned_count = len(json.load(f)["pinned_images"])
+    assert f"All {pinned_count} pinned digests verified" in res.stdout
     assert "Preflight PASSED" in res.stdout
 
 def test_preflight_cli_negative_malformed_json():

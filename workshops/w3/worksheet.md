@@ -208,12 +208,57 @@ Check evidence in `workshops/w3/evidence/rehearsal-evidence.json`.
 |---|---|---|
 | Banking application | http://localhost:9080 | Customer-facing banking demo; use CLI commands for this resolver exercise |
 | Jaeger | http://localhost:16686 | Inspect exported traces; banking records remain the settlement evidence |
-| Temporal | No browser URL exposed | Use `client.py query` and the SDK for workflow inspection; port 7233 is the Temporal API |
+| Temporal UI | http://localhost:8233 | Inspect workflow history, activity inputs/results, signals, and queries |
 
-There is no dedicated `/workshop-3` console. The current Temporal service does
-not expose its UI through Compose. On WSL2, try the browser URLs from Windows
-while Docker is running in your WSL environment. Jaeger's port can be changed
-with `JAEGER_UI_PORT`.
+There is no dedicated `/workshop-3` console. Temporal UI starts with W3 and W4;
+port 7233 remains the Temporal API. On WSL2, open the browser URLs from Windows
+while Docker is running in your WSL environment. Change the host UI port with
+`TEMPORAL_UI_PORT` in `.env` (default 8233). Jaeger's port can be changed with
+`JAEGER_UI_PORT`.
+
+### Follow the Resolver in Temporal UI
+
+For an existing W3 lab, update and start only the new UI without resetting data:
+
+```bash
+git pull --ff-only origin main
+docker compose --profile w3 pull temporal-ui
+docker compose --profile w3 up -d temporal-ui
+```
+
+1. Open http://localhost:8233 and select the `default` namespace.
+2. Open **Workflows** and find `dispute-case-case-501`. If needed, filter with
+   `WorkflowId = 'dispute-case-case-501'`.
+3. Open its latest run and inspect **History**. Expand activity events to see
+   `read_dispute_ticket` and `diagnose_and_propose_resolution`, including inputs,
+   results, and any retries. The graph's tool evidence is in the diagnosis result;
+   each LangGraph step is not a separate Temporal activity.
+4. While approval is pending, Temporal reports the workflow as **Running**.
+   Run the `get_status` workflow query in the UI to see the business phase
+   `WAITING_FOR_APPROVAL` and the saved proposal. Queries need a running worker;
+   recorded history remains available when the worker is stopped.
+5. During Step 4, refresh after restarting the worker. Duplicate Kafka delivery
+   should reuse the same workflow. Kafka offsets are visible in worker logs,
+   not in Temporal history.
+6. Approve using Step 5's CLI command. Refresh History to see the
+   `human_approval` signal, settlement activity, and workflow completion.
+   Continue to Step 6 to verify the payment count in banking records.
+
+The UI is configured for inspection with write actions disabled; use the CLI
+for approval and the guarded recovery command for a failed investigation.
+Earlier failed runs remain visible after a reset, so select the latest run.
+The standalone UI adds a 128 MiB memory limit to the profile.
+
+If the page or workflow list fails to load:
+
+```bash
+docker compose --profile w3 ps temporal temporal-ui
+docker compose --profile w3 logs --tail=50 temporal-ui temporal
+```
+
+`./scripts/workshop verify w3` checks the UI page, default namespace, and
+workflow listing through the UI's backend. These checks also detect a UI that
+loads HTML but cannot connect to Temporal.
 
 ## Troubleshooting
 

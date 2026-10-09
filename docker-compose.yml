@@ -304,6 +304,32 @@ services:
           memory: 384M
     profiles: ["w3", "w4"]
 
+  temporal-ui:
+    image: temporalio/ui:2.55.0@sha256:3899d5cf749b5555c9f798d46f2423b1d6190ea391ca713db5d1bba961759e58
+    restart: unless-stopped
+    depends_on:
+      - temporal
+    ports:
+      - "127.0.0.1:${TEMPORAL_UI_PORT:-8233}:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_UI_PORT=8080
+      - TEMPORAL_DEFAULT_NAMESPACE=default
+      - TEMPORAL_DISABLE_WRITE_ACTIONS=true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/v1/namespaces"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - workflow
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    profiles: ["w3", "w4"]
+
   kafka:
     image: apache/kafka:3.7.0@sha256:41c20d65b0a2180b9deca056d47540771752e69fe9225d5748dd65a25a9675d7
     restart: unless-stopped

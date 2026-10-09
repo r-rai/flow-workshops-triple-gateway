@@ -1,5 +1,28 @@
 import sys
+import subprocess
 import httpx
+
+def verify_temporal_ui(client):
+    # Resolve the actual published port, including .env TEMPORAL_UI_PORT overrides.
+    port = subprocess.run(
+        ["docker", "compose", "--profile", "w3", "port", "temporal-ui", "8080"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert port, "Temporal UI is not running; start the w3 profile"
+    base = f"http://{port}"
+    page = client.get(base)
+    page.raise_for_status()
+    assert "text/html" in page.headers.get("content-type", ""), "Temporal UI page unavailable"
+    namespaces = client.get(f"{base}/api/v1/namespaces")
+    namespaces.raise_for_status()
+    assert any(
+        ns["namespaceInfo"]["name"] == "default"
+        for ns in namespaces.json()["namespaces"]
+    ), "Temporal UI cannot access the default namespace"
+    workflows = client.get(f"{base}/api/v1/namespaces/default/workflows")
+    workflows.raise_for_status()
+    assert isinstance(workflows.json().get("executions", []), list), "Temporal UI workflow listing unavailable"
+    print(f"✓ Temporal UI and workflow listing verified ({base})")
 
 def main():
     print("=== Running Profile w3 Verification Smoke Test ===")
@@ -7,6 +30,7 @@ def main():
     headers = {"X-API-Key": "gate3-secret-token"}
 
     with httpx.Client(timeout=10.0) as client:
+        verify_temporal_ui(client)
         # Check incident read
         r_inc = client.get(f"{base_url}/api/v1/incidents/inc-901", headers=headers)
         assert r_inc.status_code == 200, f"Failed to get incident: {r_inc.status_code}"
