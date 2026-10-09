@@ -348,6 +348,7 @@ services:
       - USE_REPLAY_FIXTURES=${USE_REPLAY_FIXTURES:-true}
       - LLM_MODEL=${LLM_MODEL:-MiniMax-M2.7-highspeed}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-flobank-super-secret-signing-key-for-lab}
+      - JWT_ISSUER=${JWT_ISSUER:-https://identity.flobank.internal/realms/flobank}
       - API_AUDIENCE=${API_AUDIENCE:-flobank-api}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     networks:
