@@ -1,0 +1,43 @@
+services:
+  incident-room:
+    image: flobank/w4-public:1.0.0
+    container_name: flo-w4-incident-room
+    restart: unless-stopped
+    command: ["uvicorn", "src.demo.public_incident:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ACTIVE_PROFILE=w4
+      - W4_OBSERVATION_ONLY=true
+      - W4_ENABLE_VULNERABLE=false
+      - W4_ACCESS_CODE_FILE=/run/secrets/w4_access_code
+      - W4_EVIDENCE_DB=/data/evidence/w4-public-evidence.sqlite
+      - W4_SESSION_DB=/data/sessions/w4-sessions.sqlite
+    volumes:
+      - /home/sysadmin/projects/flow-workshops-triple-gateway/data/w4-public-evidence.sqlite:/data/evidence/w4-public-evidence.sqlite:ro
+      - /home/sysadmin/.flo-w4/access_code.txt:/run/secrets/w4_access_code:ro
+      - flo-w4-sessions:/data/sessions
+    networks:
+      - apps
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:8000/healthz').status == 200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  flo-w4-sessions:
+
+networks:
+  apps:
+    external: true

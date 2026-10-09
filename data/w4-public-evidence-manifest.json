@@ -1,0 +1,33 @@
+{
+  "source_file": "workshops/w4/evidence/incident-2026-10-05T170259Z.json",
+  "capture_timestamp": "2026-10-05T170259Z",
+  "run_count": 11,
+  "run_ids": [
+    "run-b27f461502750964fef9442e",
+    "run-1cd7243f1f8f8b6fdb7c927f",
+    "run-c89de688c63672a0d26e1892",
+    "run-b0b1d7fa99ad3e749cad7bf0",
+    "run-6f005e7270d17b5065d198aa",
+    "run-6c3e9096da037011812630c9",
+    "run-70bb4941979288c08200c471",
+    "run-84427b3e35e38ed114d2bbb4",
+    "run-1000bb68df778a39bd07ed29",
+    "run-9a04a5d04e95c5ff84c056a4",
+    "run-80da28d28e79d48b8799529a"
+  ],
+  "scenarios": [
+    "vulnerable_replay",
+    "budget_denial",
+    "prohibited_beneficiary",
+    "excessive_amount",
+    "wrong_audience",
+    "insufficient_scope",
+    "scope_escalation",
+    "valid_exchange",
+    "permitted_payment",
+    "policy_outage",
+    "legitimate_delegation"
+  ],
+  "db_file": "w4-public-evidence.sqlite",
+  "sha256": "2e2cfa3f6603b1e0198c1fd7a63ed7130ce88cee7b94213164efc7e9baefe406"
+}

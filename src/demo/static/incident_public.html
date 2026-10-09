@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173e34">
+  <title>Flo Bank · Workshop 4 Incident Room (Observation)</title>
+  <link rel="stylesheet" href="/demo-assets/governance.css">
+  <link rel="stylesheet" href="/demo-assets/incident.css">
+  <style>
+    .observation-pill {
+      background: #14532d;
+      color: #86efac;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+    .mobile-run-selector {
+      margin-bottom: 1.25rem;
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #334155;
+    }
+    .mobile-run-selector label {
+      display: block;
+      font-weight: 600;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+    }
+    .mobile-run-selector select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 0.375rem;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      font-size: 0.95rem;
+    }
+    .nav-chapters-scroll {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      margin-top: 0.5rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nav-chapters-scroll button {
+      flex: 0 0 auto;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      border-radius: 0.375rem;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+    .nav-chapters-scroll button.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .badge-lock {
+      font-size: 0.8rem;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+  <script src="/demo-assets/incident_public.js?v=20261009-obs" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/workshop-4" class="brand"><span class="brand-icon">f</span>flo <small>bank</small></a>
+    <span class="observation-pill">OBSERVATION ONLY · RECORDED EVIDENCE</span>
+  </header>
+
+  <main>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">WORKSHOP 04 · PARTICIPANT MOBILE COMPANION</p>
+        <h1>The day the agent<br><em>broke the bank.</em></h1>
+        <p class="subtitle">The credentials were valid. The request passed schema validation.<br>The bank still lost ₹90 lakh. What did we authorize?</p>
+      </div>
+      <div class="loss">
+        <small>RECORDED INCIDENT</small>
+        <strong>₹90 lakh</strong>
+        <span>900,000,000 paise · API 200</span>
+        <span>Valid identity · unauthorized outcome</span>
+      </div>
+    </div>
+
+    <!-- Sign In Panel -->
+    <section id="signin" class="panel signin">
+      <div>
+        <h2>Join Flo Bank’s response team</h2>
+        <p>Enter the event access code displayed on the presenter screen to inspect curated execution evidence.</p>
+      </div>
+      <form id="signin-form">
+        <label>
+          Event access code
+          <input id="access-code" type="text" placeholder="e.g. FLO-W4-2026" required autocomplete="off" autocapitalize="characters" style="text-transform: uppercase;">
+        </label>
+        <button class="primary" type="submit">Enter Incident Room ↗</button>
+      </form>
+    </section>
+
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <!-- Workspace Panel -->
+    <div id="workspace" hidden>
+      <section class="panel command">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <span id="readiness" role="status">Loading recorded evidence…</span>
+          <button id="refresh" class="secondary" style="min-height:44px;">Refresh evidence</button>
+        </div>
+      </section>
+
+      <!-- Chapter Exploration -->
+      <section class="panel" style="margin-top:1rem;">
+        <div class="panel-heading">
+          <h2>Workshop investigation cues</h2>
+          <span id="clock" class="pill">Self-paced review</span>
+        </div>
+        <p id="cue" style="font-size:0.9rem; color:#94a3b8;"></p>
+        <div id="chapters" class="nav-chapters-scroll" aria-label="Workshop chapters"></div>
+      </section>
+
+      <!-- Main Work Grid -->
+      <div class="work-grid incident-grid">
+        <section class="panel">
+          <p class="eyebrow">INVESTIGATE → CONTAIN → REPAIR → PROVE</p>
+          <h2 id="chapter-question">What did we authorize?</h2>
+          <p id="chapter-context">Explore identity, model, tool policy, or approval boundaries across the 11 recorded execution runs.</p>
+
+          <!-- Run selector moved to top of investigation -->
+          <div class="mobile-run-selector">
+            <label for="runs">SELECT RECORDED RUN TO INVESTIGATE</label>
+            <select id="runs">
+              <option value="">Loading recorded runs…</option>
+            </select>
+          </div>
+
+          <label>
+            Prediction / Notes
+            <input id="prediction" placeholder="Predict the boundary and the result" maxlength="500">
+          </label>
+          <p class="caption">Your predictions and notes stay securely in your phone's browser.</p>
+
+          <div class="panel-heading" style="margin-top:1.5rem;">
+            <h2>Incident timeline</h2>
+            <span id="mode" class="pill">Recorded backbone</span>
+          </div>
+          <ol id="timeline">
+            <li>Bank loss: ₹90 lakh · apparently valid request</li>
+          </ol>
+
+          <details id="ticket-panel" style="margin-top:1rem;">
+            <summary>Untrusted ticket &amp; recorded proposal</summary>
+            <pre id="ticket" style="white-space:pre-wrap; word-break:break-all;"></pre>
+            <p class="caption">NegotiatorBot → PaymentsAgent: ticket content became asserted approval. Untrusted user data was never sanitized into true authorization.</p>
+          </details>
+        </section>
+
+        <!-- Evidence Panel -->
+        <aside class="panel evidence-panel">
+          <p class="eyebrow">RECORDED REQUESTS · OBSERVED EFFECTS</p>
+          <h2>Boundary map</h2>
+          <div id="boundaries" class="boundary-map"></div>
+
+          <div class="decision-card">
+            <small>OBSERVED RUN STATE</small>
+            <h3 id="state">Ready to investigate</h3>
+            <p id="reason">Select a scenario above to inspect recorded evidence and observed ledger state.</p>
+          </div>
+
+          <div class="effect-grid">
+            <div>
+              <span>Protected balance change</span>
+              <strong id="delta">—</strong>
+            </div>
+            <div>
+              <span>New protected payments</span>
+              <strong id="count">—</strong>
+            </div>
+          </div>
+          <p id="sandbox-effect" class="caption"></p>
+
+          <details open>
+            <summary>Identity inspector</summary>
+            <pre id="identities" style="white-space:pre-wrap; word-break:break-all;">No requests yet.</pre>
+          </details>
+
+          <details>
+            <summary>Evidence drawer: arguments, responses &amp; ledger</summary>
+            <pre id="evidence" style="white-space:pre-wrap; word-break:break-all;">No evidence loaded.</pre>
+          </details>
+
+          <details>
+            <summary>Trace references</summary>
+            <p id="trace-status">Collector span summaries pre-verified.</p>
+            <code id="trace-id"></code>
+            <p class="caption">Run, task and proposal IDs link requests across the human wait. Live collector queries disabled in observation mode.</p>
+          </details>
+
+          <button id="download" class="secondary" style="width:100%; min-height:44px; margin-top:1rem;">Download server evidence (JSON) ↓</button>
+        </aside>
+      </div>
+
+      <!-- Approval Desk (Read-Only Inspection) -->
+      <section class="panel approval-desk" style="margin-top:1.5rem;">
+        <div>
+          <p class="eyebrow">APPROVAL DESK (OBSERVATION)</p>
+          <h2>Approve a transaction, not an agent.</h2>
+          <p>Inspect the server-owned proposal record. Review the exact source, beneficiary, currency and paise amount.</p>
+          <pre id="proposal" style="white-space:pre-wrap; word-break:break-all;">No proposal in this run.</pre>
+          <div class="badge-lock">
+            <span>🔒 Approval execution disabled on participant mobile view.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Incident Review Summary -->
+      <section class="panel" style="margin-top:1.5rem;">
+        <h2>Incident review</h2>
+        <p>Explain one denial using identity, arguments and service response. Prove one legitimate settlement with its payment ID, task binding and ledger delta. Assign owners for inference budgets, tool policy, identity, approval and audit operations.</p>
+        <p class="caption">This lab demonstrates an A2A security subset. Production banking requires managed identities, distributed budgets, key rotation, and durable audit logs.</p>
+      </section>
+
+      <footer>
+        <span>Flo Bank · Valid credentials are only the beginning</span>
+        <button id="signout" style="min-height:44px;">End session</button>
+        <span>Observation mode</span>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>
