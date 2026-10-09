@@ -15,8 +15,8 @@ Participants can join the Incident Room directly from their smartphones via QR c
 * **Public URL:** [https://w4.ravirai.in/workshop-4](https://w4.ravirai.in/workshop-4)
 * **Root Short Redirect:** [https://w4.ravirai.in/](https://w4.ravirai.in/) (307 redirect to `/workshop-4`)
 * **Event Access Code:** Rotated and delivered privately (stored on host in `/home/sysadmin/.flo-w4/access_code.txt`, `chmod 600`). The previously disclosed code (`FLO-W4-2026`) has been revoked and removed from all client HTML/JS.
-* **Access Mode:** Observation Only (`viewer` role, 3-hour session lifetime, non-fatal local notes storage)
-* **Capacity & Lifetime:** Configurable caps for active sessions (`W4_MAX_ACTIVE_SESSIONS=250`), total admissions (`W4_MAX_TOTAL_ADMISSIONS=500`), and configurable event cutoff (`W4_EVENT_CUTOFF_UTC`).
+* **Capacity & Lifetime:** Configurable caps for active sessions (`W4_MAX_ACTIVE_SESSIONS=250`) and total admissions (`W4_MAX_TOTAL_ADMISSIONS=500`).
+* **Workshop Window & Cutoff:** Saturday, 2026-10-10 from 10:00 to 11:30 AM IST (04:30 – 06:00 UTC). Cutoff enforced at `2026-10-10T06:30:00Z` (12:00 PM IST with 30-minute wrap-up grace) via `W4_EVENT_CUTOFF_UTC`.
 * **Mobile QR Code:** Saved in repository at [`docs/workshops/w4-qr-code.png`](w4-qr-code.png)
 
 ```text
