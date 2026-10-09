@@ -1,221 +1,84 @@
 # Workshop 4 Public Incident Room Deployment Report
 
-**Deployment Date:** 2026-10-09  
-**Target Environment:** VPS (`vmi3355051` / `13.140.146.58`)  
-**Status:** **LIVE, HARDENED & VERIFIED (Final Pass)**  
+Updated 2026-10-09T17:44:59+00:00 after independent review and owner-authorized hardening.
 
----
+## Participant access and schedule
 
-## 1. Executive Summary & Access Information
+- URL: https://w4.ravirai.in/workshop-4
+- Workshop: Saturday 2026-10-10, 10:00–11:30 IST (04:30–06:00 UTC).
+- Authenticated-access cutoff: 12:00 IST (06:30 UTC), including the 30-minute grace period.
+- At the cutoff, correct-code logins return 403 and existing viewer evidence requests return 401.
+- Cutoff is required and validated as a timezone-aware UTC timestamp; invalid configuration fails startup.
+- The page/container are not automatically removed or stopped. The owner will shut W4 down manually.
+- The rotated access code is kept privately in `/home/sysadmin/.flo-w4/access_code.txt`; it is not published in HTML, JS or this report. The previously disclosed code is rejected.
+- Viewers inspect 11 curated rehearsal runs. There is no live synchronization with the presenter's ledger.
 
-A secure, mobile-friendly, observation-only participant environment for **FLO Workshop 4: “The Day the Agent Broke the Bank”** has been successfully deployed, hardened, and verified for the 12–14 hour workshop window.
+## Deployed service and VPS safeguards
 
-Participants can join the Incident Room directly from their smartphones via QR code or direct URL to inspect 11 curated, recorded execution runs without executing attacks, payments, approvals, or mutations.
+Standalone project `flo-w4-public`, service `incident-room`, container `flo-w4-incident-room`.
 
-* **Public URL:** [https://w4.ravirai.in/workshop-4](https://w4.ravirai.in/workshop-4)
-* **Root Short Redirect:** [https://w4.ravirai.in/](https://w4.ravirai.in/) (307 redirect to `/workshop-4`)
-* **Event Access Code:** Rotated and delivered privately (stored on host in `/home/sysadmin/.flo-w4/access_code.txt`, `chmod 600`). The previously disclosed code (`FLO-W4-2026`) has been revoked and removed from all client HTML/JS.
-* **Capacity & Lifetime:** Configurable caps for active sessions (`W4_MAX_ACTIVE_SESSIONS=250`) and total admissions (`W4_MAX_TOTAL_ADMISSIONS=500`).
-* **Workshop Window & Cutoff:** Saturday, 2026-10-10 from 10:00 to 11:30 AM IST (04:30 – 06:00 UTC). Cutoff enforced at `2026-10-10T06:30:00Z` (12:00 PM IST with 30-minute wrap-up grace) via `W4_EVENT_CUTOFF_UTC`.
-* **Mobile QR Code:** Saved in repository at [`docs/workshops/w4-qr-code.png`](w4-qr-code.png)
+- Image: `flobank/w4-public:20261009-hardened`.
+- Deployed image ID: `sha256:ef541a09d97fe8a96cfd8838de4e5f491529de69291d50c45bb22ca33884fbc5`.
+- Dedicated entrypoint: `src.demo.public_incident:app`, one Uvicorn worker.
+- User/group: 1000:1000; read-only root filesystem; all capabilities dropped; no-new-privileges; 64-process limit; bounded 8 MiB temporary filesystem.
+- CPU: 0.5; memory: 256 MiB; logs: three files of at most 10 MiB each.
+- No published host ports. Only Caddy and W4 currently use the `apps` network.
+- Forwarded headers trusted only from current Caddy peer 172.21.0.3. If that container's IP changes, update the W4 command and redeploy only W4.
+- Curated evidence mounted read-only and opened with SQLite `mode=ro`.
+- Private writable session volume; opaque tokens stored only as hashes.
+- Active session cap: 250. Cumulative admission cap: 500; successful re-logins count toward this total. Logout frees active capacity but does not reset cumulative admissions.
+- Secure/HttpOnly/SameSite=Strict cookies, with expiry bounded by the event cutoff.
+- Login bodies limited to 4 KiB before JSON parsing, including chunked uploads. Five-second login-body receive timeout. Non-ASCII invalid codes produce 401 instead of a server error.
+- Foreign Origin headers rejected on login/logout; CLI requests without an Origin remain supported.
+- All API responses marked no-store. Public static files limited to `incident_public.js`, `incident.css`, and `governance.css`.
+- Health checks actually query the recording and session store; unavailable/empty recordings return 503.
 
-```text
-█████████████████████████████████████
-█████████████████████████████████████
-████ ▄▄▄▄▄ ██ ▄   ▀▀▄█▀▄▀█ ▄▄▄▄▄ ████
-████ █   █ ███▀▄▀ ▀▀▄▄▀▄▄█ █   █ ████
-████ █▄▄▄█ █▀ █▀█  █▄  ▀ █ █▄▄▄█ ████
-████▄▄▄▄▄▄▄█▄▀▄█ █ █▄▀ ▀ █▄▄▄▄▄▄▄████
-████▄▀▀▄█ ▄█ ▄▀▄▄█▀ █▀▀▄▀ ▀▄█▀██▀████
-████▀▀▀ ▄▀▄ █ ▀▀██▀▀▄▄▄ ▀████▄  █████
-████▄██ ▄█▄▄▄█▄▄ ██▀▄▄█  ▄▄▄█▄█▄▄████
-█████▀▄▄ █▄▄▄  ██▀▀▄ ▀ █▀  ▄▀ ▄ ▄████
-████▄ ▄▀█▄▄▀  ▀█▄▄▄ █▄▀█  ▀██▀█▄▀████
-████▄█▄ █▀▄▄▀▀▄▄▀ █▀▄  ███▀█▄██  ████
-████▄█▄▄▄█▄▄▀▀█ █▀▄████  ▄▄▄ █ ▀▀████
-████ ▄▄▄▄▄ █▀██▄▄ ▄▀ █▄█ █▄█ ▀▀ █████
-████ █   █ █▀ ▀██▀ ▄ ▄█▀▄▄ ▄ ▀▀▀▄████
-████ █▄▄▄█ ███▀▄█ █▀▄▀▀▀▀ █▄ ▄▄▀▄████
-████▄▄▄▄▄▄▄█▄█▄██▄██▄▄██▄█▄▄▄██▄█████
-█████████████████████████████████████
-▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-```
+The existing W4 session volume was backed up with SQLite's backup API before changing its directory/files to UID/GID 1000 and modes 0700/0600. A newly created replacement volume must likewise be initialized for UID 1000 before startup. Do not delete the volume as part of normal shutdown.
 
----
+## Observation and evidence
 
-## 2. Infrastructure & Security Architecture
+All five Incident Room execution/reviewer/decision/trace/reconciliation POST routes return 403. Banking, approval, policy and administration APIs are absent from this entrypoint. Checks against HTTPS and direct upstream confirmed these denials.
 
-### Traffic Flow
-```text
-Mobile Phone (QR Code) 
-      ↓ HTTPS (TLS 1.3 / Port 443)
-Cloudflare Edge Anycast (WAF, Universal SSL, Anti-Scraper)
-      ↓ Proxied HTTPS (Zone ravirai.in)
-Host Port 443 (Caddy Reverse Proxy Container)
-      ↓ Docker Bridge Network "apps" (No exposed host ports!)
-Container "flo-w4-incident-room:8000" (FastAPI / Uvicorn)
-      ├─ Curated Evidence Database (:ro SQLite mount)
-      └─ Ephemeral Session Store (Hashed cookies in private volume)
-```
+The synthetic budget-exhaustion filler is represented by an explicit 399,864-character summary. Actual HTTP 429 responses, identities, arguments, decision reasons and measured effects remain visible. The legitimate settlement preserves its ₹1,500 delta and exact task/payment binding. Credentials remain redacted. The offline importer now removes nested password/secret/cookie fields and opaque Bearer credentials, with a regression fixture proving useful flow fields survive.
 
-### Key Security Invariants Enforced
-1. **Zero Host Port Exposure:**
-   The `flo-w4-incident-room` container has **no published ports** (`ports: []`). It connects strictly to the internal Docker bridge network `apps` where Caddy reaches it directly. No port is listening on host IPv4 or IPv6.
-2. **Read-Only Curated Evidence & Explicit Sanitization:**
-   * Evidence database (`data/w4-public-evidence.sqlite`) was generated offline by `scripts/w4_public_evidence.py` from verified rehearsal run `incident-2026-10-05T170259Z.json`.
-   * Filesystem permission is `0444`.
-   * Docker mount is strictly `:ro`.
-   * SQLite URI mode is `mode=ro`.
-   * Database SHA-256 hash is verified against the manifest (`97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`).
-   * The 399,864 synthetic "x" characters in the budget-denial recording were replaced with the clean explicit summary: `“Synthetic budget-exhaustion input: 399,864 filler characters; omitted for readability.”` while preserving the exact token limit, max_tokens, and HTTP 429 response.
-   * Redacted credentials and bearer tokens use standardized `[credential redacted]` markers.
-3. **Hard Fail-Closed Enforcement on Startup:**
-   The service immediately aborts boot if:
-   * `W4_OBSERVATION_ONLY != "true"`
-   * `W4_ENABLE_VULNERABLE != "false"`
-   * `ACTIVE_PROFILE != "w4"`
-   * Access code file is missing or empty.
-   * Evidence database is missing, empty, or unreadable in `mode=ro`.
-4. **All Mutation Endpoints Explicitly Blocked (HTTP 403):**
-   * POST `/demo-api/workshop-4/runs` (denied)
-   * POST `/demo-api/workshop-4/reviewer-session` (denied)
-   * POST `/demo-api/workshop-4/runs/{id}/decision` (denied)
-   * POST `/demo-api/workshop-4/runs/{id}/traces` (denied)
-   * POST `/demo-api/workshop-4/runs/{id}/reconcile` (denied)
-5. **Absent Attack Surface (HTTP 404):**
-   No customer banking, chat, admin, Temporal, Kafka, APISIX, or OPA endpoints are mounted or accessible (`/demo-api/chat`, `/demo-api/dashboard`, `/demo-api/banking`, `/api/v1/*`, `/oauth/*`, `/mcp`, `/docs`, `/openapi.json`).
-6. **Hardened Authentication, NAT Tolerance & Session Caps:**
-   * Access code verified via `secrets.compare_digest`.
-   * Client IP rate limiting tuned to 30 failed attempts per 60 seconds (HTTP 429) with automatic strike reset on successful login to prevent NAT/classroom Wi-Fi false lockouts.
-   * Session caps enforced in SQLite: `W4_MAX_ACTIVE_SESSIONS=250` and `W4_MAX_TOTAL_ADMISSIONS=500`.
-   * Configurable UTC event cutoff (`W4_EVENT_CUTOFF_UTC`): rejects new admissions and immediately expires active sessions once reached.
-   * Generates 32-byte cryptographically random token (`secrets.token_urlsafe(32)`).
-   * Raw token is never stored in DB (only SHA-256 hash).
-   * Cookie is `HttpOnly`, `SameSite=Strict`, `Secure=True`, scoped to root `/`.
-   * Reverse proxy headers strictly trusted only from Caddy on `apps` network (`172.21.0.0/16,127.0.0.1`).
-7. **Complete Independence of Laptop Presenter Demo:**
-   * The public deployment lives in a separate Compose project (`flo-w4-public`) and separate file (`compose.w4-public.yml`).
-   * The local laptop presenter instance and existing VPS test containers (`flobank-workshops-...`) were not modified, stopped, or disrupted.
+Recording SHA-256: `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`. The recording remained unchanged during deployment and testing.
 
----
+## Fresh verification
 
-## 3. Deviations from Codex Plan
+- Public authorization/import tests: 32 passed.
+- Presenter/verification/customer regression tests: 53 passed. Final combined run: 85 passed, with two existing dependency deprecation warnings. Public test environment setup no longer contaminates presenter test collection.
+- Exact cutoff boundary simulated in an isolated session store: before cutoff, login/read 200; at cutoff, login 403 and an existing viewer 401. Session expiry equals the cutoff when it is less than three hours away.
+- Four live Chromium mobile viewports (320/360/390/412px) passed, including a storage-blocked phone, notes clearing, actual JSON download, settlement binding and logout.
+- Live HTTPS and direct upstream: Unicode invalid code 401; oversized chunked body 413; foreign Origin 403; correct private code 200; Secure cookie; authenticated reads no-store; revoked cookie 401; mutation routes 403; payment/policy/admin probes 404.
+- Bounded live smoke: 20 simultaneous evidence reads, all 200; observed p95 1.425 seconds and maximum 1.49 seconds. This is not a full audience-duration load test.
+- All pre-existing running containers retained their IDs, start timestamps and restart counts. Shared Caddyfile hash remained unchanged. W4 is healthy with no OOM/restart events.
+- Deployed public Python source hash matches the workspace source.
 
-1. **Proxy Connectivity Pattern:**
-   * *Codex proposal:* Contemplated host-loopback port binding (`127.0.0.1:<port>:8000`) or a dedicated proxy network.
-   * *Actual Implementation:* Caddy is containerized and connects to Docker network `apps`. By placing `flo-w4-incident-room` on `apps` with zero host port mappings, Caddy proxies directly to `http://flo-w4-incident-room:8000`. This completely eliminates exposing any host loopback or external ports.
-2. **Dedicated Entrypoint & Assets:**
-   * Rather than editing `src/demo/incident.py` and risking regressions on local presentation scripts, we created `src/demo/public_incident.py` alongside `src/demo/static/incident_public.html` and `src/demo/static/incident_public.js`. This guarantees 100% regression freedom for local runs.
-3. **Subdomain Resolution:**
-   * Configured `w4.ravirai.in` in Cloudflare DNS pointing to VPS IP `13.140.146.58` with Cloudflare proxy enabled.
+Limitations: real physical iOS/Android devices and a full classroom load were not available for this verification. Cloudflare still holds previously cached `incident.js` and `app.js`; direct upstream and fresh cache-key requests return 404. Those cached public lab scripts contain no live authority: their API actions are denied. No Cloudflare cache purge was performed.
 
----
+## Manual shutdown after the workshop
 
-## 4. Verification Results
+Stop only the public service; preserve session storage and unrelated services:
 
-### A. Python Regression & Public Test Suite
-* Command: `python3 -m pytest tests/test_w4_public.py tests/test_w4_public_evidence.py -q`
-  * **Result: 10/10 passed.** Verified fail-closed startup, auth requirement, session lifecycle, session caps, event cutoff enforcement, all 5 mutation blocks returning 403, customer routes returning 404, credential redactions, and sanitized budget filler projection.
-* Command: `PYTHONPATH=. .venv/bin/pytest tests/test_w4_incident.py tests/test_w4_verification.py -q`
-  * **Result: 35/35 passed.** Confirmed 0 regressions on existing workshop suites.
-
-### B. Live HTTPS Smoke Tests (`https://w4.ravirai.in`)
-The following live verification script was executed against the public Cloudflare edge:
-```text
-1. Unauthenticated access to /workshop-4:
-   Status: 200 OK
-2. Unauthenticated access to /demo-api/workshop-4/runs:
-   Status: 401 Unauthorized
-3. Revoked / invalid access code login (FLO-W4-2026):
-   Status: 401 Unauthorized {"detail":"Invalid event access code."}
-4. Rotated access code login (private code):
-   Status: 200 OK {"status":"authenticated","role":"viewer","expires_in":10800}
-5. Authenticated runs check:
-   Status: 200 OK (11 runs returned)
-6. Authenticated run evidence for budget denial (run-1cd7243f1f8f8b6fdb7c927f):
-   Status: 200 OK (Verified 399k filler replaced with clean explicit summary; status 429)
-7. Authenticated run evidence for legitimate delegation (run-80da28d28e79d48b8799529a):
-   Status: 200 OK (Verified exact ₹1,500 settlement, A2A task binding, independent approval)
-8. Denied mutating routes (All returned HTTP 403 Forbidden):
-   POST /demo-api/workshop-4/runs -> 403
-   POST /demo-api/workshop-4/reviewer-session -> 403
-   POST /demo-api/workshop-4/runs/{id}/decision -> 403
-   POST /demo-api/workshop-4/runs/{id}/traces -> 403
-   POST /demo-api/workshop-4/runs/{id}/reconcile -> 403
-9. Probing absent routes (All returned HTTP 404 Not Found):
-   GET /demo-api/chat -> 404
-   GET /demo-api/dashboard -> 404
-   GET /demo-api/banking -> 404
-   GET /api/v1/payments -> 404
-   GET /api/v1/admin -> 404
-   GET /oauth/token -> 404
-   GET /mcp -> 404
-   GET /docs -> 404
-   GET /openapi.json -> 404
-   GET /.env -> 404
-   GET /.git/config -> 404
-10. Logout and session revocation:
-   Logout: 200 OK
-   Post-logout runs access: 401 Unauthorized
-```
-
-### C. Live Playwright Mobile Viewport Test Suite
-Executed headless Chromium over real mobile viewports via `tests/w4_public_browser.cjs`:
-* **iPhone SE (320px × 667px):** Passed. Zero horizontal overflow, signin form, step execution cards, scenario explainer, clear notes, and run switcher responsive.
-* **Android Standard (360px × 780px):** Passed.
-* **iPhone 14 (390px × 844px):** Passed.
-* **Android Large Pixel (412px × 915px):** Passed.
-* All touch targets verified with height ≥ 40px.
-
-### D. Evidence Database Immutability Check
 ```bash
-sha256sum data/w4-public-evidence.sqlite
-# 97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85
+docker compose -p flo-w4-public -f /home/sysadmin/projects/flow-workshops-triple-gateway/compose.w4-public.yml stop incident-room
 ```
-Hash before tests: `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`  
-Hash after entire test barrage: `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85` (Identical).
 
-### E. Baseline VPS Service Health
-All preexisting containers (`caddy`, `portainer`, `uptime-kuma`, `dozzle`, `flobank-workshops-...`) verified running healthy with zero disruption.
+To withdraw routing as well, remove only the `w4.ravirai.in` block from `/home/sysadmin/apps/caddy/Caddyfile`, then validate and reload Caddy. Do not copy an old whole Caddyfile over intervening changes.
 
-
----
-
-## 5. Known Limitations
-
-1. **Preloaded Curated Rehearsal (By Design):**
-   The public instance serves the 11 verified rehearsal runs recorded from the laptop test suite. It does not mirror the presenter's laptop ledger in real time.
-2. **Single Worker / Single Process:**
-   The instance runs with 1 Uvicorn worker and 256 MiB RAM limit. It is designed for participant smartphone observation (reading and downloading JSON evidence), not high-concurrency scraping or load testing.
-3. **Browser Prediction Storage:**
-   Participant notes and predictions are stored in client-side `localStorage` on each phone and are never transmitted to the server.
-
----
-
-## 6. Rollback Procedure
-
-If the public environment needs to be taken down or rolled back:
-
-### Step 1: Remove Caddy Reverse Proxy Block
-1. Edit `/home/sysadmin/apps/caddy/Caddyfile` and remove the `w4.ravirai.in { ... }` block (or restore the backup):
-   ```bash
-   cp /home/sysadmin/apps/caddy/Caddyfile_backup_* /home/sysadmin/apps/caddy/Caddyfile
-   ```
-2. Validate and reload Caddy:
-   ```bash
-   docker exec caddy caddy validate --config /etc/caddy/Caddyfile
-   docker exec caddy caddy reload --config /etc/caddy/Caddyfile
-   ```
-
-### Step 2: Stop and Remove the Public Container
 ```bash
-docker compose -p flo-w4-public -f /home/sysadmin/projects/flow-workshops-triple-gateway/compose.w4-public.yml down -v
+docker exec caddy caddy validate --config /etc/caddy/Caddyfile
+docker exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
-### Step 3: Remove DNS Record (Optional)
-Using Cloudflare MCP or Cloudflare Dashboard, delete DNS A record for `w4.ravirai.in` on zone `4073980eb3b4d357145857792e5ef588`.
+If complete project removal is wanted, use `down` without `-v`. Do not prune Docker or remove shared networks. DNS removal is optional and manual.
 
-### Step 4: Clean up Access Code Secret
+## W4-only rollback
+
+Previous public image retained as `flobank/w4-public:rollback-e465e20`. Matching previous Compose saved in `/tmp/w4-hardening-review/compose.before.yml`; private session backup is `w4-sessions.pre-hardening.sqlite` inside the W4 session volume. These are local recovery artifacts, not participant assets.
+
 ```bash
-rm -rf /home/sysadmin/.flo-w4/
+docker compose -p flo-w4-public -f /tmp/w4-hardening-review/compose.before.yml up -d --no-deps --pull never incident-room
 ```
+
+This restores only the prior observation container, not the core banking entrypoint or shared proxy configuration. Prefer withdrawing W4 if a security incident is suspected. Retain the local rollback artifacts through the workshop; `/tmp` is not permanent release storage.

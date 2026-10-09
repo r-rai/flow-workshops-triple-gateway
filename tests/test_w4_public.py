@@ -13,22 +13,35 @@ tmp_dir = tempfile.TemporaryDirectory()
 code_file = Path(tmp_dir.name) / "test_access_code.txt"
 code_file.write_text(ACCESS_CODE)
 
-os.environ["W4_OBSERVATION_ONLY"] = "true"
-os.environ["W4_ENABLE_VULNERABLE"] = "false"
-os.environ["ACTIVE_PROFILE"] = "w4"
-os.environ["W4_ACCESS_CODE_FILE"] = str(code_file)
-os.environ["W4_EVIDENCE_DB"] = "data/w4-public-evidence.sqlite"
-os.environ["W4_SESSION_DB"] = str(Path(tmp_dir.name) / "test_sessions.sqlite")
-
-from src.demo.public_incident import app, validate_environment
+# Import-time validation runs with temporary settings, then restores the process
+# environment so collecting public tests cannot disable the presenter suite.
+with pytest.MonkeyPatch.context() as setup:
+    setup.setenv("W4_OBSERVATION_ONLY", "true")
+    setup.setenv("W4_ENABLE_VULNERABLE", "false")
+    setup.setenv("ACTIVE_PROFILE", "w4")
+    setup.setenv("W4_ACCESS_CODE_FILE", str(code_file))
+    setup.setenv("W4_EVIDENCE_DB", "data/w4-public-evidence.sqlite")
+    setup.setenv("W4_SESSION_DB", str(Path(tmp_dir.name) / "test_sessions.sqlite"))
+    setup.setenv("W4_EVENT_CUTOFF_UTC", "2099-01-01T00:00:00Z")
+    from src.demo.public_incident import app, validate_environment
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(monkeypatch, tmp_path):
+    from src.demo import public_incident
+    monkeypatch.setenv("W4_OBSERVATION_ONLY", "true")
+    monkeypatch.setenv("W4_ENABLE_VULNERABLE", "false")
+    monkeypatch.setenv("ACTIVE_PROFILE", "w4")
+    monkeypatch.setenv("W4_ACCESS_CODE_FILE", str(code_file))
+    monkeypatch.setenv("W4_EVIDENCE_DB", "data/w4-public-evidence.sqlite")
+    monkeypatch.setenv("W4_SESSION_DB", str(tmp_path / "sessions.sqlite"))
+    monkeypatch.setenv("W4_EVENT_CUTOFF_UTC", "2099-01-01T00:00:00Z")
+    public_incident.init_session_db()
+    public_incident._failed_logins.clear()
+    return TestClient(app, base_url="https://testserver")
 
 
-def test_fail_closed_validation():
+def test_fail_closed_validation(client):
     # Test that invalid configuration strictly raises RuntimeError
     orig_obs = os.environ["W4_OBSERVATION_ONLY"]
     try:
@@ -170,15 +183,12 @@ def test_security_headers_present(client):
     assert "frame-ancestors 'none'" in r.headers.get("content-security-policy", "")
 
 
-def test_event_cutoff_rejection(client):
+def test_event_cutoff_rejection(client, monkeypatch):
     # Set cutoff in the past
-    os.environ["W4_EVENT_CUTOFF_UTC"] = "2020-01-01T00:00:00Z"
-    try:
-        r = client.post("/demo-api/login", json={"access_code": ACCESS_CODE})
-        assert r.status_code == 403
-        assert "concluded" in r.json()["detail"].lower()
-    finally:
-        del os.environ["W4_EVENT_CUTOFF_UTC"]
+    monkeypatch.setenv("W4_EVENT_CUTOFF_UTC", "2020-01-01T00:00:00Z")
+    r = client.post("/demo-api/login", json={"access_code": ACCESS_CODE})
+    assert r.status_code == 403
+    assert "concluded" in r.json()["detail"].lower()
 
 
 def test_budget_denial_filler_cleaned(client):
@@ -192,3 +202,121 @@ def test_budget_denial_filler_cleaned(client):
     assert raw_str.count("x") < 50
     assert "399,864 filler characters" in raw_str
 
+
+
+@pytest.mark.parametrize("streamed", [False, True])
+def test_oversized_login_is_rejected_before_creating_session(client, streamed):
+    import json
+    from src.demo import public_incident
+    body = b" " * 5000 + json.dumps({"access_code": ACCESS_CODE}).encode()
+    response = client.post("/demo-api/login", content=iter([body[:3000], body[3000:]]) if streamed else body,
+                           headers={"Content-Type": "application/json"})
+    assert response.status_code == 413
+    import sqlite3
+    with sqlite3.connect(public_incident.get_session_db_path()) as conn:
+        assert conn.execute("SELECT count(*) FROM sessions").fetchone()[0] == 0
+
+
+def test_unicode_access_code_is_rejected_without_server_error(client):
+    response = client.post("/demo-api/login", json={"access_code": "₹-invalid"})
+    assert response.status_code == 401
+
+
+def test_cookie_is_secure_even_for_direct_http_login(client):
+    with TestClient(app, base_url="http://testserver") as upstream:
+        response = upstream.post("/demo-api/login", json={"access_code": ACCESS_CODE})
+        assert response.status_code == 200
+        assert "; Secure" in response.headers["set-cookie"]
+
+
+@pytest.mark.parametrize("path", ["/demo-api/login", "/demo-api/logout"])
+def test_cross_origin_session_changes_rejected(client, path):
+    response = client.post(path, json={"access_code": ACCESS_CODE},
+                           headers={"Origin": "https://untrusted.example"})
+    assert response.status_code == 403
+
+
+def test_authenticated_reads_are_not_cacheable(client):
+    client.post("/demo-api/login", json={"access_code": ACCESS_CODE})
+    for path in ["/demo-api/workshop-4/runs", "/demo-api/workshop-4/readiness"]:
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.headers["cache-control"] == "no-store"
+
+
+@pytest.mark.parametrize("asset", ["index.html", "incident.html", "incident.js", "governance.html", "app.js"])
+def test_legacy_assets_not_served(client, asset):
+    assert client.get("/demo-assets/" + asset).status_code == 404
+
+
+def test_health_reports_missing_recording(client, monkeypatch, tmp_path):
+    monkeypatch.setenv("W4_EVIDENCE_DB", str(tmp_path / "missing.sqlite"))
+    assert client.get("/healthz").status_code == 503
+
+
+@pytest.mark.parametrize("cutoff", ["", "invalid", "2026-10-10T06:30:00", "NaN"])
+def test_invalid_cutoff_fails_closed(client, monkeypatch, cutoff):
+    monkeypatch.setenv("W4_EVENT_CUTOFF_UTC", cutoff)
+    with pytest.raises(RuntimeError, match="W4_EVENT_CUTOFF_UTC"):
+        validate_environment()
+
+
+
+def test_epoch_cutoff_still_closes_admissions(client, monkeypatch):
+    monkeypatch.setenv("W4_EVENT_CUTOFF_UTC", "1970-01-01T00:00:00Z")
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 403
+    assert client.get("/demo-api/workshop-4/runs").status_code == 401
+
+
+def test_login_limit_accumulates_separate_asgi_chunks(client):
+    import asyncio
+    from src.demo.public_incident import PublicSessionBoundary
+    called = False
+    sent = []
+    chunks = iter([
+        {"type": "http.request", "body": b" " * 3000, "more_body": True},
+        {"type": "http.request", "body": b" " * 3000, "more_body": False},
+    ])
+
+    async def downstream(scope, receive, send):
+        nonlocal called
+        called = True
+
+    async def receive():
+        return next(chunks)
+
+    async def send(message):
+        sent.append(message)
+
+    scope = {"type": "http", "method": "POST", "path": "/demo-api/login", "headers": []}
+    asyncio.run(PublicSessionBoundary(downstream)(scope, receive, send))
+    assert not called
+    assert sent[0]["status"] == 413
+
+
+
+def test_cutoff_boundary_closes_an_existing_viewer(client, monkeypatch):
+    import sqlite3
+    from src.demo import public_incident
+    cutoff = public_incident.get_cutoff_timestamp()
+    monkeypatch.setattr(public_incident.time, "time", lambda: cutoff - 60)
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 200
+    token = client.cookies.get("flo_demo_session")
+    assert client.get("/demo-api/workshop-4/runs").status_code == 200
+    with sqlite3.connect(public_incident.get_session_db_path()) as conn:
+        assert conn.execute("SELECT expires_at FROM sessions").fetchone()[0] == cutoff
+    monkeypatch.setattr(public_incident.time, "time", lambda: cutoff)
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 403
+    assert client.get("/demo-api/workshop-4/runs", headers={"Cookie": "flo_demo_session=" + token}).status_code == 401
+
+
+def test_admission_caps_survive_logout(client, monkeypatch):
+    from src.demo import public_incident
+    monkeypatch.setattr(public_incident, "MAX_ACTIVE_SESSIONS", 1)
+    monkeypatch.setattr(public_incident, "MAX_TOTAL_ADMISSIONS", 2)
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 200
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 429
+    assert client.post("/demo-api/logout").status_code == 200
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 200
+    assert client.post("/demo-api/logout").status_code == 200
+    assert client.post("/demo-api/login", json={"access_code": ACCESS_CODE}).status_code == 403

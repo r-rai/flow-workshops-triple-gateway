@@ -6,6 +6,7 @@ All evidence is read directly from an immutable SQLite database in read-only mod
 """
 from __future__ import annotations
 
+import asyncio
 import collections
 import hashlib
 import json
@@ -15,11 +16,10 @@ from pathlib import Path
 import secrets
 import sqlite3
 import time
-from typing import Literal
+from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
-from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 logger = logging.getLogger("flobank.w4_public")
@@ -40,8 +40,20 @@ SCENARIOS = {
     "legitimate_delegation": "A2A: independently approve ₹1,500 settlement",
 }
 
+def get_cutoff_timestamp() -> float:
+    raw = os.getenv("W4_EVENT_CUTOFF_UTC", "").strip()
+    try:
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if dt.tzinfo is None or dt.utcoffset() != timedelta(0):
+            raise ValueError("UTC timezone required")
+        return dt.timestamp()
+    except (ValueError, OverflowError) as exc:
+        raise RuntimeError("W4_EVENT_CUTOFF_UTC must be an explicit ISO-8601 UTC timestamp") from exc
+
+
 # Strict startup validation (fail-closed)
 def validate_environment():
+    get_cutoff_timestamp()
     obs = os.getenv("W4_OBSERVATION_ONLY", "").strip().lower()
     if obs != "true":
         raise RuntimeError("FATAL: W4_OBSERVATION_ONLY must be explicitly set to 'true'")
@@ -98,22 +110,6 @@ def record_failed_login(client_ip: str):
 def reset_failed_logins(client_ip: str):
     _failed_logins.pop(client_ip, None)
 
-def get_cutoff_timestamp() -> float | None:
-    raw = os.getenv("W4_EVENT_CUTOFF_UTC")
-    if not raw:
-        return None
-    raw = raw.strip()
-    try:
-        return float(raw)
-    except ValueError:
-        pass
-    try:
-        from datetime import datetime
-        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        return dt.timestamp()
-    except Exception as e:
-        logger.warning(f"Invalid W4_EVENT_CUTOFF_UTC format: {raw} ({e})")
-        return None
 
 MAX_ACTIVE_SESSIONS = int(os.getenv("W4_MAX_ACTIVE_SESSIONS", "250"))
 MAX_TOTAL_ADMISSIONS = int(os.getenv("W4_MAX_TOTAL_ADMISSIONS", "500"))
@@ -157,7 +153,7 @@ def hash_token(token: str) -> str:
 def create_session() -> tuple[str, float]:
     cutoff = get_cutoff_timestamp()
     now = time.time()
-    if cutoff and now >= cutoff:
+    if now >= cutoff:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="The workshop event has concluded. Observation room admissions are closed.",
@@ -188,7 +184,7 @@ def create_session() -> tuple[str, float]:
     token = secrets.token_urlsafe(32)
     h = hash_token(token)
     expires_at = now + 10800  # 3 hours TTL
-    if cutoff and expires_at > cutoff:
+    if expires_at > cutoff:
         expires_at = cutoff
 
     conn.execute(
@@ -205,7 +201,7 @@ def verify_session(token: str | None) -> dict | None:
         return None
     cutoff = get_cutoff_timestamp()
     now = time.time()
-    if cutoff and now >= cutoff:
+    if now >= cutoff:
         return None
     h = hash_token(token)
     conn = sqlite3.connect(get_session_db_path())
@@ -236,6 +232,58 @@ class LoginPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
     access_code: str = Field(min_length=1, max_length=120)
 
+class PublicSessionBoundary:
+    """Bound login bytes before JSON parsing, including streamed/chunked bodies."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "")
+        if scope["type"] != "http" or scope["method"] != "POST" or path not in {
+            "/demo-api/login", "/demo-api/logout"
+        }:
+            return await self.app(scope, receive, send)
+        headers = dict(scope["headers"])
+        origin = headers.get(b"origin")
+        expected = os.getenv("W4_PUBLIC_ORIGIN", "https://w4.ravirai.in").encode()
+        if origin is not None and origin != expected:
+            return await JSONResponse({"detail": "Cross-origin session changes are forbidden."}, status_code=403)(scope, receive, send)
+        if path == "/demo-api/logout":
+            return await self.app(scope, receive, send)
+        length = headers.get(b"content-length")
+        if length is not None:
+            if not length.isdigit() or len(length) > 10:
+                return await JSONResponse({"detail": "Invalid Content-Length."}, status_code=400)(scope, receive, send)
+            if int(length) > 4096:
+                return await JSONResponse({"detail": "Login body exceeds 4 KiB."}, status_code=413)(scope, receive, send)
+        body = bytearray()
+        try:
+            async with asyncio.timeout(5):
+                while True:
+                    message = await receive()
+                    if message["type"] == "http.disconnect":
+                        return
+                    chunk = message.get("body", b"")
+                    if len(body) + len(chunk) > 4096:
+                        return await JSONResponse({"detail": "Login body exceeds 4 KiB."}, status_code=413)(scope, receive, send)
+                    body.extend(chunk)
+                    if not message.get("more_body", False):
+                        break
+        except TimeoutError:
+            return await JSONResponse({"detail": "Login body timed out."}, status_code=408)(scope, receive, send)
+        delivered = False
+
+        async def bounded_receive():
+            nonlocal delivered
+            if not delivered:
+                delivered = True
+                return {"type": "http.request", "body": bytes(body), "more_body": False}
+            return await receive()
+
+        return await self.app(scope, bounded_receive, send)
+
+
 app = FastAPI(
     title="Flo Bank · Workshop 4 Incident Room (Observation)",
     docs_url=None,
@@ -243,10 +291,12 @@ app = FastAPI(
     openapi_url=None,
 )
 
+app.add_middleware(PublicSessionBoundary)
+
 # Viewer Dependency
 async def require_viewer(request: Request) -> dict:
     cutoff = get_cutoff_timestamp()
-    if cutoff and time.time() >= cutoff:
+    if time.time() >= cutoff:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="The workshop event has concluded. Observation room sessions are closed.",
@@ -263,13 +313,9 @@ async def require_viewer(request: Request) -> dict:
 # Security headers middleware
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
-    # Enforce request body size limit for login (max 4 KiB)
-    if request.url.path == "/demo-api/login" and request.method == "POST":
-        content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > 4096:
-            return Response(content="Payload Too Large", status_code=413)
-
     response = await call_next(request)
+    if request.url.path.startswith("/demo-api/"):
+        response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
@@ -287,17 +333,30 @@ async def index():
 
 @app.api_route("/healthz", methods=["GET", "HEAD"], include_in_schema=False)
 async def healthz():
+    try:
+        with get_evidence_conn() as conn:
+            if conn.execute("SELECT count(*) FROM runs").fetchone()[0] == 0:
+                raise sqlite3.DatabaseError("Empty recording")
+            conn.execute("SELECT key, value FROM metadata LIMIT 1").fetchall()
+        with sqlite3.connect(f"file:{get_session_db_path()}?mode=ro", uri=True) as conn:
+            conn.execute("SELECT count(*) FROM sessions").fetchone()
+    except (sqlite3.Error, OSError):
+        return JSONResponse({"status": "unavailable", "mode": "observation"}, status_code=503)
     return {"status": "ok", "mode": "observation", "profile": "w4"}
 
 @app.api_route("/workshop-4", methods=["GET", "HEAD"], include_in_schema=False)
 async def incident_public():
     target = STATIC_DIR / "incident_public.html"
     if not target.is_file():
-        target = STATIC_DIR / "incident.html"
+        raise HTTPException(503, "Participant page unavailable.")
     return FileResponse(target, headers={"Cache-Control": "no-cache"})
 
 # Safe static assets mount
-app.mount("/demo-assets", StaticFiles(directory=STATIC_DIR), name="demo-assets")
+@app.api_route("/demo-assets/{asset_name}", methods=["GET", "HEAD"], include_in_schema=False)
+async def public_asset(asset_name: str):
+    if asset_name not in {"incident_public.js", "incident.css", "governance.css"}:
+        raise HTTPException(404, "Not found")
+    return FileResponse(STATIC_DIR / asset_name, headers={"Cache-Control": "no-cache"})
 
 # API Router
 demo_api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -311,7 +370,7 @@ async def login(payload: LoginPayload, request: Request, response: Response):
     with open(code_file, "r", encoding="utf-8") as f:
         expected = f.read().strip()
 
-    if not secrets.compare_digest(payload.access_code.strip(), expected):
+    if not secrets.compare_digest(payload.access_code.strip().encode("utf-8"), expected.encode("utf-8")):
         record_failed_login(client_ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -320,21 +379,20 @@ async def login(payload: LoginPayload, request: Request, response: Response):
 
     reset_failed_logins(client_ip)
     token, expires_at = create_session()
-    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     # Secure cookie scoped to root
     response.set_cookie(
         key="flo_demo_session",
         value=token,
         httponly=True,
         samesite="strict",
-        secure=is_https,
-        max_age=10800,
+        secure=True,
+        max_age=max(0, int(expires_at - time.time())),
         path="/",
     )
     return {
         "status": "authenticated",
         "role": "viewer",
-        "expires_in": 10800,
+        "expires_in": max(0, int(expires_at - time.time())),
         "message": "Welcome to Workshop 4 Incident Room observation.",
     }
 

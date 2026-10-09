@@ -36,6 +36,13 @@ const mobileViewports = [
         userAgent:
           'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
       });
+      // Exercise the previously broken storage-blocked phone on the first width.
+      if (vp.width === 320) {
+        await context.addInitScript(() => {
+          Storage.prototype.getItem = () => { throw new DOMException('Storage blocked', 'SecurityError'); };
+          Storage.prototype.setItem = () => { throw new DOMException('Storage blocked', 'SecurityError'); };
+        });
+      }
       const page = await context.newPage();
 
       const errors = [];
@@ -109,6 +116,19 @@ const mobileViewports = [
       const buttonHeight = await page.$eval('#download', el => el.getBoundingClientRect().height);
       assert(buttonHeight >= 40, `Touch target height (${buttonHeight}px) should be >= 40px for mobile`);
 
+      const downloadPromise = page.waitForEvent('download');
+      await page.click('#download');
+      const download = await downloadPromise;
+      const stream = await download.createReadStream();
+      const chunks = [];
+      for await (const chunk of stream) chunks.push(chunk);
+      const evidence = JSON.parse(Buffer.concat(chunks).toString());
+      assert.equal(evidence.scenario, 'legitimate_delegation');
+      assert.equal(evidence.effects.balance_delta, -150000);
+      assert.equal(evidence.task.output.payment_id, evidence.payment.payment_id);
+
+      await page.click('#signout');
+      await page.waitForSelector('#signin', { state: 'visible' });
       assert.deepEqual(errors, [], 'No browser console errors expected');
       console.log(`✓ ${vp.name} verified successfully.`);
       await context.close();

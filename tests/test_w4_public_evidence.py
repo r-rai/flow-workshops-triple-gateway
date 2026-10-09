@@ -51,3 +51,21 @@ def test_build_evidence_db_integration():
         count = conn.execute("SELECT count(*) FROM runs").fetchone()[0]
         assert count == 11
         conn.close()
+
+
+
+def test_nested_and_text_credentials_removed_without_hiding_flow():
+    raw = {"run_id": "run-secret-fixture", "scenario": "permitted_payment", "events": [{
+        "label": "Recorded tool request", "status_code": 403,
+        "identity": {"sub": "payments-agent", "scope": "api:payments:write"},
+        "arguments": {"amount": 25000, "beneficiary": "vendor-alpha"},
+        "response": {"password": "FAKE_PASSWORD_CANARY", "secret_key": "FAKE_SECRET_CANARY",
+                     "cookie": "FAKE_COOKIE_CANARY", "error": "Bearer FAKE_OPAQUE_CREDENTIAL_CANARY",
+                     "reason": "Beneficiary prohibited"}}]}
+    clean = validate_run(raw)
+    serialized = json.dumps(clean)
+    assert "CANARY" not in serialized
+    event = clean["events"][0]
+    assert event["arguments"] == raw["events"][0]["arguments"]
+    assert event["identity"] == raw["events"][0]["identity"]
+    assert event["response"]["reason"] == "Beneficiary prohibited"

@@ -56,8 +56,8 @@ def sanitize(value):
         return {
             k: sanitize(v)
             for k, v in value.items()
-            if k.lower()
-            not in (
+            if not any(part in k.lower().replace("-", "_") for part in FORBIDDEN_KEY_SUBSTRINGS)
+            and k.lower().replace("-", "_") not in (
                 "access_token",
                 "subject_token",
                 "authorization",
@@ -66,6 +66,9 @@ def sanitize(value):
                 "reasoning_content",
                 "thinking",
                 "raw_token",
+                "cookie",
+                "set_cookie",
+                "refresh_token",
             )
         }
     if isinstance(value, list):
@@ -75,6 +78,7 @@ def sanitize(value):
         if "Review incident xxxx" in value or (value.startswith("Review incident ") and value.count("x") > 10000):
             filler_count = value.count("x")
             value = f"Review incident [Synthetic budget-exhaustion input: {filler_count:,} filler characters; omitted for readability]"
+        value = re.sub(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*", "Bearer [credential redacted]", value)
         return re.sub(
             r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",
             "[credential redacted]",
