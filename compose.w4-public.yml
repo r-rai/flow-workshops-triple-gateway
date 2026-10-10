@@ -1,6 +1,6 @@
 services:
   incident-room:
-    image: flobank/w4-public:20261009-hardened
+    image: flobank/w4-public:20261010-gateway-workshop
     container_name: flo-w4-incident-room
     restart: unless-stopped
     user: "1000:1000"

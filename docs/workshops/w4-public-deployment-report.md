@@ -1,6 +1,6 @@
 # Workshop 4 Public Incident Room Deployment Report
 
-Updated 2026-10-09T17:44:59+00:00 after independent review and owner-authorized hardening.
+Updated 2026-10-10T03:22:30+00:00 after owner-requested presentation and container refresh. The original hardening verification below is retained; see the latest refresh section for current deployment details.
 
 ## Participant access and schedule
 
@@ -82,3 +82,33 @@ docker compose -p flo-w4-public -f /tmp/w4-hardening-review/compose.before.yml u
 ```
 
 This restores only the prior observation container, not the core banking entrypoint or shared proxy configuration. Prefer withdrawing W4 if a security incident is suspected. Retain the local rollback artifacts through the workshop; `/tmp` is not permanent release storage.
+
+## Gateway presentation and container refresh — 2026-10-10
+
+- Built a 43-slide editable Workshop 4 deck: API gateway, AI gateway, MCP gateway,
+  Triple-Gate architecture, QR audience access, then the incident-response lab.
+  Delivery is a 15-minute gateway primer plus the original 135-minute lab.
+- Reusable repository PPTX/PDF contain the audience URL QR and a facilitator-code
+  placeholder. The separate event PPTX/PDF include the newly generated audience
+  code. No reviewer or sandbox password is embedded in either deck.
+- Rotated the private audience-code file and recreated only the local API and
+  public observer containers. Existing volumes were retained; other running
+  container IDs stayed unchanged.
+- Current public image: `flobank/w4-public:20261010-gateway-workshop`.
+- Current public image ID: `sha256:860b89f8cf003b884d6b9cc392c9e9bc3507071f484942c93b3400663b6ca2a2`.
+- Preserved event cutoff: **2026-10-10 12:00 IST / 06:30 UTC**. The deck's longer
+  delivery duration does not automatically extend this event-specific cutoff.
+- Live HTTPS verification: new code 200; previous code 401; 11 recordings
+  accessible; execution POST 403; logout revokes access; served observer script
+  hash matches the current checkout.
+- Local `./scripts/workshop verify w4` passed inference, MCP discovery, banking
+  identity and A2A agent-card checks.
+- Recording SHA-256 remained `97398e40f6cf2224f67df6cc068f23919bb463b2cd81401e966fb8be794cbc85`.
+- QR decoding passed for the embedded image and the actual rendered PDF slide.
+  Presentation checks passed slide bounds, text fit, notes, source paths, PDF
+  page count and package integrity. PDF rendering is independent of PowerPoint;
+  inspect the PPTX in the presentation application before delivery.
+- Private previous-code backup and keyed event artifacts are under
+  `/tmp/flo-w4-event`; copy required delivery artifacts to durable private storage
+  before that temporary directory is cleaned. Previous observer image retained
+  as `flobank/w4-public:rollback-pre-gateway-workshop`.

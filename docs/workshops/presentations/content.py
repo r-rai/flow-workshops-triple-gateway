@@ -474,3 +474,6 @@ slide(w4, "Presenter preparation & source guide", "Reference / outside timed del
     ("RECOVER", "Timebox stalls to two minutes. Export evidence. Reconcile original runs.")],
     takeaway="Follow the W4 answer key for secret configuration, isolation and rehearsal setup.",
     notes="Do setup outside the timed workshop. See workshops/w4/answer-key.md for W4_REVIEWER_PASSWORD, W4_ENABLE_VULNERABLE, W4_SANDBOX_KEY, observation-only hosting and presenter sandbox startup. Do not put actual values in this deck. Technical runner: .venv/bin/python workshops/w4/rehearsal_w4.py --vulnerable --outage, only on the appropriately prepared stack. It creates fictional records and does not reset data. Human timing record: workshops/w4/delivery-rehearsal.md. Downloads/builds and profile switching happen before attendees arrive.")
+
+from w4_primer import expand_workshop_four
+expand_workshop_four(w4, slide)

@@ -6,6 +6,8 @@ layout and explicit line wrapping. PDF copies are rendered independently, not
 exported by PowerPoint; compare in your presentation app after editing a deck.
 """
 from pathlib import Path
+import argparse
+from io import BytesIO
 import json
 import math
 import zipfile
@@ -18,13 +20,18 @@ from pptx.enum.text import MSO_ANCHOR
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.utils import ImageReader
 import fitz
 from PIL import Image, ImageDraw
+import qrcode
 
 from content import DECKS
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+AUDIENCE_URL = 'https://w4.ravirai.in/workshop-4'
+AUDIENCE_KEY = None
+AUDIENCE_EXPIRY = '12:00 IST · 10 October 2026'
 W, H = 960, 540
 NAVY, PAPER, INK = "102B36", "F5F7F4", "163640"
 MUTED, TEAL, WHITE, BORDER = "536B73", "007F79", "FFFFFF", "D8E3DF"
@@ -124,6 +131,19 @@ class Painter:
         for index, line in enumerate(lines):
             self.pdf.drawString(x, H-y-ascent-index*lineheight, line)
 
+    def image(self, png, x, y, w, h):
+        self.slide.shapes.add_picture(BytesIO(png), Pt(x), Pt(y), Pt(w), Pt(h))
+        self.pdf.drawImage(ImageReader(BytesIO(png)), x, H-y-h, w, h)
+
+
+def audience_qr():
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_Q, box_size=12, border=4)
+    qr.add_data(AUDIENCE_URL)
+    qr.make(fit=True)
+    output = BytesIO()
+    qr.make_image(fill_color='black', back_color='white').save(output, format='PNG')
+    return output.getvalue()
+
 
 def footer(p, deck, page, total, dark=False):
     color = "AAC0C6" if dark else MUTED
@@ -159,7 +179,47 @@ def render(p, d, s, page):
         p.text(s["lead"], 43, 145, 871, 58, size=18, minimum=16, color=MUTED)
         top = 215
     bottom = 444
-    if s["kind"] == "w2_architecture":
+    if s["kind"] == "audience_access":
+        p.image(audience_qr(), 65, 170, 260, 260)
+        p.text('OPEN ON YOUR PHONE', 365, 172, 520, 28, size=14, color=TEAL, bold=True)
+        p.text(AUDIENCE_URL, 365, 209, 520, 60, size=24, minimum=21, bold=True)
+        p.text('AUDIENCE ACCESS CODE', 365, 285, 520, 26, size=14, color=TEAL, bold=True)
+        p.text(AUDIENCE_KEY or 'Provided live by facilitator', 365, 318, 520, 52, size=30, minimum=23, bold=True)
+        p.text('Recorded evidence only · no payment execution', 365, 385, 520, 27, size=16, minimum=14)
+        p.text('Access closes: '+AUDIENCE_EXPIRY, 365, 421, 520, 28, size=13, minimum=12, color=MUTED)
+    elif s["kind"] == "w4_architecture":
+        def node(x, y, title, body, width=180, height=82, color=WHITE):
+            p.rect(x, y, width, height, color, radius=True)
+            compact = height < 60
+            p.text(title, x+10, y+7, width-20, 23 if compact else 29, size=14, minimum=12, bold=True, color=TEAL)
+            offset = 28 if compact else 39
+            p.text(body, x+10, y+offset, width-20, height-offset-2, size=11 if compact else 12, minimum=10, leading=1.15)
+
+        def arrow(x, y, direction='→'):
+            p.text(direction, x, y, 40, 28, size=22, minimum=18, color=TEAL)
+
+        node(42, 157, 'Agent backend', 'Orchestrate requests;\nvalidate model proposals')
+        arrow(236, 180)
+        node(272, 157, 'Gate 1 / AI', 'Inference budget;\nreserve before dispatch')
+        arrow(466, 180)
+        node(502, 157, 'Model provider', 'Returns a proposal\nor refusal')
+        node(742, 157, 'Independent reviewer', 'Approve exact proposal;\nseparate session', width=176, color='E0ECE6')
+        p.text('Model output returns to the agent; the agent requests tools below.', 42, 244, 640, 24, size=12, minimum=11, color=MUTED)
+        arrow(807, 244, '↓')
+        node(42, 279, 'Tool request', 'Named capability +\nactual payment arguments')
+        arrow(236, 302)
+        node(272, 279, 'Gate 2 / MCP', 'Caller + tool arguments;\nOPA policy decision')
+        arrow(466, 302)
+        node(502, 279, 'Gate 3 / API', 'APISIX route + API\naudience and scope checks')
+        arrow(701, 302)
+        node(742, 279, 'Core banking', 'Approval binding;\nidempotent settlement', width=176)
+        arrow(345, 361, '↕')
+        arrow(807, 361, '↕')
+        node(272, 393, 'OPA', 'Role / amount / beneficiary', height=53)
+        node(502, 393, 'Jaeger', 'Observed distributed traces', height=53)
+        node(742, 393, 'Durable records', 'Tasks / proposals / payments', width=176, height=53)
+        p.text('Three logical gates share APISIX.\nThe isolated vulnerable ledger\nis a separate demonstration.', 42, 381, 210, 68, size=12, minimum=10, color=MUTED, leading=1.2)
+    elif s["kind"] == "w2_architecture":
         def node(x, y, w, h, title, body, color=WHITE):
             p.rect(x, y, w, h, color, radius=True)
             p.text(title, x+10, y+9, w-20, 25, size=14, minimum=12, bold=True, color=TEAL)
@@ -213,7 +273,7 @@ def render(p, d, s, page):
                 p.text("→", x+cw+3, top+111, 20, 26, size=18, minimum=16, color=TEAL)
     elif s["code"]:
         p.rect(42, top, 876, bottom-top, NAVY, radius=True)
-        p.text("TERMINAL  /  FROM REPOSITORY ROOT", 61, top+15, 820, 25,
+        p.text("JSON-RPC  /  SANITIZED REQUEST BODY" if s['kind'] == 'request_payload' else "TERMINAL  /  FROM REPOSITORY ROOT", 61, top+15, 820, 25,
                size=10, minimum=10, color=accent, bold=True)
         p.text(s["code"], 61, top+54, 837, bottom-top-69,
                size=17, minimum=13, color=WHITE, mono=True, leading=1.4)
@@ -259,6 +319,8 @@ def make_deck(d):
     notes = [f"# Workshop {d['number']}: {d['title']}", "", d["subtitle"], "",
              f"Duration: {d['duration']} minutes. Last slide is presenter reference outside the timed agenda.", "",
              "Expected outcomes in these slides are instructional targets, not fresh execution results.", ""]
+    if d['number'] == 4:
+        notes += ['Delivery: 15-minute gateway primer followed by the 135-minute lab, including its seven-minute break.', '']
     audits=[]
     for i,s in enumerate(d["slides"],1):
         sl=prs.slides.add_slide(prs.slide_layouts[6])
@@ -319,6 +381,10 @@ def verify_and_preview(d, stem, audits):
     # Inspect selected layouts at full size in addition to the contact sheet.
     for idx in (min(5,expected-1), min(10,expected-1)):
         doc[idx].get_pixmap(matrix=fitz.Matrix(1,1),alpha=False).save(str(preview_dir/f"{stem}-slide-{idx+1:02d}.png"))
+    for idx, slide in enumerate(d['slides']):
+        if slide['kind'] in ('w4_architecture', 'audience_access'):
+            label = 'architecture' if slide['kind'] == 'w4_architecture' else 'audience-access'
+            doc[idx].get_pixmap(matrix=fitz.Matrix(1.5,1.5),alpha=False).save(str(preview_dir/f'{stem}-{label}.png'))
     doc.close()
     return dict(workshop=d["number"], slides=expected, duration_minutes=d["duration"],
                 pptx=ppt_path.name,pdf=pdf_path.name, checks="passed",
@@ -329,17 +395,45 @@ def verify_and_preview(d, stem, audits):
 
 
 def main():
+    global HERE, AUDIENCE_KEY, AUDIENCE_EXPIRY
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--workshop', type=int, choices=[1,2,3,4])
+    parser.add_argument('--output-dir', type=Path)
+    parser.add_argument('--audience-key-file', type=Path)
+    parser.add_argument('--audience-expiry', default=AUDIENCE_EXPIRY)
+    args = parser.parse_args()
+    if args.audience_key_file:
+        if not args.output_dir or args.workshop != 4:
+            parser.error('Event keys require --workshop 4 and a separate --output-dir; keep keyed decks out of repository outputs.')
+        target = args.output_dir.resolve()
+        if target.is_relative_to(ROOT):
+            parser.error('Generate the event deck outside the repository to avoid publishing its access code.')
+        AUDIENCE_KEY = args.audience_key_file.read_text().strip()
+        if not AUDIENCE_KEY:
+            parser.error('Audience key file is empty')
+    if args.output_dir:
+        HERE = args.output_dir.resolve()
+        HERE.mkdir(parents=True, exist_ok=True)
+    AUDIENCE_EXPIRY = args.audience_expiry
+    selected = [d for d in DECKS if not args.workshop or d['number'] == args.workshop]
     results=[]
-    for d in DECKS:
+    for d in selected:
         stem,audits=make_deck(d)
         result=verify_and_preview(d,stem,audits)
         results.append(result)
         print(f"W{d['number']}: {result['slides']} slides; PPTX, PDF, notes and previews generated; checks passed.")
-    (HERE/"validation.json").write_text(json.dumps(results,indent=2)+"\n")
-    bundle=HERE/"flo-bank-all-workshops.zip"
+    validation_path = HERE/'validation.json'
+    if args.workshop and validation_path.exists():
+        prior = json.loads(validation_path.read_text())
+        results = sorted([r for r in prior if r['workshop'] != args.workshop]+results, key=lambda r:r['workshop'])
+    validation_path.write_text(json.dumps(results,indent=2)+"\n")
+    if any(d['number'] == 4 for d in selected):
+        (HERE/'w4-audience-qr.png').write_bytes(audience_qr())
+    bundle=HERE/(f'flo-bank-workshop-{args.workshop}-package.zip' if args.workshop else 'flo-bank-all-workshops.zip')
     with zipfile.ZipFile(bundle,"w",compression=zipfile.ZIP_DEFLATED) as z:
         for path in sorted(HERE.iterdir()):
-            if path.suffix in (".pptx",".pdf",".md",".py",".txt",".json"):
+            include = not args.workshop or path.name.startswith(f'flo-bank-workshop-{args.workshop}') or path.name == 'w4-audience-qr.png'
+            if include and path.suffix in (".pptx",".pdf",".md",".py",".txt",".json",".png"):
                 z.write(path,path.name)
     print(f"Bundle: {bundle}")
 

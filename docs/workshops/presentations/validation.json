@@ -58,8 +58,8 @@
   },
   {
     "workshop": 4,
-    "slides": 29,
-    "duration_minutes": 135,
+    "slides": 43,
+    "duration_minutes": 150,
     "pptx": "flo-bank-workshop-4.pptx",
     "pdf": "flo-bank-workshop-4.pdf",
     "checks": "passed",
