@@ -1,16 +1,12 @@
 # W4 facilitator answer key
 
-Use the [presenter story](../../docs/workshops/workshop-4-story.md), [participant worksheet](worksheet.md) and [incident evidence sheet](incident-evidence.md). The schedule totals **135 minutes including the seven-minute break**. Keep explanation blocks under seven minutes; use a prediction or evidence inspection between blocks.
+Use the [step-by-step facilitator runbook](runbook.md), [presenter story](../../docs/workshops/workshop-4-story.md), [participant worksheet](worksheet.md) and [incident evidence sheet](incident-evidence.md). The runbook includes setup, password retrieval, request inspection, expected outcomes, reasoning, and learning for each exercise. The schedule totals **135 minutes including the seven-minute break**. Keep explanation blocks under seven minutes; use a prediction or evidence inspection between blocks.
 
 ## Setup and isolation
 
-Complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) and run shell commands in Bash on Linux/WSL. Build before attendees arrive. Configure an independent reviewer password locally. Keep it out of exported evidence. For the local presenter only, generate a distinct incident sandbox key and enable the replay:
+Complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) and run shell commands in Bash on Linux/WSL. Follow [runbook section 1](runbook.md#1-prepare-the-local-lab-before-the-session) to generate and persist first-time reviewer/sandbox settings in local `.env`. Reuse those settings for later starts; do not regenerate a password to retrieve it. Build before attendees arrive. With the local presenter configuration prepared, start:
 
 ```bash
-export W4_REVIEWER_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
-export W4_SANDBOX_KEY="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
-export W4_ENABLE_VULNERABLE=true
-export W4_OBSERVATION_ONLY=false
 ./scripts/workshop pull w4
 docker compose --profile w4 --profile w4-presenter build incident-sandbox
 ./scripts/workshop switch w4
@@ -18,6 +14,32 @@ docker compose --profile w4 --profile w4-presenter up -d incident-sandbox
 ```
 
 Pass the reviewer password privately to the cofacilitator; use separate browser sessions. On shared hosting set `W4_OBSERVATION_ONLY=true` and keep `W4_ENABLE_VULNERABLE=false`: authenticated viewers can inspect sanitized presenter runs, but scenario execution, review decisions and financial reconciliation are disabled. The incident service has no public port, no protected volumes, no banking/provider keys, a separate internal network and a disposable ledger. It accepts only a run ID and executes one fixed recorded proposal. Recreating that service resets its ledger; protected runs are stored separately in `/app/data/w4-incident.sqlite`. Run one uvicorn worker per local instance.
+
+### Fetch the running reviewer password
+
+From the repository root on the local lab host, use a private terminal:
+
+```bash
+docker compose exec -T api printenv W4_REVIEWER_PASSWORD
+```
+
+This retrieves the actual running API value. It differs from the `flo-demo`
+login password and QR observers' access code. Keep it out of exported evidence.
+Open a private/incognito window or separate browser profile, sign in with
+`maya@flobank.demo` / `flo-demo`, select **Independent reviewer**, enter the
+password, and click **Open reviewer session**. Another tab shares requester
+cookies and is insufficient. See [runbook section 2](runbook.md#2-retrieve-the-reviewer-password-and-open-a-separate-session)
+for missing-password setup and API recreation.
+
+After pulling UI changes, rebuild the local API and hard-refresh the browser:
+
+```bash
+git pull origin main
+docker compose --profile w4 up -d --build --no-deps api
+```
+
+This does not update the separate QR observer deployment; see
+[runbook section 14](runbook.md#14-qr-observers-and-hosted-updates).
 
 ## Expected results and explanations
 
@@ -62,8 +84,9 @@ proposals on the active stack; they do not reset data. Evidence is written to
 `workshops/w4/evidence/incident-<timestamp>.json`.
 
 ```bash
+export W4_REVIEWER_PASSWORD="$(docker compose exec -T api printenv W4_REVIEWER_PASSWORD)"
 .venv/bin/python workshops/w4/rehearsal_w4.py --vulnerable --outage
-# Optional hosted-model comparison; sends the fictional ticket only:
+# Full suite plus one bounded hosted-model review; also creates payments:
 .venv/bin/python workshops/w4/rehearsal_w4.py --live
 ```
 

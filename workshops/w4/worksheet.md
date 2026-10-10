@@ -1,5 +1,8 @@
 # Workshop 4 · The Day the Agent Broke the Bank
 
+Facilitators: use the [step-by-step runbook](runbook.md) for setup, reviewer-password
+retrieval, presenter explanations, and interpretation of each result.
+
 Before running Python commands or the Bash launcher, complete the [workshop Python setup](../../docs/workshops/participant-infra-guide.md#step-23-set-up-python-virtual-environment-for-workshop-clients-verification--tests) from the repository root. Use Bash on Linux/WSL for the launcher; macOS users can run Python clients and direct Docker Compose commands.
 
 You are Flo Bank’s response team. NegotiatorBot handles customer cases; PaymentsAgent carries out settlements. A malicious ticket became a payment instruction. The opening loss is **₹90 lakh = 900,000,000 paise**. The incident is a recorded proposal executed against an isolated vulnerable ledger. It does not demonstrate a live model compromise.
@@ -43,6 +46,15 @@ an update to this verification script.
 Open the Incident Room and check readiness before running a scenario. Starting
 `w4` alone does not enable the isolated vulnerable replay.
 
+Choose a scenario and click **Run scenario ↗**; choosing the dropdown alone does
+not execute it. **Current run timeline** shows the selected run's events.
+**Original incident context: untrusted ticket** is the opening story, not evidence
+that every scenario executed the ₹90 lakh handoff. Inspect the current run's
+payload in the evidence drawer: top-level `arguments` where populated, or
+`events[].arguments` for the request body. For Gate 2, payment fields are inside
+the `Tool policy` event's `arguments.params.arguments`. Its `response` explains
+the actual tool decision; HTTP 200 can still carry an MCP denial.
+
 Use **View → Presenter** to show Chapter cues, then select **8–20 Follow the money**
 to reveal the ticket and recorded handoff. The View selector updates the visible
 controls and URL immediately; refreshing preserves your selected view. Selecting
@@ -75,6 +87,10 @@ Expected: the attack requests remain denied; the permitted request creates one 2
 
 ## Pair exercise: local identity request
 
+Before the first run, check that `workshops/w4/checkpoints/initial/identity.json`
+requests `api:payments:write`. If a previous session left the corrected read
+scope in that file, restore the write scope before testing the intended denial.
+
 ```bash
 .venv/bin/python workshops/w4/exercise_exchange.py initial
 ```
@@ -95,9 +111,19 @@ Use the supplied completed file rather than editing it when you need a checkpoin
 
 ## Approval and delegation
 
+On a facilitator-owned local lab, retrieve the running reviewer password in a
+private terminal with `docker compose exec -T api printenv W4_REVIEWER_PASSWORD`.
+For instructor-managed access, ask the facilitator privately. The QR observer
+access code is separate and grants no reviewer authority. Missing-password setup
+is covered in [runbook section 2](runbook.md#2-retrieve-the-reviewer-password-and-open-a-separate-session).
+
 Run **legitimate delegation** immediately before review. This creates a 150,000-paise (₹1,500) proposal. Use a separate private window or browser profile for the reviewer; sign in, choose Independent reviewer, and enter the facilitator’s reviewer password. Selecting that view alone grants no authority.
 
 Review all four fields plus the proposal and task IDs. The requester cannot approve, even if a reviewer cookie exists in its own browser. Approve or reject independently. Approval executes the server-owned exact arguments, tests changed arguments and retry, then binds the actual payment to the task. Inspect every boundary result; check the protected balance delta is −150,000 and the payment count delta is 1. Refresh both browsers and compare the evidence.
+
+Prepare the reviewer session before creating the proposal; proposals expire
+after ten minutes. Use the same delegation run for the subsequent A2A inspection
+instead of creating another ₹1,500 settlement.
 
 ## Incident review
 

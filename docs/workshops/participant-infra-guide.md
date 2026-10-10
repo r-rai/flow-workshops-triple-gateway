@@ -357,7 +357,8 @@ PYTHONPATH=. .venv/bin/python workshops/w3/rehearsal_w3.py
 ### Step 1: Configure and Start Workshop 4
 
 Follow the [W4 facilitator setup](../../workshops/w4/answer-key.md#setup-and-isolation)
-before attendees arrive. Set the independent reviewer password before starting
+and [step-by-step runbook](../../workshops/w4/runbook.md#1-prepare-the-local-lab-before-the-session)
+before attendees arrive. Persist the independent reviewer password in local `.env` before starting
 services. The optional vulnerable replay additionally needs a distinct sandbox
 key, `W4_ENABLE_VULNERABLE=true` and the `w4-presenter` service. Plain W4 startup
 does not configure these requirements.
@@ -375,6 +376,29 @@ Open **http://localhost:9080/workshop-4**, sign in with the prefilled sample log
 and check readiness. Follow the worksheet's local policy and identity exercises.
 Use a separate browser session for independent review with the configured
 reviewer password. Export run evidence before resetting or changing profiles.
+
+On your own local lab, retrieve the password actually configured in the running
+API using a private terminal:
+
+```bash
+docker compose exec -T api printenv W4_REVIEWER_PASSWORD
+```
+
+Open a private/incognito window or separate browser profile, sign in with the
+sample login, select **Independent reviewer**, enter that password, and click
+**Open reviewer session**. View selection alone grants no authority. For missing
+passwords, see [runbook section 2](../../workshops/w4/runbook.md#2-retrieve-the-reviewer-password-and-open-a-separate-session).
+QR observers use a separate access code and cannot approve transactions.
+
+After pulling local UI updates:
+
+```bash
+git pull origin main
+docker compose --profile w4 up -d --build --no-deps api
+```
+
+Hard-refresh the browser. This rebuilds the local API only; the QR observer
+service requires its own image rebuild and deployment.
 
 ### Step 4: Inspect Delegation and Settlement Evidence
 
