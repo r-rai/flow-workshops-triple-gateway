@@ -296,7 +296,7 @@ function render(run) {
   storage.set('w4-public-run', run.run_id);
 
   $('state').textContent = (run.state || 'unknown').replaceAll('_', ' ');
-  $('mode').textContent = `${run.inference_mode || 'recorded'} · ${run.run_id}`;
+  $('mode').textContent = `${run.scenario.replaceAll('_', ' ')} · ${run.inference_mode || 'recorded'} · ${run.run_id}`;
   $('reason').textContent = run.reason || (run.state === 'awaiting_review' ? 'No debit yet. Independent review is required.' : 'Inspect the service responses and measured ledger observations.');
 
   const delta = run.effects?.balance_delta;
@@ -338,14 +338,9 @@ function render(run) {
   // Timeline
   const timeline = $('timeline');
   timeline.replaceChildren();
-  const entries = [
-    'Incident: ₹90 lakh · 900,000,000 paise',
-    'Ticket: untrusted settlement instructions',
-    'Recorded handoff: NegotiatorBot → PaymentsAgent',
-    ...(run.events || [])
+  const entries = (run.events || [])
       .filter(e => e.boundary !== 'Evidence')
-      .map(e => `${e.label} · ${e.status_code ?? 'denied'} · ${e.outcome}`),
-  ];
+      .map(e => `${e.label} · ${e.status_code ?? 'no response'} · ${e.outcome}`);
   for (const text of entries) {
     const li = document.createElement('li');
     li.textContent = text;

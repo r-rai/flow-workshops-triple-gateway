@@ -63,7 +63,7 @@ function setView() {
 function render(run) {
   current=run; localStorage.setItem('w4-run',run.run_id);
   $('state').textContent=run.state.replaceAll('_',' ');
-  $('mode').textContent=`${run.inference_mode} · ${run.run_id}`;
+  $('mode').textContent=`${run.scenario.replaceAll('_',' ')} · ${run.inference_mode} · ${run.run_id}`;
   $('reason').textContent=run.reason || (run.state==='awaiting_review'?'No debit yet. Independent review is required.':'Inspect the service responses and measured ledger observations.');
   $('delta').textContent=run.effects.balance_delta==null?'Unresolved':new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(run.effects.balance_delta/100);
   $('count').textContent=run.effects.payment_count_delta ?? 'Unresolved';
@@ -73,7 +73,7 @@ function render(run) {
   $('proposal').textContent=run.proposal?fmt({proposal:run.proposal,decision:run.approval,payment:run.payment,task_id:run.task?.task_id}):'No pending proposal.';
   $('ticket').textContent=fmt(run.ticket);
   $('timeline').replaceChildren();
-  const entries=['Incident: ₹90 lakh · 900,000,000 paise',...(chapter>=1?['Ticket: untrusted settlement instructions','Recorded handoff: NegotiatorBot → PaymentsAgent']:[]),...run.events.filter(e=>e.boundary!=='Evidence').map(e=>`${e.label} · ${e.status_code ?? 'no response'} · ${e.outcome}`)];
+  const entries=run.events.filter(e=>e.boundary!=='Evidence').map(e=>`${e.label} · ${e.status_code ?? 'no response'} · ${e.outcome}`);
   for(const text of entries) {const li=document.createElement('li');li.textContent=text;$('timeline').append(li);}
   $('boundaries').replaceChildren();
   for(const boundary of ['Gate 1','Gate 2','Gate 3','Approval','A2A','Settlement','Isolated sandbox']) {

@@ -146,7 +146,7 @@
       line-height: 1.4;
     }
   </style>
-  <script src="/demo-assets/incident_public.js?v=20261009-v2" defer></script>
+  <script src="/demo-assets/incident_public.js?v=20261010-run-context" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -246,17 +246,17 @@
           </div>
 
           <div class="panel-heading" style="margin-top:1.5rem;">
-            <h2>Incident timeline</h2>
-            <span id="mode" class="pill">Recorded backbone</span>
+            <h2>Current run timeline</h2>
+            <span id="mode" class="pill">No run selected</span>
           </div>
           <ol id="timeline">
-            <li>Bank loss: ₹90 lakh · apparently valid request</li>
+            <li>Select a recorded run to inspect its events.</li>
           </ol>
 
           <details id="ticket-panel" style="margin-top:1rem;">
-            <summary>Untrusted ticket &amp; recorded proposal</summary>
+            <summary>Original incident context: untrusted ticket</summary>
             <pre id="ticket" style="white-space:pre-wrap; word-break:break-all;"></pre>
-            <p class="caption">NegotiatorBot → PaymentsAgent: ticket content became asserted approval. Untrusted user data was never sanitized into true authorization.</p>
+            <p class="caption">In the original recorded incident, ticket content became asserted approval across NegotiatorBot → PaymentsAgent. This is background context; the current run timeline and evidence show what the selected scenario actually tested.</p>
           </details>
         </section>
 
