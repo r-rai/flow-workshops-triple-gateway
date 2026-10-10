@@ -1,0 +1,403 @@
+{
+  "info": {
+    "name": "Flo Bank \u2014 Workshop 1 MCP",
+    "description": "Workshop 1 MCP requests matching the supplied Python client. Start W1 before sending. Run Broad discovery before Broad account read; discovery captures generated tool names. Curated requests use fixed get_account/get_case names. Includes only reads and denial demonstrations. Responses may be JSON or SSE; discovery scripts parse both. Variables contain fictional lab credentials only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:9080",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "gate3-secret-token",
+      "type": "string"
+    },
+    {
+      "key": "account_id",
+      "value": "acc-101",
+      "type": "string"
+    },
+    {
+      "key": "case_id",
+      "value": "case-501",
+      "type": "string"
+    },
+    {
+      "key": "broad_account_tool",
+      "value": "get_account",
+      "type": "string"
+    },
+    {
+      "key": "broad_payment_list_tool",
+      "value": "list_payments_api_v1_payments_get",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 \u2014 Broad catalog (/mcp)",
+      "item": [
+        {
+          "name": "01 Initialize",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              }
+            ],
+            "url": "{{base_url}}/mcp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"w1-postman\",\n      \"version\": \"1.0\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "02 Discover tools (captures tool names)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              }
+            ],
+            "url": "{{base_url}}/mcp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Run before broad account read. Check the captured broad_account_tool variable against discovery if necessary."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const raw = pm.response.text();",
+                  "let message;",
+                  "try { message = JSON.parse(raw); } catch (e) {",
+                  "  for (const line of raw.split(/\\r?\\n/)) {",
+                  "    if (line.startsWith(\"data:\")) {",
+                  "      try { message = JSON.parse(line.slice(5).trim()); break; } catch (ignored) {}",
+                  "    }",
+                  "  }",
+                  "}",
+                  "if (message) console.log(\"Parsed MCP response\", message);",
+                  "if (message && message.result && Array.isArray(message.result.tools)) {",
+                  "  const tools = message.result.tools;",
+                  "  const account = tools.find(t => t.inputSchema && t.inputSchema.properties && t.inputSchema.properties.pathParameters && /account/i.test(t.name) && !/list/i.test(t.name));",
+                  "  const paymentList = tools.find(t => /payment/i.test(t.name) && /get|list/i.test(t.name));",
+                  "  if (account) pm.collectionVariables.set(\"broad_account_tool\", account.name);",
+                  "  if (paymentList) pm.collectionVariables.set(\"broad_payment_list_tool\", paymentList.name);",
+                  "  console.log(\"Discovered tools\", tools.map(t => t.name));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 Read account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/mcp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"{{broad_account_tool}}\",\n    \"arguments\": {\n      \"pathParameters\": {\n        \"id\": \"{{account_id}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2 \u2014 Curated catalog (/mcp/curated)",
+      "item": [
+        {
+          "name": "04 Initialize curated",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2024-11-05\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"w1-postman\",\n      \"version\": \"1.0\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "05 Discover curated tools",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/list\",\n  \"params\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Expected tools: exactly get_account and get_case."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const raw = pm.response.text();",
+                  "let message;",
+                  "try { message = JSON.parse(raw); } catch (e) {",
+                  "  for (const line of raw.split(/\\r?\\n/)) {",
+                  "    if (line.startsWith(\"data:\")) {",
+                  "      try { message = JSON.parse(line.slice(5).trim()); break; } catch (ignored) {}",
+                  "    }",
+                  "  }",
+                  "}",
+                  "if (message) console.log(\"Parsed MCP response\", message);",
+                  "if (message && message.result) console.log(\"Curated tools\", message.result.tools);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 Read account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_account\",\n    \"arguments\": {\n      \"pathParameters\": {\n        \"id\": \"{{account_id}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "07 Read support case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_case\",\n    \"arguments\": {\n      \"pathParameters\": {\n        \"id\": \"{{case_id}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "08 Invalid API key (expected downstream denial)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "invalid-secret"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_account\",\n    \"arguments\": {\n      \"pathParameters\": {\n        \"id\": \"{{account_id}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Inspect the embedded downstream result for 401 / Invalid API key; outer HTTP status may be 200."
+          },
+          "response": []
+        },
+        {
+          "name": "09 Missing API key (expected downstream denial)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"get_account\",\n    \"arguments\": {\n      \"pathParameters\": {\n        \"id\": \"{{account_id}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "No X-API-Key header. Inspect the embedded denial."
+          },
+          "response": []
+        },
+        {
+          "name": "10 Excluded payment-list tool (expected lookup rejection)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json, text/event-stream"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": "{{base_url}}/mcp/curated",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"{{broad_payment_list_tool}}\",\n    \"arguments\": {}\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Run Broad discovery first to capture the actual payment-list tool. This attempts a read/list operation excluded from the curated catalog; no payment mutation is included."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
