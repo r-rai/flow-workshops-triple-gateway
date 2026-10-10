@@ -17,6 +17,15 @@ const chapters = [
 let current = null, busy = false, reviewer = false, chapter = Number(localStorage.getItem('w4-chapter') || 0);
 let clickKey = null, observation = false;
 const fmt = v => JSON.stringify(v, null, 2);
+function requestId() {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  // getRandomValues remains available on HTTP workshop hosts.
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
 function error(e) { $('error').hidden = !e; $('error').textContent = e?.message || ''; }
 async function api(path, body, method) {
   const r = await fetch(path, {method:method || (body ? 'POST':'GET'), credentials:'same-origin', headers:body?{'Content-Type':'application/json'}:{}, body:body?JSON.stringify(body):undefined});
@@ -92,7 +101,7 @@ async function enter() {
   if(observation) $('readiness').textContent+=' · Observation only';
 }
 $('signin-form').onsubmit=async e=>{e.preventDefault();error(null);try{await api('/demo-api/login',{email:$('email').value,password:$('password').value});await enter();}catch(e){error(e);}};
-$('run').onclick=async()=>{if(busy)return;error(null);setBusy(true);clickKey ||= crypto.randomUUID();try{const run=await api(API+'/runs',{scenario:$('scenario').value,request_id:clickKey});render(run);clickKey=null;await reloadRuns();}catch(e){error(e);}finally{setBusy(false);}};
+$('run').onclick=async()=>{if(busy)return;error(null);setBusy(true);try{clickKey ||= requestId();const run=await api(API+'/runs',{scenario:$('scenario').value,request_id:clickKey});render(run);clickKey=null;await reloadRuns();}catch(e){error(e);}finally{setBusy(false);}};
 $('scenario').onchange=()=>{clickKey=null;$('prediction').value=localStorage.getItem('w4-predict-'+$('scenario').value)||'';};
 $('prediction').oninput=()=>localStorage.setItem('w4-predict-'+$('scenario').value,$('prediction').value);
 $('runs').onchange=async()=>{try{render(await api(API+'/runs/'+$('runs').value));}catch(e){error(e);}};
