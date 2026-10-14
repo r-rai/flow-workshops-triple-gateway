@@ -37,7 +37,7 @@ function setBusy(value) {
   busy=value; $('run').disabled=value || observation; $('running').hidden=!value;
   $('approve').disabled=value || observation || !reviewer || current?.state!=='awaiting_review';
   $('reject').disabled=$('approve').disabled;
-  $('reconcile').disabled=value || observation || !current || !['running','unresolved','approved'].includes(current.state);
+  $('reconcile').disabled=value || observation || !current || !['running','awaiting_review','unresolved','approved'].includes(current.state);
 }
 function setChapter(value, record=true) {
   chapter=Math.max(0,Math.min(chapters.length-1,value)); localStorage.setItem('w4-chapter',chapter);

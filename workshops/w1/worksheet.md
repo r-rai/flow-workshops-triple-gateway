@@ -14,6 +14,13 @@
 
 ---
 
+## Presenter runbook and Postman
+
+Use the [presenter runbook](runbook.md) for the complete beginner walkthrough,
+direct MCP connections, Postman request order, API-key behavior, and configuration tour.
+Import the [Postman collection](postman/Flo-Bank-W1-MCP.postman_collection.json)
+to run the same discovery, read, exclusion, and denial demonstrations over HTTP.
+
 ## Before the session: prepare the Python client
 
 Run these commands from the repository root before the timed exercise:

@@ -25,6 +25,7 @@ docker compose --profile demo-enterprise up -d --build
 
 ## Topic 1 (W1): Modernizing APIs for AI Agents: From OpenAPI to MCP
 - **Workshop story**: [Give Flo the Right Tools](workshop-1-story.md), a 45-minute presenter narrative covering generation, curation, invocation and downstream authorization.
+- **Presenter runbook**: [W1 step-by-step delivery](../../workshops/w1/runbook.md), including Postman, direct MCP connections, authentication, and configuration.
 - **Duration**: 45 minutes
 - **Profile**: `w1`
 - **Description**: Most enterprises already have well-documented REST APIs, but AI agents cannot reliably use them without an interface designed for tool discovery, structured invocation, and safe runtime interaction. This session shows how API architects and integration engineers can transform existing OpenAPI-described services into MCP-based, AI-consumable tools, where automation helps, where curation is essential, and how to preserve governance, security, and observability along the way.

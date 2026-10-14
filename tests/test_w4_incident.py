@@ -124,6 +124,34 @@ def test_vulnerable_disabled_on_protected_instance(lab):
     assert c.post('/demo-api/workshop-4/runs', json={'scenario':'vulnerable_replay','request_id':'x'}).status_code == 403
 
 
+def test_reconcile_expired_review_unblocks_new_scenarios(lab):
+    c, _, factory = lab
+    run = start(c, 'legitimate_delegation')
+    path = '/demo-api/workshop-4/runs/'+run['run_id']+'/reconcile'
+    pending = c.post(path, json={}).json()
+    assert pending['state'] == 'awaiting_review'
+    assert pending['effects']['payment_count_delta'] == 0
+    from src.models.db_models import PaymentProposal
+    with factory() as db:
+        db.query(PaymentProposal).filter_by(id=run['proposal']['proposal_id']).update({'expires_at':time.time()-1})
+        db.commit()
+    blocked = c.post('/demo-api/workshop-4/runs', json={'scenario':'wrong_audience','request_id':'next'})
+    assert blocked.status_code == 409
+    result = c.post(path, json={}).json()
+    assert result['state'] == 'expired'
+    assert result['effects']['payment_count_delta'] == 0
+    assert start(c, 'wrong_audience', 'next')['state'] == 'denied'
+
+
+def test_active_review_error_explains_recovery(lab):
+    c, _, _ = lab
+    start(c, 'legitimate_delegation')
+    blocked = c.post('/demo-api/workshop-4/runs', json={'scenario':'wrong_audience','request_id':'next'})
+    assert blocked.status_code == 409
+    assert 'Reconcile' in blocked.json()['detail']
+    assert 'reviewer' in blocked.json()['detail']
+
+
 def test_isolated_replay_exact_loss_and_idempotency(tmp_path):
     from src.demo.incident_sandbox import replay
     path = tmp_path / 'isolated.sqlite'

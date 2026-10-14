@@ -48,6 +48,11 @@ const path = require('node:path');
       assert.equal(await page.locator('#count').innerText(), '0');
       assert.match(await page.locator('#sandbox-effect').innerText(), /₹90 lakh/);
       assert.equal(await page.locator('#error').isVisible(), false);
+      run.state = 'awaiting_review';
+      await page.reload();
+      await page.locator('#workspace').waitFor({state:'visible'});
+      assert.equal(await page.locator('#reconcile').isDisabled(), false, 'Pending reviews must allow expiry reconciliation');
+      assert.equal(await page.locator('#approve').isDisabled(), true, 'Reconciliation must not grant approval authority');
       assert.deepEqual(errors, []);
       await page.close();
     }

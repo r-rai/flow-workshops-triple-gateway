@@ -7,6 +7,9 @@ Use the [W1 worksheet](../../workshops/w1/worksheet.md) for participant commands
 the [answer key](../../workshops/w1/answer-key.md) for presenter preparation, and
 the [delivery plan](delivery-plan.md) for the series outcomes.
 
+For step-by-step delivery with direct MCP clients or Postman, use the
+[W1 presenter runbook](../../workshops/w1/runbook.md).
+
 ## The business story
 
 Flo Bank wants its support agent to answer account questions and inspect support

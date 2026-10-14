@@ -449,7 +449,7 @@ def create_router(session_dependency):
                     return run
                 active = db.execute('SELECT data FROM runs').fetchall()
                 if any(json.loads(r[0])['state'] in ('running','awaiting_review','approved','unresolved') for r in active):
-                    raise HTTPException(409,'Resolve the active demonstration before starting another run.')
+                    raise HTTPException(409,'Resolve the active demonstration before starting another run. Select it under Server-owned run. Use Reconcile uncertain result to check for expiry or recover an interrupted run. A pending proposal needs an independent reviewer to approve or reject it; changing View does not open a reviewer session.')
                 run = {'run_id':'run-'+secrets.token_hex(12),'scenario':payload.scenario,'inference_mode':'live' if payload.scenario=='live_comparison' else 'recorded','state':'running','started_at':time.time(),'identities':[],'events':[],'effects':{},'trace_id':secrets.token_hex(16),'trace_status':'incomplete','ticket':TICKET,'delegation':['NegotiatorBot','PaymentsAgent']}
                 db.execute('INSERT INTO runs VALUES (?,?,?,?)',(run['run_id'],owner(flo_demo_session),payload.request_id,json.dumps(run)))
             async with gateway_client() as client:
@@ -510,7 +510,7 @@ def create_router(session_dependency):
             _,run = authorized(run_id,flo_demo_session,w4_reviewer)
             async with gateway_client() as client:
                 execution = Execution(run,client)
-                if run['state'] in ('running','approved','unresolved'):
+                if run['state'] in ('running','awaiting_review','approved','unresolved'):
                     await execution.recover()
                 else:
                     await execution.observe()
